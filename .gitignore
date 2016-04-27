@@ -1,0 +1,11 @@
+.directory
+.gradle
+node_modules
+bower_components
+app/css/libs/bower
+app/js/libs/bower
+app/editor/js/libs/bower
+app/editor/css/libs/bower
+build
+dev
+npm-debug.log

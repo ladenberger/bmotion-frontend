@@ -1,0 +1,114 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.api.tasks.Exec
+
+def bmotionVersion = '0.2.8'
+def appVersion = '0.2.8'
+def targets = ["linux-ia32", "linux-x64", "darwin-x64", "win32-ia32", "win32-x64"]
+
+// ----------------------------------------
+// Helper methods ...
+// ----------------------------------------
+def download(String address, String target) {
+    def file = new FileOutputStream(target)
+    def out = new BufferedOutputStream(file)
+    out << new URL(address).openStream()
+    out.close()
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+    mavenCentral()
+    maven {
+        name "sonatype snapshots"
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+    maven {
+        name "sonatype releases"
+        url "https://oss.sonatype.org/content/repositories/releases/"
+    }
+}
+
+dependencies {
+    compile group: 'de.hhu.stups', name: 'bmotion-prob', version: bmotionVersion, changing: true
+}
+
+// Extend clean task ...
+clean {
+    delete("build")
+}
+
+task getLibs(dependsOn: jar) << {
+    copy {
+        from configurations.compile
+        into 'build/libs'
+    }
+}
+
+task npmDeps(type: Exec) {
+    commandLine "npm", 'install'
+}
+
+task copyPackageJson(type: Copy) {
+    from 'package.json'
+    into 'build'
+}
+
+task npmProductionDeps(dependsOn: [copyPackageJson], type: Exec) {
+    commandLine "npm", 'install', '--production', '--prefix', 'build'
+}
+
+task grunt_standalone_all(dependsOn: [npmDeps], type: GruntTask) {
+    gruntArgs = "standalone_all --force"
+}
+
+targets.each() { target ->
+
+    task "copyResources_${target}"(dependsOn: ["grunt_standalone_${target}", getLibs, "npmProductionDeps"], type: Copy) {
+        from 'bmotion.json'
+        from('build') {
+            include 'node_modules/**'
+            include 'libs/**'
+            include 'template/**'
+        }
+        if (target == "darwin-x64") {
+            into 'build/client/bmotion-prob-' + target + '/bmotion-prob.app/Contents/Resources'
+        } else {
+            into 'build/client/bmotion-prob-' + target + '/resources'
+        }
+    }
+
+    task "zip_${target}"(dependsOn: ["copyResources_${target}"], type: Zip) {
+        destinationDir = new File('build/dist/' + appVersion)
+        archiveName = 'bmotion-prob-' + appVersion + '-' + target + '.zip'
+        from('build/client/bmotion-prob-' + target) {
+            into "./bmotion-prob-" + appVersion
+        }
+    }
+
+    task "grunt_standalone_${target}"(dependsOn: [npmDeps], type: GruntTask) {
+        gruntArgs = "standalone_${target} --force"
+    }
+
+    task "standalone_${target}"(dependsOn: ["zip_${target}"]) {}
+
+}
+
+task standalone_all(dependsOn: [tasks.withType(Copy).matching { task -> task.name.startsWith('assemble_') },
+                                tasks.withType(Zip).matching { task -> task.name.startsWith('zip_') }]) << {
+}
+
+class GruntTask extends Exec {
+    private String gruntExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "grunt.cmd" : "grunt"
+    private String switches = "--no-color"
+
+    public GruntTask() {
+        super()
+        this.setExecutable(gruntExecutable)
+    }
+
+    public void setGruntArgs(String gruntArgs) {
+        this.args = "$switches $gruntArgs".trim().split(" ") as List
+    }
+}

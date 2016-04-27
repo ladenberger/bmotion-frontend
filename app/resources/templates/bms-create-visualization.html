@@ -1,0 +1,47 @@
+<div>
+    <div class="modal-header">
+        <h3 class="modal-title">
+            Create BMotion Studio Visualization
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div>
+            <form name="userForm">
+                <div class="form-group" ng-class="{ 'has-error': userForm.id.$invalid && userForm.id.$dirty }">
+                    <label class="control-label">ID</label>
+                    <input type="text" class="form-control" name="id" ng-minlength=3 ng-pattern="/^[a-zA-Z0-9]+$/"
+                           ng-model="view.id" required
+                           placeholder="ID"/>
+
+                    <p class="help-block" ng-if="userForm.id.$error.required">The id is required.</p>
+
+                    <p class="help-block" ng-if="userForm.id.$error.pattern">No special characters and whitespace are
+                        allowed.</p>
+
+                    <p class="help-block" ng-if="userForm.id.$error.minlength">The id is required to be at least 3
+                        characters.</p>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Name</label>
+                    <input type="text" class="form-control" name="name" ng-model="view.name"
+                           placeholder="Name"/>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Auto Open ProB View:</label>
+                    <select multiple class="form-control" name="autoOpen" ng-model="view.autoOpen">
+                        <option>CurrentTrace</option>
+                        <option>Events</option>
+                        <option>StateInspector</option>
+                        <option>CurrentAnimations</option>
+                        <option>GroovyConsoleSession</option>
+                        <option>ModelCheckingUI</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" type="button" ng-click="ok()" ng-disabled="userForm.$invalid">OK</button>
+            <button class="btn" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </div>
+</div>

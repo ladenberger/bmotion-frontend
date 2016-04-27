@@ -1,0 +1,92 @@
+<div ng-controller="bmsObserverCspEventCtrl">
+
+    <div class="row fixed-height">
+        <div class="col-md-3">Selector:</div>
+        <div class="col-md-9">
+            <span editable-text="observer.data.selector">{{ observer.data.selector || "selector" }}</span>
+        </div>
+    </div>
+
+    <div class="row fixed-height">
+        <div class="col-md-3 observer-formula-menu"
+             ng-mouseover="showObserverMenu()"
+             ng-mouseleave="hideObserverMenu()"
+             ng-click="addTransformer()">
+            <i ng-class="{'fa fa-plus': isObserverMenu, '': !isObserverMenu}"></i>
+            {{ isObserverMenu ? " Add" : "Transformers:" }}
+        </div>
+        <div class="col-md-9">
+        </div>
+    </div>
+
+    <div ng-repeat="o in observer.data.observers track by $index">
+
+        <div class="csp-event-transformer-box csp-event-transformer-header">
+            <div style="float:left;">
+                <div ng-click="rowform.$show()"
+                     ng-class="{'editable-click': !rowform.$visible, '': rowform.$visible}">
+                    <span editable-text="o.exp" e-name="exp" e-form="rowform">{{o.exp || "expression"}}</span>
+                </div>
+                <div ng-show="rowform.$visible" class="observer-form-buttons">
+                    <form editable-form name="rowform">
+                        <button type="submit" ng-disabled="rowform.$waiting" title="Save Observer"><i
+                                class="fa fa-floppy-o"></i>
+                        </button>
+                        <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()"><i
+                                class="fa fa-ban" title="Cancel Editing Observer"></i></button>
+                    </form>
+                </div>
+                <div style="clear:both"></div>
+            </div>
+            <div style="float:right">
+                <div class="csp-event-transformer-menu">
+                    <a href="#" ng-click="removeTransformer($index)"
+                       title="Remove Transformer"><i
+                            class="fa fa-trash-o"></i></a>
+                </div>
+            </div>
+            <div style="clear:both"></div>
+        </div>
+        <div class="csp-event-transformer-box csp-event-transformer-content">
+            <div class="row fixed-height">
+                <div class="col-md-3 observer-formula-menu"
+                     ng-mouseover="showActionMenu($index)"
+                     ng-mouseleave="hideActionMenu($index)"
+                     ng-click="addAction(o)">
+                    <i ng-class="{'fa fa-plus': isActionMenu($index), '': !isActionMenu($index)}"></i>
+                    {{ isActionMenu($index) ? " Add" : "Actions:" }}
+                </div>
+                <div class="col-md-9">
+                    <div ng-repeat="t in o.actions track by $index" class="csp-event-action">
+                        <div ng-click="actform.$show()"
+                             ng-class="{'editable-click': !actform.$visible, '': actform.$visible}">
+                            <span editable-text="t.selector" e-name="selector" e-form="actform"
+                                  style="font-style:italic;">{{t.selector || "selector"}}</span>
+                            <br/>
+                            <span editable-text="t.attr" e-name="attr" e-form="actform">{{t.attr || "attr"}}: </span>
+                            <br ng-show="actform.$visible"/>
+                            <span editable-text="t.value" e-name="value" e-form="actform">{{t.value || "value"}}</span>
+                        </div>
+                        <div ng-show="actform.$visible" class="observer-form-buttons">
+                            <form editable-form name="actform">
+                                <button type="submit" ng-disabled="actform.$waiting" title="Save Action"><i
+                                        class="fa fa-floppy-o"></i>
+                                </button>
+                                <button type="button" ng-disabled="actform.$waiting" ng-click="actform.$cancel()"><i
+                                        class="fa fa-ban" title="Cancel Editing Action"></i></button>
+                            </form>
+                            <div>
+                                <button ng-click="removeAction(o, $index)" title="Remove Action"><i
+                                        class="fa fa-trash-o"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>

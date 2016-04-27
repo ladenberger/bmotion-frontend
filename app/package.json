@@ -1,0 +1,12 @@
+{
+  "version": "0.2.8",
+  "name": "bmotion-prob",
+  "productName": "BMotion Studio for ProB",
+  "main": "./bmotion.main.js",
+  "license": "EPL-1.0",
+  "author": {
+    "name": "Lukas Ladenberger",
+    "email": "ladenberger@cs.uni-duesseldorf.de",
+    "url": "www.stups.hhu.de/ProB/index.php5/BMotion_Studio"
+  }
+}

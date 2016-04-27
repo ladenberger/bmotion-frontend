@@ -1,0 +1,25 @@
+<div class="modal-js-editor">
+  <div class="modal-header">
+    <h3 class="modal-title">
+      JavaScript Editor
+      <i class="fa fa-info-circle cursor-pointer" ng-click="isCollapsed = !isCollapsed"></i>
+    </h3>
+    <div uib-collapse="isCollapsed">
+      <div class="well well-sm">
+        <div ng-bind-html="doc.description"></div>
+        <div>The following parameters are available:</div>
+        <div class="row" ng-repeat="p in doc.parameter track by $index">
+          <div class="col-xs-2">{{p.name}}:</div>
+          <div class="col-xs-10" ng-bind-html="p.description"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="js-editor" ui-codemirror="editorOptions" ng-model="code"></div>
+    <div class="modal-footer">
+      <button class="btn" type="button" ng-click="ok()">OK</button>
+      <button class="btn" type="button" ng-click="cancel()">Cancel</button>
+    </div>
+  </div>
+</div>

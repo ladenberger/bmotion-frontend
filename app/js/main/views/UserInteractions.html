@@ -1,0 +1,10 @@
+<table class="table table-striped table-condensed">
+  <tr>
+    <th>Transition</th>
+    <th>Executor</th>
+  </tr>
+  <tr ng-repeat="evt in events | reverse" ng-click="executeEvent(evt)" class="userInteractionsView-item userInteractionsView-item-{{evt.group}}">
+    <td>{{evt.opString}}</td>
+    <td>{{evt.executor ? '#' + evt.executor : ''}}</td>
+  </tr>
+</table>

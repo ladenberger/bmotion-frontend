@@ -1,0 +1,227 @@
+.oe-tab {
+  padding-bottom: 75px;
+}
+.oe-view {
+  overflow-y: auto;
+  height: 100%;
+}
+.observer-box {
+  display: block;
+  margin-bottom: 1px;
+  width: 280px;
+  padding: 6px;
+  font-size: 12px;
+  -webkit-box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  moz-box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px
+}
+.observer-menu {
+  text-align: center;
+}
+.observer-menu a {
+  color: black;
+}
+.observer-menu a:hover {
+  font-style: italic;
+}
+.observer-menu a:hover, .observer-menu a:focus {
+  text-decoration: none;
+}
+.observer-content {
+  background-color: #E8E8E8;
+  padding-left: 8px;
+}
+.observer-content .fixed-height {
+  min-height: 25px;
+}
+.editable-empty, .editable-empty:hover, .editable-empty:focus, a.editable-empty, a.editable-empty:hover, a.editable-empty:focus {
+  font-style: normal;
+  color: black;
+}
+.editable-click {
+  display: block;
+  margin-top: 1px;
+  color: black;
+  padding: 1px 3px 1px 3px;
+  border: 1px solid #E8E8E8;
+  clear: both;
+}
+.editable-click:hover {
+  display: block;
+  margin-top: 1px;
+  color: black;
+  padding: 1px 3px 1px 3px;
+  border: 1px solid darkgray;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px text-decoration: none;
+  text-decoration: none;
+  font-style: normal;
+}
+.editable-click:hover:after {
+  font-family: "FontAwesome";
+  content: "\f040";
+  float: right;
+  /*position: absolute;
+    top: 4px;
+    right: 20px;*/
+}
+.editable-wrap {
+  margin-left: 2px;
+}
+input[type="text"].editable-input.editable-has-buttons {
+  font-size: 12px;
+  width: 128px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+}
+input[type="checkbox"].editable-input.editable-has-buttons {
+  border: 0;
+  margin: 3px 0 0 0;
+  padding: 0;
+}
+.editable {
+  overflow: hidden;
+}
+.observer-content button {
+  cursor: pointer;
+}
+.observer-header {
+  background-color: #E0E0E0;
+  margin-top: 5px;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  cursor: pointer;
+}
+.observer-header a:link {
+  color: black;
+}
+.observer-header span {
+  font-weight: bold;
+}
+.observer-header .label-type {
+  text-transform: uppercase;
+}
+.observer-formula-menu {
+  cursor: pointer;
+}
+.observer-highlight {
+  background-color: lightyellow;
+}
+.modal-js-editor .modal-header {
+  padding: 10px 10px 0 10px;
+  border-bottom: 0;
+}
+.modal-js-editor .modal-footer {
+  border-top: 0;
+  padding: 0px;
+}
+.modal-js-editor .modal-body {
+  padding: 10px;
+}
+.modal-js-editor .modal-title {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.modal-js-editor .well {
+  margin: 0;
+}
+.modal-js-editor .col-xs-2 {
+  text-align: right;
+  font-weight: bold;
+}
+.modal-js-editor .well div {
+  padding: 5px;
+}
+.js-editor {
+  border: 1px solid darkgray;
+}
+.inner-value-box {
+  margin-bottom: 1px;
+  padding: 6px;
+  -webkit-box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  moz-box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px
+}
+.bt-switch-js {
+  float: right;
+  padding-top: 2px;
+  padding-right: 2px;
+  cursor: pointer;
+}
+.js-edit-field {
+  float: left;
+  width: 170px;
+}
+.js-edit-field-inner {
+  float: left;
+  height: 25px;
+  width: 160px;
+}
+.observer-form-buttons {
+  clear: both;
+  height: 25px;
+}
+.observer-form-buttons div, .observer-form-buttons form {
+  float: left;
+  padding: 2px;
+}
+.csp-event-transformer-box {
+  margin-bottom: 1px;
+  padding: 6px;
+  -webkit-box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  moz-box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 1px 1px 2px white, 1px 1px 1px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px
+}
+.csp-event-transformer-header {
+  background-color: #E0E0E0;
+  margin-top: 5px;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  min-height: 25px;
+  position: relative
+}
+.csp-event-transformer-menu {
+  padding: 3px 0 3px 0;
+  text-align: center;
+}
+.csp-event-transformer-menu a {
+  color: black;
+}
+.csp-event-transformer-header .editable-click {
+  border: 1px solid #E0E0E0;
+  width: 230px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.csp-event-transformer-header .editable-click:hover:after {
+  font-family: "FontAwesome";
+  content: "\f040";
+  position: absolute;
+  top: 11px;
+  right: 22px;
+}
+.csp-event-transformer-header .editable-input{
+  width: 230px;
+}
+.csp-event-transformer-content {}
+.csp-event-action {
+  margin-bottom: 10px;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.editable-controls>select {
+  width: 150px;
+}

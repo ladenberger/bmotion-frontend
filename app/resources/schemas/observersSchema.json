@@ -1,0 +1,34 @@
+{
+  "type": "array",
+  "title": "Observers",
+  "required": true,
+  "additionalProperties": false,
+  "items": {
+    "type": "object",
+    "title": "Observer",
+    "properties": {
+      "selector": {
+        "title": "Selector",
+        "type": "string"
+      },
+      "translate": {
+        "title": "Translate?",
+        "type": "boolean"
+      },
+      "formulas": {
+        "title": "Formulas",
+        "type": "array",
+        "format": "table",
+        "items": {
+          "title": "Formula",
+          "type": "string"
+        }
+      }
+    },
+    "additionalProperties": false,
+    "required": [
+      "selector",
+      "formulas"
+    ]
+  }
+}

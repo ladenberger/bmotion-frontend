@@ -1,0 +1,31 @@
+<div>
+    <div class="modal-header">
+        <h3 class="modal-title">
+            Select model to be visualized
+        </h3>
+    </div>
+    <div class="modal-body">
+        <div>
+            <form name="userForm">
+                <div class="form-group" ng-class="{ 'has-error': userForm.model.$invalid && userForm.model.$dirty }">
+                    <label class="control-label">Model</label>
+
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="model" ng-model="model" placeholder="Model"
+                               required>
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button" ng-click="openModel()">
+                                <span class="glyphicon glyphicon-file"></span>
+                            </button>
+                        </span>
+                    </div>
+                    <p class="help-block" ng-if="userForm.model.$error.required">Please enter a path to a model.</p>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" type="button" ng-click="ok()" ng-disabled="userForm.$invalid">OK</button>
+            <button class="btn" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </div>
+</div>

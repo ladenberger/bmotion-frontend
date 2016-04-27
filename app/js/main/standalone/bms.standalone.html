@@ -1,0 +1,61 @@
+<div ng-show="sessionId" class="fullWidthHeight bms-tabs">
+
+  <uib-tabset class="fullWidthHeight">
+    <uib-tab select="selectSimulatorTab()" heading="Simulator">
+      <div data-bms-visualization-view="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>
+    </uib-tab>
+    <uib-tab select="selectEditorTab(svg)" ng-show="view.hasSvg()" ng-repeat="(svg, value) in view.svg" heading="Editor: {{svg}}" disable="isDisabled(svg)" ng-click="!isDisabled(svg) || whyDisabled(svg)">
+      <div data-bms-visualization-editor="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-svg-file="{{svg}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>
+    </uib-tab>
+    <uib-tab select="selectDiagramTab()" ng-repeat="tab in tabs track by $index" active="tab.active" disable="tab.disabled" ng-mouseenter="enter(tab)" ng-mouseleave="leave(tab)">
+      <uib-tab-heading>
+        {{tab.title}}
+        <a href="" class="tab-close-bt" ng-click="removeTab($index)" ng-show="tab.showClose">
+          <i class="glyphicon glyphicon-remove"></i>
+        </a>
+      </uib-tab-heading>
+      <div ng-include="tab.content" class="fullWidthHeight"></div>
+    </uib-tab>
+  </uib-tabset>
+
+  <div bms-dialog type="UserInteractions" title="User Interactions Log">
+    <div bms-user-interaction class="userInteractionsView"></div>
+  </div>
+
+</div>
+
+<div bms-dialog type="CurrentTrace" data-bms-session-id="{{sessionId}}" title="History">
+  <div prob-view></div>
+</div>
+
+<div bms-dialog type="Events" data-bms-session-id="{{sessionId}}" title="Events">
+  <div prob-view></div>
+</div>
+
+<div bms-dialog type="StateInspector" data-bms-session-id="{{sessionId}}" title="State">
+  <div prob-view></div>
+</div>
+
+<div bms-dialog type="CurrentAnimations" data-bms-session-id="{{sessionId}}" title="Animations">
+  <div prob-view></div>
+</div>
+
+<div bms-dialog type="BConsole" data-bms-session-id="{{sessionId}}" title="Console">
+  <div prob-view></div>
+</div>
+
+<div bms-dialog type="ModelCheckingUI" data-bms-session-id="{{sessionId}}" title="ModelChecking">
+  <div prob-view></div>
+</div>
+
+<div bms-dialog type="GroovyConsoleSession" data-bms-session-id="{{sessionId}}" title="GroovyConsole">
+  <div prob-view></div>
+</div>
+
+<script type="text/ng-template" id="projectionDiagramTemplate">
+  <div data-bms-diagram-element-projection-view data-bms-session-id="{{sessionId}}" data-bms-visualization-id="{{id}}" class="fullWidthHeight"></div>
+</script>
+
+<script type="text/ng-template" id="traceDiagramTemplate">
+  <div data-bms-diagram-trace-view data-bms-session-id="{{sessionId}}" data-bms-visualization-id="{{id}}" class="fullWidthHeight"></div>
+</script>

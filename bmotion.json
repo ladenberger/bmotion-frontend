@@ -1,0 +1,11 @@
+{
+  "socket": {
+    "host": "localhost",
+    "port": "19090"
+  },
+  "prob": {
+    "host": "localhost",
+    "version": "milestone-28",
+    "revision": "6a94e37003fa3290797138f7f167739016750153"
+  }
+}
