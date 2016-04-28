@@ -19,14 +19,15 @@
     "grunt-contrib-copy": "^0.8.2",
     "grunt-contrib-requirejs": "^0.4.4",
     "grunt-electron": "^2.0.0",
-    "karma": "~0.13.22",
     "jasmine-core": "~2.4.1",
-    "karma-jasmine": "~0.3.8",
     "angular-mocks": "~1.5.3",
-    "phantomjs-prebuilt": "~2.1.7",
-    "karma-phantomjs-launcher": "~1.0.0",
+    "grunt-karma": "~0.12.2",
+    "phantomjs": "~2.1.7",
+    "karma": "~0.13.22",
+    "karma-jasmine": "~0.3.8",
+    "karma-coverage": "~0.5.5",
     "karma-requirejs": "~0.2.6",
-    "grunt-karma": "~0.12.2"
+    "karma-phantomjs-launcher": "~1.0.0"
   },
   "dependencies": {
     "diskdb": "^0.1.14",

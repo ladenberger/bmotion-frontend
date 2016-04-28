@@ -7,5 +7,6 @@ app/js/libs/bower
 app/editor/js/libs/bower
 app/editor/css/libs/bower
 build
+coverage
 dev
 npm-debug.log

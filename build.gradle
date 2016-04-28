@@ -34,11 +34,6 @@ dependencies {
     compile group: 'de.hhu.stups', name: 'bmotion-prob', version: bmotionVersion, changing: true
 }
 
-// Extend clean task ...
-clean {
-    delete("build")
-}
-
 task getLibs(dependsOn: jar) << {
     copy {
         from configurations.compile
@@ -61,6 +56,14 @@ task npmProductionDeps(dependsOn: [copyPackageJson], type: Exec) {
 
 task grunt_standalone_all(dependsOn: [npmDeps], type: GruntTask) {
     gruntArgs = "standalone_all --force"
+}
+
+task grunt_clean(dependsOn: [npmDeps], type: GruntTask) {
+    gruntArgs = "clean --force"
+}
+
+task prepare(dependsOn: [npmDeps], type: GruntTask) {
+    gruntArgs = "prepare --force"
 }
 
 targets.each() { target ->
@@ -97,6 +100,11 @@ targets.each() { target ->
 
 task standalone_all(dependsOn: [tasks.withType(Copy).matching { task -> task.name.startsWith('assemble_') },
                                 tasks.withType(Zip).matching { task -> task.name.startsWith('zip_') }]) << {
+}
+
+// Extend clean task ...
+clean {
+  dependsOn getTasksByName("grunt_clean", true)
 }
 
 class GruntTask extends Exec {

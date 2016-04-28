@@ -9,7 +9,16 @@ module.exports = function(grunt) {
   var editorDependencies = ["angular-ui-codemirror", "codemirror", "angular-xeditable", "eventEmitter", "eventie", "imagesloaded", "jquery.browser"];
 
   grunt.initConfig({
-    clean: ["build", "cache", "bower_components", "app/js/libs/bower", "app/css/libs/bower", "app/editor/js/libs/bower", "app/editor/css/libs/bower"],
+    clean: [
+      "build",
+      "cache",
+      "bower_components",
+      "coverage",
+      "app/js/libs/bower",
+      "app/css/libs/bower",
+      "app/editor/js/libs/bower",
+      "app/editor/css/libs/bower"
+    ],
     electron: {
       "linux-x64": {
         options: {
@@ -160,7 +169,11 @@ module.exports = function(grunt) {
     },
     karma: {
       unit: {
-        configFile: 'karma.conf.js'
+        configFile: 'karma.conf.js',
+        // run karma in the background
+        background: true,
+        // which browsers to run the tests on
+        browsers: ['PhantomJS']
       }
     }
   });
@@ -184,13 +197,13 @@ module.exports = function(grunt) {
   targets.forEach(function(target) {
     grunt.registerTask('standalone_' + target, '', function() {
       grunt.config.set('mode', 'standalone');
-      grunt.task.run(['clean', 'prepare', 'test', 'copy:template', 'electron:' + target]);
+      grunt.task.run(['prepare', 'test', 'copy:template', 'electron:' + target]);
     });
   });
 
   grunt.registerTask('standalone_all', '', function() {
     grunt.config.set('mode', 'standalone');
-    grunt.task.run(['clean', 'prepare', 'test', 'copy:template', 'electron']);
+    grunt.task.run(['prepare', 'test', 'copy:template', 'electron']);
   });
 
 };
