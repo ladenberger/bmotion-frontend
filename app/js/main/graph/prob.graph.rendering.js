@@ -445,8 +445,6 @@ define([
                 var nodes = data[0];
                 var edges = data[1];
 
-                console.log(nodes);
-
                 var promises = [];
                 // Get HTML data
                 angular.forEach(nodes, function(node) {
