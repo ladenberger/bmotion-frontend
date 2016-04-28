@@ -1,11 +1,11 @@
-# BMotion Studio for ProB
+# BMotionWeb Frontend
 
-[![Build Status](https://travis-ci.org/ladenberger/bmotion-prob-frontend.svg?branch=develop)](https://travis-ci.org/ladenberger/bmotion-prob-frontend)
+[![Build Status](https://travis-ci.org/ladenberger/bmotion-frontend.svg?branch=develop)](https://travis-ci.org/ladenberger/bmotion-frontend)
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
 ## Build
 
-Run the following command for building BMotion Studio for ProB, where xxx is the target platform:
+Run the following command for building BMotionWeb standalone application, where xxx is the target platform:
 
 ```
 gradle clean standalone_xxx
