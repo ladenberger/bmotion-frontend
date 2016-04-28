@@ -157,6 +157,11 @@ module.exports = function(grunt) {
           dest: 'build/template/'
         }]
       }
+    },
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js'
+      }
     }
   });
 
@@ -165,8 +170,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-electron');
+  grunt.loadNpmTasks('grunt-karma');
 
   grunt.registerTask('default', ['build']);
+
+  grunt.registerTask('test', ['karma']);
 
   grunt.registerTask('prepare', ['bower:install']);
   grunt.registerTask('build', ['standalone_all']);
@@ -182,7 +190,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('standalone_all', '', function() {
     grunt.config.set('mode', 'standalone');
-    grunt.task.run(['prepare', 'copy:template', 'electron']);
+    grunt.task.run(['test', 'prepare', 'copy:template', 'electron']);
   });
 
 };
