@@ -179,18 +179,18 @@ module.exports = function(grunt) {
   grunt.registerTask('prepare', ['bower:install']);
   grunt.registerTask('build', ['standalone_all']);
 
-  grunt.registerTask('online', ['prepare', 'requirejs:js-online', 'requirejs:css-online', 'copy:online']);
+  grunt.registerTask('online', ['prepare', 'test', 'requirejs:js-online', 'requirejs:css-online', 'copy:online']);
 
   targets.forEach(function(target) {
     grunt.registerTask('standalone_' + target, '', function() {
       grunt.config.set('mode', 'standalone');
-      grunt.task.run(['prepare', 'copy:template', 'electron:' + target]);
+      grunt.task.run(['clean', 'prepare', 'test', 'copy:template', 'electron:' + target]);
     });
   });
 
   grunt.registerTask('standalone_all', '', function() {
     grunt.config.set('mode', 'standalone');
-    grunt.task.run(['test', 'prepare', 'copy:template', 'electron']);
+    grunt.task.run(['clean', 'prepare', 'test', 'copy:template', 'electron']);
   });
 
 };
