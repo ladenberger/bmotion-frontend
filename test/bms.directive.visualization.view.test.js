@@ -101,13 +101,17 @@ define(['bms.directive.visualisation.view'], function() {
             return deferred.promise;
           });
 
-          $httpBackend.expectGET(manifestPath).respond(200, manifestData);
+          $httpBackend.when('GET', manifestPath).respond(manifestData);
+          $httpBackend.when('GET', templateFolder + '/observers.json').respond(jsonObservers);
+          $httpBackend.when('GET', templateFolder + '/events.json').respond(jsonEvents);
+
+          //$httpBackend.expectGET(manifestPath).respond(200, manifestData);
 
           var promise = bmsSessionService.initSession(manifestPath);
           promise.then(function(_bmsSessionInstance_) {
 
-            $httpBackend.expectGET(templateFolder + '/observers.json').respond(200, jsonObservers);
-            $httpBackend.expectGET(templateFolder + '/events.json').respond(200, jsonEvents);
+            //$httpBackend.expectGET(templateFolder + '/observers.json').respond(200, jsonObservers);
+            //$httpBackend.expectGET(templateFolder + '/events.json').respond(200, jsonEvents);
 
             bmsSessionInstance = _bmsSessionInstance_;
 
@@ -178,8 +182,8 @@ define(['bms.directive.visualisation.view'], function() {
 
       it('getJsonElements should resolve object', function(done) {
 
-        $httpBackend.expectGET(templateFolder + '/observers.json').respond(200, jsonObservers);
-        $httpBackend.expectGET(templateFolder + '/events.json').respond(200, jsonEvents);
+        //$httpBackend.expectGET(templateFolder + '/observers.json').respond(200, jsonObservers);
+        //$httpBackend.expectGET(templateFolder + '/events.json').respond(200, jsonEvents);
 
         var promise = $scope.getJsonElements(templateFolder, viewData);
 

@@ -162,7 +162,7 @@ define([
 
             $scope.loadTemplate = function(templateFolder, template) {
               var defer = $q.defer();
-              $scope.view.container.attr('src', templateFolder + '/' + template).attr('id', $scope.id);
+              $scope.view.container.attr('src', templateFolder + '/' + template);
               $scope.view.container.load(function() {
                 var iframeContents = $($scope.view.container.contents());
                 $compile(iframeContents)($scope);
