@@ -96,10 +96,18 @@ define([
         };
 
         var evalExtern = function(sessionId, viewId, options) {
+
+          var defer = $q.defer();
+
           eval(sessionId, viewId, options)
-            .then(function(result) {}, function(err) {
-              bmsModalService.openErrorDialog(err);
+            .then(function(result) {
+              defer.resolve(result);
+            }, function(err) {
+              defer.reject(err);
             });
+
+          return defer.promise;
+
         };
 
         var eval = function(sessionId, viewId, options) {
@@ -148,9 +156,12 @@ define([
                   nOptions.trigger(fresults);
                 }
 
+                defer.resolve(results);
+
               },
               function error(err) {
                 bmsModalService.openErrorDialog(err);
+                defer.reject(err);
               });
 
           return defer.promise;
