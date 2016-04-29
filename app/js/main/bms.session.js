@@ -118,6 +118,7 @@ define([
       function($q, bmsSession, bmsManifestService, bmsWsService) {
 
         var sessions = {};
+        var viewToSessionIdMap = {};
 
         return {
           getTemplateFolder: function(manifestFilePath) {

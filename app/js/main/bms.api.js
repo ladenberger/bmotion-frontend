@@ -6,89 +6,108 @@ define([
   'bms.session',
   'bms.visualization',
   'bms.observers',
-  'bms.handlers'
+  'bms.handlers',
+  'bms.ws'
 ], function(angular, $, bms) {
 
-  angular.module('bms.api', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.observers', 'bms.handlers'])
-    .factory('bmsApiService', ['ws', '$injector', '$q', 'trigger', 'bmsSessionService', 'bmsObserverService', 'bmsHandlerService', 'bmsVisualizationService', 'bmsModalService',
-      function(ws, $injector, $q, trigger, bmsSessionService, bmsObserverService, bmsHandlerService, bmsVisualizationService, bmsModalService) {
+  angular.module('bms.api', [
+      'bms.modal',
+      'bms.session',
+      'bms.visualization',
+      'bms.observers',
+      'bms.handlers',
+      'bms.ws'
+    ])
+    .factory('bmsApiService', ['ws', '$injector', '$q', 'trigger', 'bmsSessionService', 'bmsObserverService', 'bmsHandlerService', 'bmsVisualizationService', 'bmsModalService', 'bmsWsService',
+      function(ws, $injector, $q, trigger, bmsSessionService, bmsObserverService, bmsHandlerService, bmsVisualizationService, bmsModalService, bmsWsService) {
 
-        var addObserver = function(visId, type, data, list) {
+        var addObserver = function(sessionId, viewId, type, data) {
 
-          var vis = bmsVisualizationService.getVisualization(visId);
-          vis.addObserver(type, data, list)
-            .then(function(observer) {
-              vis.checkObserver(observer)
-                .then(function() {}, function(err) {
-                  bmsModalService.openErrorDialog(err);
-                });
-            }, function(err) {
-              bmsModalService.openErrorDialog(err);
-            });
+          var defer = $q.defer();
 
-          /*if (vis.stateId !== 'root' && vis.initialised && vis.lastOperation !== '$setup_constants') {
-            var promises = [];
-            for (var svg in vis.svg) {
-              promises.push(vis.svg[svg]['defer'].promise);
-            }
-            $q.all(promises).then(function() {
-              triggerObserver(visId, observer, vis.stateId, data.cause);
-            });
-          }*/
+          var session = bmsSessionService.getSession(sessionId);
+          var view = session.getView(viewId);
+          view.addObserver(type, data)
+            .then(
+              function success(observer) {
+                view.checkObserver(observer)
+                  .then(
+                    function success() {
+                      defer.resolve(observer);
+                    },
+                    function error(err) {
+                      bmsModalService.openErrorDialog(err);
+                      defer.reject(err);
+                    });
+              },
+              function error(err) {
+                bmsModalService.openErrorDialog(err);
+                defer.reject(err);
+              });
 
-        };
-
-        var addEvent = function(visId, type, data, list) {
-
-          var vis = bmsVisualizationService.getVisualization(visId);
-          var evt = vis.addEvent(type, data, list)
-            .then(function(evt) {
-              vis.setupEvent(evt)
-                .then(function() {}, function(err) {
-                  bmsModalService.openErrorDialog(err);
-                });
-            }, function(err) {
-              bmsModalService.openErrorDialog(err);
-            });
-
-          /*var instance = $injector.get(type, "");
-          var promises = [];
-          for (var svg in vis.svg) {
-            promises.push(vis.svg[svg]['defer'].promise);
-          }
-          $q.all(promises).then(function() {
-            instance.setup(bmsSessionService.getSessionId(), visId, evt, vis.container, vis.traceId);
-          });*/
+          return defer.promise;
 
         };
 
-        var on = function(visId, what, callback) {
-          var vis = bmsVisualizationService.getVisualization(visId);
-          var listener = vis.addListener(what, callback);
-          if (what === "ModelInitialised" && vis.initialised && listener) {
+        var addEvent = function(sessionId, viewId, type, data) {
+
+          var defer = $q.defer();
+
+          var session = bmsSessionService.getSession(sessionId);
+          var view = session.getView(viewId);
+          view.addEvent(type, data)
+            .then(
+              function success(evt) {
+                view.setupEvent(evt)
+                  .then(
+                    function success() {
+                      defer.resolve(evt);
+                    },
+                    function error(err) {
+                      bmsModalService.openErrorDialog(err);
+                      defer.reject(err);
+                    });
+              },
+              function error(err) {
+                bmsModalService.openErrorDialog(err);
+                defer.reject(err);
+              });
+
+          return defer.promise;
+
+        };
+
+        var on = function(sessionId, viewId, what, callback) {
+
+          var session = bmsSessionService.getSession(sessionId);
+          var view = session.getView(viewId);
+          var listener = view.addListener(what, callback);
+          if (listener && what === "ModelInitialised") {
             // Init listener should be called only once
-            listener.callback(vis);
+            listener.callback(view);
             listener.executed = true;
           }
+
         };
 
-        var getModelData = function(visId, what, options) {
-          var vis = bmsVisualizationService.getVisualization(visId);
-          return vis["model"][what];
+        var getModelData = function(sessionId, viewId, what, options) {
+          var session = bmsSessionService.getSession(sessionId);
+          return session.toolData.model[what];
         };
 
-        var evalExtern = function(visId, options) {
-          eval(visId, options)
+        var evalExtern = function(sessionId, viewId, options) {
+          eval(sessionId, viewId, options)
             .then(function(result) {}, function(err) {
               bmsModalService.openErrorDialog(err);
             });
         };
 
-        var eval = function(visId, options) {
+        var eval = function(sessionId, viewId, options) {
 
           var defer = $q.defer();
 
-          var vis = bmsVisualizationService.getVisualization(visId);
+          var session = bmsSessionService.getSession(sessionId);
+          var view = session.getView(viewId);
 
           var nOptions = bms.normalize(angular.merge({
             formulas: [],
@@ -97,63 +116,69 @@ define([
             error: function() {}
           }, options), ["trigger", "error"]);
 
-          ws.emit('evaluateFormulas', {
-            data: {
-              id: bmsSessionService.getSessionId(),
-              formulas: nOptions.formulas.map(function(f) {
-                return {
-                  formula: f,
+          var randomId = bms.uuid();
+          var formulas = {};
+          formulas[randomId] = {
+            formulas: nOptions.formulas.map(function(f) {
+              return {
+                formula: f,
+                options: {
                   translate: nOptions.translate
                 }
-              })
-            }
-          }, function(r) {
+              }
+            })
+          };
 
-            var errors = [];
-            var results = [];
+          bmsWsService.evaluateFormulas(
+              sessionId,
+              formulas
+            )
+            .then(
+              function success(r) {
 
-            angular.forEach(nOptions.formulas, function(f) {
-              if (r[f]['error']) {
-                var errorMsg = r[f]['error'] + " ("
+                var results = r[randomId];
+                var fresults = [];
+                angular.forEach(nOptions.formulas, function(formula) {
+                  fresults.push(results[formula]);
+                });
+
                 if (nOptions.selector) {
-                  errorMsg = errorMsg + "selector: " + nOptions.selector + ", ";
+                  nOptions.trigger(view.container.contents().find(nOptions.selector), fresults);
+                } else {
+                  nOptions.trigger(fresults);
                 }
-                errorMsg = errorMsg + "formula: " + f + ")";
-                errors.push(errorMsg);
-              } else {
-                results.push(r[f]['trans'] !== undefined ? r[f]['trans'] : r[f]['result']);
-              }
-            });
 
-            if (errors.length === 0) {
-              if (nOptions.selector) {
-                nOptions.trigger(vis.container.contents().find(nOptions.selector), results);
-              } else {
-                nOptions.trigger(results);
-              }
-              defer.resolve(results);
-            } else {
-              nOptions.error(errors);
-              defer.reject(errors);
-            }
-
-          });
+              },
+              function error(err) {
+                bmsModalService.openErrorDialog(err);
+              });
 
           return defer.promise;
 
         };
 
-        var executeEvent = function(visId, options) {
-          var vis = bmsVisualizationService.getVisualization(visId);
-          var nOptions = bms.normalize(options, ["callback"], vis.container);
-          nOptions.traceId = vis.traceId;
-          ws.emit("executeEvent", {
-            sessionId: bmsSessionService.getSessionId(),
-            name: nOptions.name,
-            options: nOptions
-          }, function(result) {
-            if (nOptions.callback) nOptions.callback.call(this, result, vis.container);
-          });
+        var executeEvent = function(sessionId, viewId, options) {
+
+          var defer = $q.defer();
+
+          var session = bmsSessionService.getSession(sessionId);
+          var view = session.getView(viewId);
+
+          var nOptions = bms.normalize(options, ["callback"], view.container);
+          nOptions.traceId = view.toolOptions.traceId;
+          bmsWsService.executeEvent(sessionId, nOption.name, nOptions)
+            .then(
+              function success(result) {
+                if (nOptions.callback) nOptions.callback.call(this, result, view.container);
+                defer.resolve(result);
+              },
+              function error(err) {
+                bmsModalService.openErrorDialog(err);
+                defer.reject(err);
+              });
+
+          return defer.promise;
+
         };
 
         return {

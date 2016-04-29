@@ -53,14 +53,6 @@ define([
 
         };
 
-        /*bmsVisualization.prototype.addJsObserver = function(type, data) {
-          return this.addObserver(type, data, 'js');
-        };
-
-        bmsVisualization.prototype.addJsonObserver = function(type, data) {
-          return this.addObserver(type, data, 'json');
-        };*/
-
         bmsVisualization.prototype.addEvent = function(type, data) {
 
           var defer = $q.defer();
@@ -80,93 +72,21 @@ define([
 
         };
 
-        /*bmsVisualization.prototype.addJsEvent = function(type, data) {
-          return this.addEvent(type, data, 'js');
-        };
-
-        bmsVisualization.prototype.addJsonEvent = function(type, data) {
-          return this.addEvent(type, data, 'json');
-        };*/
-
         bmsVisualization.prototype.getObservers = function() {
           return this.observers;
-          /*var observers = [];
-          if (!list) {
-            // If no list was passed, return all observers (json and js observers)
-            observers = this.jsObservers.concat(this.jsonObservers);
-          } else {
-            if (list === 'js') {
-              observers = this.jsObservers;
-            }
-            if (list === 'json') {
-              observers = this.jsonObservers;
-            }
-          }
-          return observers;*/
         };
 
         bmsVisualization.prototype.clearObservers = function() {
           this.observers = [];
-          /*if (list) {
-            if (list === 'js') {
-              this.jsObservers = [];
-            }
-            if (list === 'json') {
-              this.jsonObservers = [];
-            }
-          } else {
-            this.jsObservers = [];
-            this.jsonObservers = [];
-          }*/
         };
 
         bmsVisualization.prototype.clearEvents = function() {
           this.events = [];
-          /*if (list) {
-            if (list === 'js') {
-              this.jsEvents = [];
-            }
-            if (list === 'json') {
-              this.jsonEvents = [];
-            }
-          } else {
-            this.jsEvents = [];
-            this.jsonEvents = [];
-          }*/
         };
 
         bmsVisualization.prototype.getEvents = function() {
           return this.events;
-          /*var events = [];
-          if (!list) {
-            // If no list was passed, return all observers (json and js observers)
-            events = this.jsEvents.concat(this.jsonEvents);
-          } else {
-            if (list === 'js') {
-              events = this.jsEvents;
-            }
-            if (list === 'json') {
-              events = this.jsonEvents;
-            }
-          }
-          return events;*/
         };
-
-        /*bmsVisualization.prototype.getJsonObservers = function() {
-          return visualizationService.getObservers('json');
-        };
-
-        bmsVisualization.prototype.getJsObservers = function() {
-          return visualizationService.getObservers('js');
-        };
-
-        bmsVisualization.prototype.getJsonEvents = function() {
-          return visualizationService.getEvents('json');
-        };
-
-        bmsVisualization.prototype.getJsEvents = function() {
-          return visualizationService.getEvents('js');
-        };*/
 
         bmsVisualization.prototype.addSvg = function(svg) {
           if (!this.svg[svg]) this.svg[svg] = {};

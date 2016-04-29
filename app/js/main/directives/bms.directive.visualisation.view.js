@@ -64,7 +64,8 @@ define([
 
             // Set container of visualization instance
             var iframe = $($element.contents());
-            iframe.attr("id", $scope.id);
+            iframe.attr("viewId", $scope.id);
+            iframe.attr("sessionId", $scope.sessionId);
             var iframeContents;
             $scope.view.container = iframe;
 
