@@ -22,7 +22,7 @@ module.exports = function(grunt) {
     electron: {
       "linux-x64": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
@@ -34,7 +34,7 @@ module.exports = function(grunt) {
       },
       "linux-ia32": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
@@ -46,12 +46,12 @@ module.exports = function(grunt) {
       },
       "win32-ia32": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
           platform: 'win32',
-          icon: 'app/resources/icons/bmsicon.ico',
+          //icon: 'app/resources/icons/bmsicon.ico',
           arch: 'ia32',
           asar: true,
           "app-version": appVersion
@@ -59,12 +59,12 @@ module.exports = function(grunt) {
       },
       "win32-x64": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
+          //icon: 'app/resources/icons/bmsicon.ico',
           platform: 'win32',
-          icon: 'app/resources/icons/bmsicon.ico',
           arch: 'x64',
           asar: true,
           "app-version": appVersion
@@ -72,12 +72,12 @@ module.exports = function(grunt) {
       },
       "darwin-x64": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
-          platform: 'darwin',
           icon: 'app/resources/icons/bmsicon.icns',
+          platform: 'darwin',
           arch: 'x64',
           asar: true,
           "app-version": appVersion

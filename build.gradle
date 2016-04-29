@@ -54,10 +54,6 @@ task npmProductionDeps(dependsOn: [copyPackageJson], type: Exec) {
     commandLine "npm", 'install', '--production', '--prefix', 'build'
 }
 
-task grunt_standalone_all(dependsOn: [npmDeps], type: GruntTask) {
-    gruntArgs = "standalone_all --force"
-}
-
 task grunt_clean(dependsOn: [npmDeps], type: GruntTask) {
     gruntArgs = "clean --force"
 }
@@ -76,17 +72,17 @@ targets.each() { target ->
             include 'template/**'
         }
         if (target == "darwin-x64") {
-            into 'build/client/bmotion-prob-' + target + '/bmotion-prob.app/Contents/Resources'
+            into 'build/client/bmotion-' + target + '/bmotion.app/Contents/Resources'
         } else {
-            into 'build/client/bmotion-prob-' + target + '/resources'
+            into 'build/client/bmotion-' + target + '/resources'
         }
     }
 
     task "zip_${target}"(dependsOn: ["copyResources_${target}"], type: Zip) {
         destinationDir = new File('build/dist/' + appVersion)
-        archiveName = 'bmotion-prob-' + appVersion + '-' + target + '.zip'
-        from('build/client/bmotion-prob-' + target) {
-            into "./bmotion-prob-" + appVersion
+        archiveName = 'bmotion-' + appVersion + '-' + target + '.zip'
+        from('build/client/bmotion-' + target) {
+            into "./bmotion-" + appVersion
         }
     }
 

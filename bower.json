@@ -1,5 +1,5 @@
 {
-  "name": "bmotion-prob",
+  "name": "bmotion",
   "homepage": "http://www.stups.hhu.de/ProB/index.php5/BMotion_Studio",
   "devDependencies": {
     "angular": "1.5.3",

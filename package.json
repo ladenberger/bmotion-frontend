@@ -1,16 +1,16 @@
 {
-  "name": "bmotion-prob",
+  "name": "bmotion",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ladenberger/bmotion-prob-frontend.git"
+    "url": "https://github.com/ladenberger/bmotion-frontend.git"
   },
   "author": "Lukas Ladenberger",
   "license": "EPL-1.0",
   "bugs": {
-    "url": "https://github.com/ladenberger/bmotion-prob-frontend/issues"
+    "url": "https://github.com/ladenberger/bmotion-frontend/issues"
   },
   "description": "BMotion Studio for ProB",
-  "homepage": "https://github.com/ladenberger/bmotion-prob-frontend",
+  "homepage": "https://github.com/ladenberger/bmotion-frontend",
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-bower-task": "^0.4.0",
@@ -18,7 +18,7 @@
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-copy": "^0.8.2",
     "grunt-contrib-requirejs": "^0.4.4",
-    "grunt-electron": "^2.0.0",
+    "grunt-electron": "~3.0.0",
     "jasmine-core": "~2.4.1",
     "angular-mocks": "~1.5.3",
     "grunt-karma": "~0.12.2",
