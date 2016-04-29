@@ -63,17 +63,6 @@ define([
           loadFixtures('examples/lift.html');
           viewInstance.container = $('body');
 
-          // Simulate apply function of formula observer
-          /*spyOn(refinementObserverInstance, "apply").and.callFake(function(data) {
-            var defer = $q.defer();
-            defer.resolve({
-              'somebmsid': {
-                'opacity': data ? 1 : 0
-              }
-            });
-            return defer.promise;
-          });*/
-
         }).finally(done);
 
         $rootScope.$digest();
@@ -97,7 +86,8 @@ define([
       bmsSessionInstance.toolData['model'] = {};
       bmsSessionInstance.toolData['model']['refinements'] = ['ref1'];
 
-      refinementObserverInstance.options.enable = function() {
+      refinementObserverInstance.options.enable = function(origin) {
+        expect(origin).toBeInDOM();
         return {
           'opacity': 1
         }
@@ -124,7 +114,8 @@ define([
       bmsSessionInstance.toolData['model'] = {};
       bmsSessionInstance.toolData['model']['refinements'] = [];
 
-      refinementObserverInstance.options.disable = function() {
+      refinementObserverInstance.options.disable = function(origin) {
+        expect(origin).toBeInDOM();
         return {
           'opacity': 0
         }
