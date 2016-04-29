@@ -1,4 +1,7 @@
-define(['prob.observers.csp'], function() {
+define([
+  'jquery',
+  'prob.observers.csp'
+], function($) {
 
   "use strict";
 
@@ -10,10 +13,12 @@ define(['prob.observers.csp'], function() {
     var probWsService;
     var viewInstance;
     var $rootScope;
-    var viewId = 'lift';
+    var viewId = 'someViewId';
     var sessionId = 'someSessionId';
     var ws;
     var $q;
+
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('prob.observers.csp'));
 
@@ -27,11 +32,11 @@ define(['prob.observers.csp'], function() {
         $q = _$q_;
 
         var manifestData = {
-          "model": "model/m3.bcm",
+          "model": "model/crossing.csp",
           "views": [{
             "id": viewId,
-            "name": "Lift environment",
-            "template": "lift.html"
+            "name": "Crossingl",
+            "template": "crossing.html"
           }]
         };
         var manifestPath = 'somepath/bmotion.json';
@@ -48,12 +53,14 @@ define(['prob.observers.csp'], function() {
 
           var defer = $q.defer();
 
-          defer.resolve({
-            'someid': {
-              'exp1': '{evt1.1.1,evt2.1.2,evt3.1.3}',
-              'exp2': '{evt0}'
-            }
-          });
+          var result = {};
+
+          result[cspEventObserverInstance.id] = {
+            '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': '{enter.1.Train1}',
+            '{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}': '{leave.0.Train1}'
+          };
+
+          defer.resolve(result);
 
           return defer.promise;
 
@@ -64,48 +71,55 @@ define(['prob.observers.csp'], function() {
         $httpBackend.flush();
         promise.then(function(bmsSessionInstance) {
 
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
+          viewInstance = bmsSessionInstance.getView(viewId);
+
           cspEventObserverInstance = new cspEventObserver(viewInstance, {
-            selector: '#someselector',
-            observers: [{
-              exp: "exp1",
-              actions: [{
-                selector: "#selector{{a2}}",
-                attr: "fill",
-                value: "green"
+            "selector": "#crossing",
+            "observers": [{
+              "exp": "{gate.down,gate.up}",
+              "actions": [{
+                "selector": "g[id^=gate]",
+                "attr": "opacity",
+                "value": "0"
               }]
             }, {
-              exp: "exp2",
-              actions: [{
-                selector: "#someotherselector",
-                attr: "fill",
-                value: "red"
+              "exp": "{gate.down}",
+              "actions": [{
+                "selector": "#gate-go_down-2, #gate-go_down-1",
+                "attr": "opacity",
+                "value": "100"
               }]
             }, {
-              events: ["evt3.1.3"],
-              actions: [{
-                selector: "#selector1",
-                attr: "fill",
-                value: "yellow"
+              "exp": "{gate.up}",
+              "actions": [{
+                "selector": "#gate-go_up-2, #gate-go_up-1",
+                "attr": "opacity",
+                "value": "100"
+              }]
+            }, {
+              "exp": "{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}",
+              "actions": [{
+                "selector": "#train_{{a2}}",
+                "attr": "x",
+                "value": "{{a1}}00"
+              }, {
+                "selector": "#train_{{a2}}",
+                "attr": "transform",
+                "value": ""
+              }]
+            }, {
+              "exp": "{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}",
+              "actions": [{
+                "selector": "#train_{{a2}}",
+                "attr": "transform",
+                "value": "translate(50,0)"
               }]
             }]
           });
 
-          spyOn(viewInstance, "getBmsIds").and.callFake(function(arg) {
-            if (arg === '#selector1') {
-              return ['bmsid1'];
-            } else if (arg === '#selector2') {
-              return ['bmsid2'];
-            } else if (arg === '#someotherselector') {
-              return ['bmsid3'];
-            } else if (arg === '#selector3') {
-              return ['bmsid4'];
-            }
-          });
-
-          spyOn(cspEventObserverInstance, "getId").and.callFake(function(evt, args) {
-            return 'someid';
-          });
+          // Set manually container of view
+          loadFixtures('examples/crossing.html');
+          viewInstance.container = $('body');
 
         }).finally(done);
 
@@ -130,8 +144,8 @@ define(['prob.observers.csp'], function() {
       var promise = cspEventObserverInstance.evaluateExpressions();
       promise.then(function(results) {
         expect(results).toEqual({
-          'exp1': ['evt1.1.1', 'evt2.1.2', 'evt3.1.3'],
-          'exp2': ['evt0']
+          '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': ['enter.1.Train1'],
+          '{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}': ['leave.0.Train1']
         });
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
@@ -152,19 +166,18 @@ define(['prob.observers.csp'], function() {
         var deferred = $q.defer();
 
         deferred.resolve([{
-          name: 'evt1',
-          opString: 'evt1.1.1',
-          parameters: ['1', '1'],
+          name: 'start_cspm_MAIN',
+          opString: 'start_cspm_MAIN',
           group: 'past'
         }, {
-          name: 'evt2',
-          opString: 'evt2.1.2',
-          parameters: ['1', '2'],
+          name: 'enter',
+          opString: 'enter.1.Train1',
+          parameters: ['1', 'Train1'],
           group: 'current'
         }, {
-          name: 'evt3',
-          opString: 'evt3.1.3',
-          parameters: ['1', '3'],
+          name: 'leave',
+          opString: 'leave.0.Train1',
+          parameters: ['0', 'Train1'],
           group: 'future'
         }]);
 
@@ -174,14 +187,15 @@ define(['prob.observers.csp'], function() {
 
       var promise = cspEventObserverInstance.check();
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'bmsid1': {
-            'fill': 'green'
-          },
-          'bmsid2': {
-            'fill': 'green'
-          }
-        });
+
+        var trainId = $('#train_Train1').attr("data-bms-id");
+        var expectObject = {};
+        expectObject[trainId] = {
+          'x': '100',
+          'transform': ''
+        };
+        expect(attributeValues).toEqual(expectObject);
+
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
@@ -196,18 +210,18 @@ define(['prob.observers.csp'], function() {
         var deferred = $q.defer();
 
         deferred.resolve([{
-          name: 'evt1',
-          opString: 'evt1.1.1',
-          parameters: ['1', '1'],
+          name: 'start_cspm_MAIN',
+          opString: 'start_cspm_MAIN',
           group: 'past'
         }, {
-          name: 'evt0',
-          opString: 'evt0',
+          name: 'enter',
+          opString: 'enter.1.Train1',
+          parameters: ['1', 'Train1'],
           group: 'past'
         }, {
-          name: 'evt3',
-          opString: 'evt3.1.3',
-          parameters: ['1', '3'],
+          name: 'leave',
+          opString: 'leave.0.Train1',
+          parameters: ['0', 'Train1'],
           group: 'current'
         }]);
 
@@ -217,17 +231,15 @@ define(['prob.observers.csp'], function() {
 
       var promise = cspEventObserverInstance.check();
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'bmsid1': {
-            'fill': 'yellow'
-          },
-          'bmsid3': {
-            'fill': 'red'
-          },
-          'bmsid4': {
-            'fill': 'green'
-          }
-        });
+
+        var trainId = $('#train_Train1').attr("data-bms-id");
+        var expectObject = {};
+        expectObject[trainId] = {
+          'x': '100',
+          'transform': 'translate(50,0)'
+        };
+        expect(attributeValues).toEqual(expectObject);
+
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();

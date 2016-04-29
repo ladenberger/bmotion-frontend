@@ -137,12 +137,7 @@ define([
                             observer.trigger.call(this, transition);
                           }
                           angular.forEach(observer.actions, function(action) {
-                            //var selector;
-                            //if (bms.isFunction(action.selector)) {
-                            //  selector = action.selector.call(this, transition);
-                            //} else {
                             var selector = self.replaceParameter(action.selector, transition['parameters']);
-                            //}
                             var attr = self.replaceParameter(action.attr, transition['parameters']);
                             var value = self.replaceParameter(action.value, transition['parameters']);
                             var bmsids = self.view.getBmsIds(selector, container);
