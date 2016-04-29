@@ -27,7 +27,8 @@
     "karma-jasmine": "~0.3.8",
     "karma-coverage": "~0.5.5",
     "karma-requirejs": "~0.2.6",
-    "karma-phantomjs-launcher": "~1.0.0"
+    "karma-phantomjs-launcher": "~1.0.0",
+    "karma-jasmine-jquery": "~0.1.1"
   },
   "dependencies": {
     "diskdb": "^0.1.14",

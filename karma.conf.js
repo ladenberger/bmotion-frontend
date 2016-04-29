@@ -9,22 +9,34 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'requirejs'],
+    frameworks: ['jasmine-jquery', 'jasmine', 'requirejs'],
 
     // list of files / patterns to load in the browser
     files: [
       'node_modules/angular/angular.js',
       'node_modules/angular-mocks/angular-mocks.js',
-      'test/test.config.js',
-      {pattern: 'app/js/**/*.js', included: false},
-      {pattern: 'app/js/**/**/*.js', included: false},
-      {pattern: 'test/*.js', included: false}
+      'test/test.config.js', {
+        pattern: 'app/js/**/*.js',
+        included: false
+      }, {
+        pattern: 'app/js/**/**/*.js',
+        included: false
+      }, {
+        pattern: 'test/*.js',
+        included: false
+      },
+      // fixtures
+      {
+        pattern: 'test/fixtures/examples/*.html',
+        watched: true,
+        served: true,
+        included: false
+      }
     ],
 
 
     // list of files to exclude
-    exclude: [
-    ],
+    exclude: [],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
@@ -40,9 +52,9 @@ module.exports = function(config) {
 
     // tell karma how you want the coverage results
     coverageReporter: {
-      type : 'html',
+      type: 'html',
       // where to store the report
-      dir : 'coverage/'
+      dir: 'coverage/'
     },
 
     // web server port

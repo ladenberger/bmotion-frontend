@@ -162,10 +162,10 @@ define([
 
             $scope.loadTemplate = function(templateFolder, template) {
               var defer = $q.defer();
-              $scope.view.container.attr('src', templateFolder + '/' + template);
+              var path = templateFolder.length > 0 ? templateFolder + '/' + template : template;
+              $scope.view.container.attr('src', path);
               $scope.view.container.load(function() {
-                var iframeContents = $($scope.view.container.contents());
-                $compile(iframeContents)($scope);
+                $compile($($scope.view.container.contents()))($scope);
                 defer.resolve();
               });
               return defer.promise;

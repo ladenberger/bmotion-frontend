@@ -1,4 +1,7 @@
-define(['bms.api'], function() {
+define([
+  'jquery',
+  'bms.api'
+], function($) {
 
   "use strict";
 
@@ -11,6 +14,8 @@ define(['bms.api'], function() {
     var viewInstance;
     var ws;
     var $q;
+
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('bms.api'));
 
@@ -45,8 +50,8 @@ define(['bms.api'], function() {
           var results = {};
           for (var id in args) {
             results[id] = {
-              'formula1': 'res1',
-              'formula2': 'res2'
+              'door': 'closed',
+              'floor': '1'
             }
           }
           defer.resolve(results);
@@ -57,21 +62,11 @@ define(['bms.api'], function() {
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
         promise.then(function(bmsSessionInstance) {
+
           viewInstance = bmsSessionInstance.getView(viewId);
-
-          // Simulate checkObserver function of view instance
-          spyOn(viewInstance, "checkObserver").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-          });
-
-          // Simulate setupEvent function of view instance
-          spyOn(viewInstance, "setupEvent").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-          });
+          // Set manually container of view
+          loadFixtures('examples/lift.html');
+          viewInstance.container = $('body');
 
         }).finally(done);
 
@@ -88,38 +83,143 @@ define(['bms.api'], function() {
     it('eval function should call trigger function with formula results', function(done) {
 
       bmsApiService.eval(sessionId, viewId, {
-        formulas: ['formula1', 'formula2'],
+        formulas: ['door', 'floor'],
         trigger: function(results) {
-          expect(results).toEqual(['res1', 'res2']);
+          expect(results).toEqual(['closed', '1']);
           done();
         }
       });
 
     });
 
-    it('addObserver function should add observer in view instance', function(done) {
+    it('eval function should call trigger function with origin and formula results', function(done) {
+
+      bmsApiService.eval(sessionId, viewId, {
+        selector: '#door',
+        formulas: ['door', 'floor'],
+        trigger: function(origin, results) {
+          // Origin should be passed to trigger function
+          expect(origin).toBeInDOM();
+          // Results should be passed to trigger function
+          expect(['closed', '1']).toEqual(results);
+          done();
+        }
+      });
+
+    });
+
+    it('addObserver function should add and check observer (trigger function should be called with origin and results)', function(done) {
 
       bmsApiService.addObserver(sessionId, viewId, 'formula', {
-          formulas: ['formula1', 'formula2'],
-          trigger: function() {}
+          selector: '#door',
+          formulas: ['door', 'floor'],
+          trigger: function(origin, results) {
+            // Origin should be passed to trigger function
+            expect(origin).toBeInDOM();
+            // Results should be passed to trigger function
+            expect(['closed', '1']).toEqual(results);
+          }
         })
         .then(function(observer) {
+          expect(observer).toBeDefined();
+          // Observer should be added to view instance
           expect(viewInstance.getObservers().length).toBe(1);
         })
         .finally(done);
 
     });
 
-    it('addEvent function should add event in view instance', function(done) {
+    it('addEvent function should add and setup event', function(done) {
 
       bmsApiService.addEvent(sessionId, viewId, 'executeEvent', {
-          selector: '#someselector',
-          name: 'someeventname'
+          selector: '#door',
+          name: 'eventname'
         })
-        .then(function() {
+        .then(function(evt) {
+          expect(evt).toBeDefined();
+          // Tooltip should be installed
+          expect($('#door')).toHaveAttr('data-hasqtip');
+          // Event should be added to view instance
           expect(viewInstance.getEvents().length).toBe(1);
         })
         .finally(done);
+
+    });
+
+    it('addEvent function should reject if no selector was set in case of adding executeEvent event', function(done) {
+
+      var error;
+
+      var promise = bmsApiService.addEvent(sessionId, viewId, 'executeEvent', {
+        name: 'eventname'
+      });
+      promise.then(
+          function() {},
+          function(err) {
+            error = err;
+          })
+        .finally(function() {
+          expect(error).toBeDefined();
+          expect(promise.$$state.status).toBe(2); // Rejected
+          done();
+        });
+
+    });
+
+    it('executeEvent function should resolve and call callback with result and container', function(done) {
+
+      inject(function(bmsWsService) {
+
+        // Simulate resolving executeEvent server call
+        spyOn(bmsWsService, "executeEvent").and.callFake(function(evt, args) {
+          var defer = $q.defer();
+          defer.resolve('someresults');
+          return defer.promise;
+        });
+
+        var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {
+          callback: function(result, container) {
+            // Callback should be called
+            expect(result).toBe('someresults');
+            expect(container).toBe(viewInstance.container);
+          }
+        });
+        promise.then(
+          function(result) {
+            // Function should be resolved
+            expect(result).toBe('someresults');
+          }).finally(done);
+
+      });
+
+    });
+
+    it('executeEvent function should reject if executeEvent server call rejects', function(done) {
+
+      inject(function(bmsWsService) {
+
+        // Simulate resolving executeEvent server call
+        spyOn(bmsWsService, "executeEvent").and.callFake(function(evt, args) {
+          var defer = $q.defer();
+          defer.reject('somerror');
+          return defer.promise;
+        });
+
+        var error;
+
+        var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {});
+        promise.then(
+            function() {},
+            function(err) {
+              error = err;
+            })
+          .finally(function() {
+            expect(error).toBeDefined();
+            expect(promise.$$state.status).toBe(2); // Rejected
+            done();
+          });
+
+      });
 
     });
 

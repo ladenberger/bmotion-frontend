@@ -1,4 +1,4 @@
-define(['bms.directive.visualisation.view'], function() {
+define(['jquery', 'bms.directive.visualisation.view'], function($) {
 
   "use strict";
 
@@ -9,7 +9,7 @@ define(['bms.directive.visualisation.view'], function() {
     var viewData;
     var viewDataWithoutJsonElements;
     var manifestData;
-    var templateFolder = "someManifestPath";
+    var templateFolder = "";
     var manifestPath = templateFolder + "/bmotion.json";
     var viewId = 'lift';
     var bmsSessionInstance;
@@ -35,7 +35,7 @@ define(['bms.directive.visualisation.view'], function() {
           viewData = {
             "id": viewId,
             "name": "Lift environment",
-            "template": "lift.html",
+            "template": "http://www.google.de",
             "observers": "observers.json",
             "events": "events.json"
           };
