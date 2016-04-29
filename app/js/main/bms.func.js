@@ -65,7 +65,7 @@ define([
     },
     callElementFunction: function(functor, element, paraName, paraData) {
       if (typeof functor === 'function') {
-        if (paraName && paraData) {
+        if (paraData) {
           return functor.call(self, element, paraData);
         } else {
           return functor.call(self);

@@ -1,4 +1,7 @@
-define(['prob.observers.predicate'], function() {
+define([
+  'jquery',
+  'prob.observers.predicate'
+], function($) {
 
   "use strict";
 
@@ -13,6 +16,8 @@ define(['prob.observers.predicate'], function() {
     var viewInstance;
     var ws;
     var $q;
+
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('prob.observers.predicate'));
 
@@ -48,43 +53,13 @@ define(['prob.observers.predicate'], function() {
         promise.then(function(bmsSessionInstance) {
           viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
           predicateObserverInstance = new predicateObserver(viewInstance, {
-            selector: '#someselector',
-            predicate: 'predicate1',
-            true: function() {
-              return {
-                'fill': 'green'
-              }
-            },
-            false: function() {
-              return {
-                'fill': 'red'
-              }
-            }
+            selector: '#door',
+            predicate: 'predicate1'
           });
 
-          // Simulate apply function of formula observer
-          spyOn(predicateObserverInstance, "apply").and.callFake(function(data) {
-
-            var deferred = $q.defer();
-
-            var result = data.result[0];
-            var color;
-
-            if (result === 'TRUE') {
-              color = 'green';
-            } else if (result === 'FALSE') {
-              color = 'red';
-            }
-
-            deferred.resolve({
-              'somebmsid': {
-                'fill': color
-              }
-            });
-
-            return deferred.promise;
-
-          });
+          // Set manually container of view
+          loadFixtures('examples/lift.html');
+          viewInstance.container = $('body');
 
         }).finally(done);
 
@@ -113,15 +88,25 @@ define(['prob.observers.predicate'], function() {
 
     it('check function should return true attribute values of observer if result of predicate is true', function(done) {
 
+      predicateObserverInstance.options.true = function(origin) {
+        // Origin should be passed to true function
+        expect(origin).toBeInDOM();
+        return {
+          'fill': 'green'
+        }
+      };
+
       var promise = predicateObserverInstance.check({
         'predicate1': 'TRUE'
       });
+      var doorBmsId = $('#door').attr('data-bms-id');
+      var expectedObj = {};
+      expectedObj[doorBmsId] = {
+        'fill': 'green'
+      };
+
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'fill': 'green'
-          }
-        });
+        expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
@@ -131,15 +116,26 @@ define(['prob.observers.predicate'], function() {
 
     it('check function should return false attribute values of observer if result of predicate is false', function(done) {
 
+      predicateObserverInstance.options.false = function(origin) {
+        // Origin should be passed to false function
+        expect(origin).toBeInDOM();
+        return {
+          'fill': 'red'
+        }
+      };
+
       var promise = predicateObserverInstance.check({
         'predicate1': 'FALSE'
       });
+
+      var doorBmsId = $('#door').attr('data-bms-id');
+      var expectedObj = {};
+      expectedObj[doorBmsId] = {
+        'fill': 'red'
+      };
+
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'fill': 'red'
-          }
-        });
+        expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();

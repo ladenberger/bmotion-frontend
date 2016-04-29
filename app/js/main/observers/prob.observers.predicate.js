@@ -74,13 +74,14 @@ define([
 
           var defer = $q.defer();
 
-          var selector = this.options.selector;
+          var self = this;
+
+          var selector = self.options.selector;
           if (selector) {
             var fvalues = {};
             var result = data.result;
             var element = self.view.container.find(selector);
             var jcontainer = $(self.view.container);
-            var self = this;
             element.each(function() {
               var ele = $(this);
               var returnValue;
@@ -91,7 +92,7 @@ define([
                 returnValue = bms.callOrReturn(self.options.false, ele, jcontainer);
               }
               if (returnValue) {
-                var bmsid = bmsVisualizationService.getBmsIdForElement(ele);
+                var bmsid = self.view.getBmsIdForElement(ele);
                 fvalues[bmsid] = returnValue;
               }
             });

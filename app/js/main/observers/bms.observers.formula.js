@@ -83,7 +83,6 @@ define([
         observer.prototype.apply = function(result, _container_) {
 
           var defer = $q.defer();
-
           var self = this;
           var selector = self.options.selector;
           if (selector) {

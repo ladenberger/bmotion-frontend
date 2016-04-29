@@ -1,4 +1,7 @@
-define(['bms.observers.formula'], function() {
+define([
+  'jquery',
+  'bms.observers.formula'
+], function($) {
 
   "use strict";
 
@@ -13,6 +16,8 @@ define(['bms.observers.formula'], function() {
     var viewInstance;
     var ws;
     var $q;
+
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('bms.observers.formula'));
 
@@ -46,27 +51,16 @@ define(['bms.observers.formula'], function() {
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
         promise.then(function(bmsSessionInstance) {
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
+
+          viewInstance = bmsSessionInstance.getView(viewId);
           formulaObserverInstance = new formulaObserver(viewInstance, {
-            selector: '#someselector',
-            formulas: ['formula1', 'formula2'],
-            trigger: function() {
-              return {
-                'stroke-width': 1
-              };
-            }
+            selector: '#door',
+            formulas: ['door', 'floor']
           });
 
-          // Simulate apply function of formula observer
-          spyOn(formulaObserverInstance, "apply").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve({
-              'somebmsid': {
-                'stroke-width': 1
-              }
-            });
-            return deferred.promise;
-          });
+          // Set manually container of view
+          loadFixtures('examples/lift.html');
+          viewInstance.container = $('body');
 
         }).finally(done);
 
@@ -93,18 +87,54 @@ define(['bms.observers.formula'], function() {
       expect(formulaObserverInstance.getFormulas().length).toBe(2);
     }));
 
-    it('check function should return attribute values of observer', function(done) {
+    it('check function should call trigger function (with origin and results parameters and return attribute values', function(done) {
 
-      var promise = formulaObserverInstance.check(viewInstance, {
-        'formula1': 'res1',
-        'formula2': 'res2'
+      formulaObserverInstance.options.trigger = function(origin, results) {
+
+        // Origin should be passed to trigger function
+        expect(origin).toBeInDOM();
+        // Results should be passed to trigger function
+        expect(['closed', '1']).toEqual(results);
+        return {
+          'stroke-width': 1
+        };
+
+      };
+
+      var promise = formulaObserverInstance.check({
+        'door': 'closed',
+        'floor': '1'
       });
+
+      var doorBmsId = $('#door').attr('data-bms-id');
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'stroke-width': 1
-          }
-        });
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'stroke-width': 1
+        };
+        expect(attributeValues).toEqual(expectedObj);
+      }).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('check function should call trigger function with results only if no selector was passed', function(done) {
+
+      // Set manually selector option to undefined
+      formulaObserverInstance.options.selector = undefined;
+      formulaObserverInstance.options.trigger = function(results) {
+        // Results should be passed to trigger function
+        expect(['closed', '1']).toEqual(results);
+      };
+
+      var promise = formulaObserverInstance.check({
+        'door': 'closed',
+        'floor': '1'
+      });
+
+      promise.then(function() {
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();

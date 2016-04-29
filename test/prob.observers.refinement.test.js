@@ -1,4 +1,7 @@
-define(['prob.observers.refinement'], function() {
+define([
+  'jquery',
+  'prob.observers.refinement'
+], function($) {
 
   "use strict";
 
@@ -14,6 +17,8 @@ define(['prob.observers.refinement'], function() {
     var viewInstance;
     var ws;
     var $q;
+
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('prob.observers.refinement'));
 
@@ -48,24 +53,18 @@ define(['prob.observers.refinement'], function() {
         $httpBackend.flush();
         promise.then(function(_bmsSessionInstance_) {
           bmsSessionInstance = _bmsSessionInstance_;
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
+          viewInstance = bmsSessionInstance.getView(viewId);
           refinementObserverInstance = new refinementObserver(viewInstance, {
-            selector: '#someselector',
-            refinement: 'ref1',
-            enable: function() {
-              return {
-                'opacity': 1
-              }
-            },
-            disable: function() {
-              return {
-                'opacity': 0
-              }
-            }
+            selector: '#door',
+            refinement: 'ref1'
           });
 
+          // Set manually container of view
+          loadFixtures('examples/lift.html');
+          viewInstance.container = $('body');
+
           // Simulate apply function of formula observer
-          spyOn(refinementObserverInstance, "apply").and.callFake(function(data) {
+          /*spyOn(refinementObserverInstance, "apply").and.callFake(function(data) {
             var defer = $q.defer();
             defer.resolve({
               'somebmsid': {
@@ -73,7 +72,7 @@ define(['prob.observers.refinement'], function() {
               }
             });
             return defer.promise;
-          });
+          });*/
 
         }).finally(done);
 
@@ -98,13 +97,21 @@ define(['prob.observers.refinement'], function() {
       bmsSessionInstance.toolData['model'] = {};
       bmsSessionInstance.toolData['model']['refinements'] = ['ref1'];
 
+      refinementObserverInstance.options.enable = function() {
+        return {
+          'opacity': 1
+        }
+      };
+
       var promise = refinementObserverInstance.check();
+      var doorBmsId = $('#door').attr('data-bms-id');
+      var expectedObj = {};
+      expectedObj[doorBmsId] = {
+        'opacity': 1
+      };
+
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'opacity': 1
-          }
-        });
+        expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
@@ -117,13 +124,22 @@ define(['prob.observers.refinement'], function() {
       bmsSessionInstance.toolData['model'] = {};
       bmsSessionInstance.toolData['model']['refinements'] = [];
 
-      var promise = refinementObserverInstance.check(viewInstance);
+      refinementObserverInstance.options.disable = function() {
+        return {
+          'opacity': 0
+        }
+      };
+
+      var promise = refinementObserverInstance.check();
+
+      var doorBmsId = $('#door').attr('data-bms-id');
+      var expectedObj = {};
+      expectedObj[doorBmsId] = {
+        'opacity': 0
+      };
+
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'opacity': 0
-          }
-        });
+        expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
