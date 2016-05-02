@@ -19,9 +19,9 @@ define([
       function(ws, $q, bmsModalService, bmsVisualizationService, bmsWsService, probWsService) {
         'use strict';
 
-        var event = function(visualization, options) {
+        var event = function(view, options) {
           this.id = bms.uuid();
-          this.visualization = visualization;
+          this.view = view;
           this.options = this.getDefaultOptions(options);
         };
 
@@ -58,10 +58,10 @@ define([
 
           var self = this;
 
-          var session = self.visualization.session;
+          var session = self.view.session;
           if (session.isBVisualization()) {
             var refinements = session.toolData.model.refinements;
-            var isRefinement = self.options.refinement !== undefined ? bms.inArray(self.options.refinement, refinements) : true;
+            var isRefinement = self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
             return isRefinement;
           }
 
@@ -181,7 +181,7 @@ define([
 
         };
 
-        event.prototype.setup = function(visualization) {
+        event.prototype.setup = function() {
 
           var defer = $q.defer();
 
@@ -191,17 +191,17 @@ define([
             defer.reject("Please specify a selector or an element.");
           } else {
 
-            var traceId = visualization.toolOptions.traceId;
-            var jcontainer = visualization.container.contents();
+            var traceId = self.view.toolOptions.traceId;
+            var jcontainer = self.view.container.contents();
 
-            var jelements = self.options.element ? $(self.options.element) : visualization.container.contents().find(self.options.selector);
+            var jelements = self.options.element ? $(self.options.element) : self.view.container.contents().find(self.options.selector);
 
             jelements.each(function(i, ele) {
 
               var jele = $(ele);
               jele.css('cursor', 'pointer');
 
-              var tooltip = self.initTooltip(visualization.session.id, jele, jcontainer, traceId);
+              var tooltip = self.initTooltip(self.view.session.id, jele, jcontainer, traceId);
               var api = tooltip.qtip('api');
               var callbackFunc = bms.convertFunction('data,origin,container', self.options.callback);
 
@@ -209,7 +209,7 @@ define([
 
                 // Get more information about event (e.g. enabled/disabled)
                 probWsService.checkEvents(
-                    visualization.session.id,
+                    self.view.session.id,
                     traceId,
                     bms.normalize(self.options.events, [], jele, jcontainer)
                   )
@@ -227,7 +227,7 @@ define([
                       var predicate = enabledEvents[0].predicate; // Event predicate
 
                       // Execute event with name and predicate
-                      bmsWsService.executeEvent(visualization.session.id, name, {
+                      bmsWsService.executeEvent(self.view.session.id, name, {
                         traceId: traceId,
                         predicate: predicate,
                         executor: jele.attr("id") ? jele.attr("id") : 'unknown'

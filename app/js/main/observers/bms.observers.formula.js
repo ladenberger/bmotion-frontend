@@ -40,9 +40,10 @@ define([
           var session = self.view.session;
           if (session.isBVisualization()) {
             var refinements = session.toolData.model.refinements;
-            var isRefinement = self.options.refinement !== undefined ? bms.inArray(self.options.refinement, refinements) : true;
-            var isInitialized = session.toolData.initialized ? session.toolData.initialized : false;
-            return isRefinement && isInitialized;
+            var isRefinement = self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+            //var isInitialized = session.toolData.initialized ? session.toolData.initialized : false;
+            //return isRefinement && isInitialized;
+            return isRefinement;
           }
 
           return true;

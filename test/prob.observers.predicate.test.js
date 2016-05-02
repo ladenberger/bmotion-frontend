@@ -8,6 +8,7 @@ define([
   describe('prob.observers.predicate', function() {
 
     var bmsVisualizationService;
+    var bmsSessionInstance;
     var predicateObserver;
     var predicateObserverInstance;
     var $rootScope;
@@ -50,8 +51,16 @@ define([
         var promise = bmsSessionService.initSession(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(bmsSessionInstance) {
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
+        promise.then(function(_bmsSessionInstance_) {
+
+          bmsSessionInstance = _bmsSessionInstance_;
+
+          spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
+            return true;
+          });
+
+          viewInstance = bmsSessionInstance.getView(viewId);
+
           predicateObserverInstance = new predicateObserver(viewInstance, {
             selector: '#door',
             predicate: 'predicate1'
@@ -140,6 +149,64 @@ define([
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
       });
+
+    });
+
+    it('check function should call true function if result of predicate is true', function(done) {
+
+      predicateObserverInstance.options.selector = '';
+      predicateObserverInstance.options.true = function(container) {
+        // Origin should be passed to true function
+        expect(container).toBeInDOM();
+      };
+
+      var promise = predicateObserverInstance.check({
+        'predicate1': 'TRUE'
+      });
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('check function should call false function if result of predicate is false', function(done) {
+
+      predicateObserverInstance.options.selector = '';
+      predicateObserverInstance.options.false = function(container) {
+        // Origin should be passed to true function
+        expect(container).toBeInDOM();
+      };
+
+      var promise = predicateObserverInstance.check({
+        'predicate1': 'FALSE'
+      });
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('shouldBeChecked should return true if given refinement is in animation', function() {
+
+      bmsSessionInstance.toolData['model'] = {};
+      bmsSessionInstance.toolData['model']['refinements'] = ['m1', 'm2', 'm3'];
+
+      predicateObserverInstance.options.refinement = 'm3';
+
+      expect(predicateObserverInstance.shouldBeChecked()).toBeTruthy();
+
+    });
+
+    it('shouldBeChecked should return false if given refinement is not in animation', function() {
+
+      bmsSessionInstance.toolData['model'] = {};
+      bmsSessionInstance.toolData['model']['refinements'] = ['m1'];
+
+      predicateObserverInstance.options.refinement = 'm3';
+
+      expect(predicateObserverInstance.shouldBeChecked()).toBe(false);
 
     });
 

@@ -8,6 +8,7 @@ define([
   describe('bms.observers.formula', function() {
 
     var bmsVisualizationService;
+    var bmsSessionInstance;
     var formulaObserver;
     var formulaObserverInstance;
     var $rootScope;
@@ -50,7 +51,13 @@ define([
         var promise = bmsSessionService.initSession(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(bmsSessionInstance) {
+        promise.then(function(_bmsSessionInstance_) {
+
+          bmsSessionInstance = _bmsSessionInstance_;
+
+          spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
+            return true;
+          });
 
           viewInstance = bmsSessionInstance.getView(viewId);
           formulaObserverInstance = new formulaObserver(viewInstance, {
@@ -134,11 +141,32 @@ define([
         'floor': '1'
       });
 
-      promise.then(function() {
-      }).finally(function() {
+      promise.then(function() {}).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
       });
+
+    });
+
+    it('shouldBeChecked should return true if given refinement is in animation', function() {
+
+      bmsSessionInstance.toolData['model'] = {};
+      bmsSessionInstance.toolData['model']['refinements'] = ['m1', 'm2', 'm3'];
+
+      formulaObserverInstance.options.refinement = 'm3';
+
+      expect(formulaObserverInstance.shouldBeChecked()).toBeTruthy();
+
+    });
+
+    it('shouldBeChecked should return false if given refinement is not in animation', function() {
+
+      bmsSessionInstance.toolData['model'] = {};
+      bmsSessionInstance.toolData['model']['refinements'] = ['m1'];
+
+      formulaObserverInstance.options.refinement = 'm3';
+
+      expect(formulaObserverInstance.shouldBeChecked()).toBe(false);
 
     });
 

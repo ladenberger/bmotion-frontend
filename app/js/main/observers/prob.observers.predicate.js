@@ -37,9 +37,10 @@ define([
           var session = self.view.session;
           if (session.isBVisualization()) {
             var refinements = session.toolData.model.refinements;
-            var isRefinement = self.options.refinement !== undefined ? bms.inArray(self.options.refinement, refinements) : true;
-            var isInitialized = session.toolData.initialized ? session.toolData.initialized : false;
-            return isRefinement && isInitialized;
+            var isRefinement = self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+            //var isInitialized = session.toolData.initialized ? session.toolData.initialized : false;
+            //return isRefinement && isInitialized;
+            return isRefinement;
           }
 
           return true;
@@ -52,12 +53,12 @@ define([
 
         observer.prototype.getDiagramData = function(node) {
           var self = this;
-          if(node.results) {
+          if (node.results) {
             return self.getFormulas().map(function(fobj) {
               return node.results[self.getId()][fobj.formula];
             });
           } else {
-              return [];
+            return [];
           }
         };
 
@@ -76,20 +77,20 @@ define([
 
           var self = this;
 
+          var result = data.result;
           var selector = self.options.selector;
+
           if (selector) {
             var fvalues = {};
-            var result = data.result;
             var element = self.view.container.find(selector);
-            var jcontainer = $(self.view.container);
             element.each(function() {
               var ele = $(this);
               var returnValue;
               //var normalized = bms.normalize(observer.data, [], ele);
               if (result[0] === "TRUE") {
-                returnValue = bms.callOrReturn(self.options.true, ele, jcontainer);
+                returnValue = bms.callOrReturn(self.options.true, ele, self.view.container);
               } else if (result[0] === "FALSE") {
-                returnValue = bms.callOrReturn(self.options.false, ele, jcontainer);
+                returnValue = bms.callOrReturn(self.options.false, ele, self.view.container);
               }
               if (returnValue) {
                 var bmsid = self.view.getBmsIdForElement(ele);
@@ -99,9 +100,9 @@ define([
             defer.resolve(fvalues);
           } else {
             if (result[0] === "TRUE") {
-              bms.callFunction(this.options.true);
+              bms.callFunction(this.options.true, 'container', self.view.container);
             } else if (result[0] === "FALSE") {
-              bms.callFunction(this.options.false);
+              bms.callFunction(this.options.false, 'container', self.view.container);
             }
             defer.resolve();
           }
