@@ -12,7 +12,7 @@ define([
   'bms.manifest'
 ], function(angular, $, bms) {
 
-  return angular.module('bms.directive.visualisation.view', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.manifest'])
+  return angular.module('bms.directive.visualization.view', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.manifest'])
     .directive('bmsVisualizationView', ['$rootScope', 'bmsManifestService', 'bmsSessionService', 'bmsVisualizationService', 'ws', 'bmsModalService', 'trigger', '$compile', '$http', '$q',
       function($rootScope, bmsManifestService, bmsSessionService, bmsVisualizationService, ws, bmsModalService, trigger, $compile, $http, $q) {
         'use strict';
@@ -29,12 +29,13 @@ define([
             if (!$scope.sessionId) {
               bmsModalService.openErrorDialog("Session id must not be undefined.");
             }
-            // TODO check if session really exists!?
-            $scope.session = bmsSessionService.getSession($scope.sessionId);
 
-            // If an id was already set (e.g. in a parent controller) take it,
-            // else generate a new randon id
-            $scope.id = $scope.id ? $scope.id : bms.uuid();
+            if (!$scope.id) {
+              bmsModalService.openErrorDialog("Visualization id must not be undefined.");
+            }
+
+            // Get session instance
+            $scope.session = bmsSessionService.getSession($scope.sessionId);
             // Get view instance
             $scope.view = $scope.session.getView($scope.id);
 
@@ -160,17 +161,6 @@ define([
               return defer.promise;
             };
 
-            $scope.loadTemplate = function(templateFolder, template) {
-              var defer = $q.defer();
-              var path = templateFolder.length > 0 ? templateFolder + '/' + template : template;
-              $scope.view.container.attr('src', path);
-              $scope.view.container.load(function() {
-                $compile($($scope.view.container.contents()))($scope);
-                defer.resolve();
-              });
-              return defer.promise;
-            };
-
             $scope.getJsonElements = function(templateFolder, viewData) {
 
               var defer = $q.defer();
@@ -267,7 +257,7 @@ define([
                     // Set view data in visualization instance
                     $scope.view.viewData = viewData;
                     // load view template
-                    $scope.loadTemplate($scope.session.templateFolder, viewData.template)
+                    $scope.view.loadTemplate(viewData.template, $scope)
                       .then(
                         function success() {
                           // get json observer and events

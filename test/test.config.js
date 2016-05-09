@@ -17,7 +17,7 @@ requirejs.config({
     "bms.directive": "js/main/directives/bms.directive",
     "bms.directive.execute.event": "js/main/directives/bms.directive.execute.event",
     "bms.directive.bms.widget": "js/main/directives/bms.directive.bms.widget",
-    "bms.directive.visualisation.view": "js/main/directives/bms.directive.visualisation.view",
+    "bms.directive.visualization.view": "js/main/directives/bms.directive.visualization.view",
     "bms.directive.editor": "js/main/directives/bms.directive.editor",
     "bms.directive.dialog": "js/main/directives/bms.directive.dialog",
     "bms.directive.svg": "js/main/directives/bms.directive.svg",
@@ -37,8 +37,8 @@ requirejs.config({
     "prob.observers.data": "js/main/observers/prob.observers.data",
 
     // Graph modules
-    "prog.graph": "js/main/graph/prob.graph",
-    "prob.graph.rendering": "js/main/graph/prob.graph",
+    "prob.graph": "js/main/graph/prob.graph",
+    "prob.graph.rendering": "js/main/graph/prob.graph.rendering",
     "prob.graph.trace": "js/main/graph/prob.graph.trace",
     "prob.graph.projection": "js/main/graph/prob.graph.projection",
 
@@ -60,12 +60,15 @@ requirejs.config({
     "bms.ws": "js/main/bms.ws",
 
     "prob.ui": "js/main/prob.ui",
-    "prob.graph": "js/main/prob.graph",
     "prob.ws": "js/main/prob.ws",
 
     // Root modules
     "bms.standalone.root": "js/main/standalone/bms.standalone.root",
     "bms.editor.root": "js/main/editor/bms.editor.root",
+    "bms.online.root": "js/main/online/bms.online.root",
+
+    // Online modules
+    "bms.online.directive": "js/main/online/bms.online.directive",
 
     // Standalone modules
     "bms.standalone.ctrl.session": "js/main/standalone/bms.standalone.ctrl.session",

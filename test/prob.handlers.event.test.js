@@ -49,31 +49,26 @@ define([
           return deferred.promise;
         });
 
-        var promise = bmsSessionService.initSession(manifestPath);
+        bmsSessionInstance = bmsSessionService.getSession(sessionId);
+        spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
+          return true;
+        });
+        viewInstance = bmsSessionInstance.getView(viewId);
+        // Set manually container of view
+        loadFixtures('examples/lift.html');
+        viewInstance.container = $('body');
+        executeEventEventInstance = new executeEventEvent(viewInstance, {
+          events: [{
+            name: 'close_door'
+          }, {
+            name: 'open_door'
+          }]
+        });
+
+        var promise = bmsSessionInstance.init(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(_bmsSessionInstance_) {
-
-          bmsSessionInstance = _bmsSessionInstance_;
-
-          spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
-            return true;
-          });
-
-          viewInstance = bmsSessionInstance.getView(viewId);
-          // Set manually container of view
-          loadFixtures('examples/lift.html');
-          viewInstance.container = $('body');
-
-          executeEventEventInstance = new executeEventEvent(viewInstance, {
-            events: [{
-              name: 'close_door'
-            }, {
-              name: 'open_door'
-            }]
-          });
-
-        }).finally(done);
+        promise.then(done);
 
         $rootScope.$digest();
 
@@ -145,9 +140,11 @@ define([
 
     it('shouldBeChecked should return true if given refinement is in animation', function() {
 
-      bmsSessionInstance.toolData['model'] = {};
-      bmsSessionInstance.toolData['model']['refinements'] = ['m1', 'm2', 'm3'];
-
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1', 'm2', 'm3']
+        }
+      };
       executeEventEventInstance.options.refinement = 'm3';
 
       expect(executeEventEventInstance.shouldBeChecked()).toBeTruthy();
@@ -156,8 +153,11 @@ define([
 
     it('shouldBeChecked should return false if given refinement is not in animation', function() {
 
-      bmsSessionInstance.toolData['model'] = {};
-      bmsSessionInstance.toolData['model']['refinements'] = ['m1'];
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
 
       executeEventEventInstance.options.refinement = 'm3';
 

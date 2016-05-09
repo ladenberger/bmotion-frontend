@@ -2,10 +2,10 @@
  * BMotionWeb for ProB Standalone Module
  *
  */
-define(['angularAMD', 'angular', 'bms.api.extern', 'bms.visualization', 'bms.directive', 'bms.observers', 'bms.handlers', 'prob.ui', 'bms.manifest', 'bms.modal', 'bms.common', 'bms.session', 'angular-route'],
+define(['angularAMD', 'angular', 'bms.api.extern', 'bms.visualization', 'bms.directive', 'bms.observers', 'bms.handlers', 'bms.manifest', 'bms.modal', 'bms.common', 'bms.session', 'angular-route'],
   function(angularAMD, angular) {
 
-    var module = angular.module('prob.online', ['bms.visualization', 'bms.directive', 'bms.observers', 'bms.handlers', 'prob.ui', 'bms.manifest', 'bms.modal', 'bms.common', 'bms.session', 'ngRoute'])
+    var module = angular.module('prob.online', ['bms.visualization', 'bms.directive', 'bms.observers', 'bms.handlers', 'bms.manifest', 'bms.modal', 'bms.common', 'bms.session', 'ngRoute'])
       .run(['bmsMainService',
         function(bmsMainService) {
           bmsMainService.setMode('ModeOnline');

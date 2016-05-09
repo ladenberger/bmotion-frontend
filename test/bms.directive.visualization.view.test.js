@@ -1,8 +1,8 @@
-define(['jquery', 'bms.directive.visualisation.view'], function($) {
+define(['jquery', 'bms.directive.visualization.view'], function($) {
 
   "use strict";
 
-  describe('bms.directive.visualisation.view', function() {
+  describe('bms.directive.visualization.view', function() {
 
     var $scope;
     var directiveElem;
@@ -18,7 +18,7 @@ define(['jquery', 'bms.directive.visualisation.view'], function($) {
     var $httpBackend;
     var sessionId = "someSessionId";
 
-    beforeEach(module('bms.directive.visualisation.view'));
+    beforeEach(module('bms.directive.visualization.view'));
 
     describe('compile tests', function() {
 
@@ -35,7 +35,7 @@ define(['jquery', 'bms.directive.visualisation.view'], function($) {
           viewData = {
             "id": viewId,
             "name": "Lift environment",
-            "template": "http://www.google.de",
+            "template": "lift.html",
             "observers": "observers.json",
             "events": "events.json"
           };
@@ -105,18 +105,13 @@ define(['jquery', 'bms.directive.visualisation.view'], function($) {
           $httpBackend.when('GET', templateFolder + '/observers.json').respond(jsonObservers);
           $httpBackend.when('GET', templateFolder + '/events.json').respond(jsonEvents);
 
-          //$httpBackend.expectGET(manifestPath).respond(200, manifestData);
-
-          var promise = bmsSessionService.initSession(manifestPath);
-          promise.then(function(_bmsSessionInstance_) {
-
-            //$httpBackend.expectGET(templateFolder + '/observers.json').respond(200, jsonObservers);
-            //$httpBackend.expectGET(templateFolder + '/events.json').respond(200, jsonEvents);
-
-            bmsSessionInstance = _bmsSessionInstance_;
+          bmsSessionInstance = bmsSessionService.getSession(sessionId);
+          var viewInstance = bmsSessionInstance.getView(viewId);
+          var promise = bmsSessionInstance.init(manifestPath);
+          promise.then(function() {
 
             // Simulate compilation of bmsVisualizationView directive
-            var element = angular.element('<div data-bms-visualization-view="' + viewId + '" data-bms-session-id="' + bmsSessionInstance.id + '"></div>');
+            var element = angular.element('<div data-bms-visualization-view="' + viewId + '" data-bms-visualization-id="' + viewId + '" data-bms-session-id="' + bmsSessionInstance.id + '"></div>');
             directiveElem = $compile(element)($rootScope.$new());
             $scope = directiveElem.isolateScope();
 
@@ -138,7 +133,7 @@ define(['jquery', 'bms.directive.visualisation.view'], function($) {
               return deferred.promise;
             });
 
-            spyOn($scope, "loadTemplate").and.callFake(function(evt, args) {
+            spyOn($scope.view, "loadTemplate").and.callFake(function(evt, args) {
               var deferred = $q.defer();
               deferred.resolve();
               return deferred.promise;

@@ -70,7 +70,7 @@ define([
           });
 
         }
-      ])
+      ]);
     return angularAMD.bootstrap(module);
 
   });

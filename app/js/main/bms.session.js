@@ -33,6 +33,51 @@ define([
           return this.modelPath;
         };
 
+        bmsSession.prototype.getTemplateFolder = function(manifestFilePath) {
+          //TODO check if manifestFilePath is undefined
+          var filename = manifestFilePath.replace(/^.*[\\\/]/, '');
+          var folder = manifestFilePath.replace('/' + filename, '');
+          return folder;
+        };
+
+        bmsSession.prototype.init = function(manifestFilePath) {
+
+          var defer = $q.defer();
+
+          var self = this;
+
+          if (!manifestFilePath) {
+            defer.reject("Manifest file path must not be undefined.");
+          } else {
+            bmsManifestService.getManifest(manifestFilePath)
+              .then(function(_manifestData_) {
+
+                var manifestData = _manifestData_;
+                var templateFolder = self.getTemplateFolder(manifestFilePath);
+                var modelPath = templateFolder + '/' + manifestData.model;
+
+                bmsWsService.initSession(self.id, manifestFilePath, modelPath, manifestData.modelOptions)
+                  .then(function(sessionData) {
+                    self.tool = sessionData[0].tool;
+                    self.toolData = sessionData[1];
+                    self.manifestFilePath = manifestFilePath;
+                    self.manifestData = manifestData;
+                    self.templateFolder = templateFolder;
+                    self.modelPath = modelPath;
+                    defer.resolve(self);
+                    self.initialized.resolve(self);
+                  }, function(err) {
+                    defer.reject(err);
+                  });
+              }, function(err) {
+                defer.reject(err);
+              });
+          }
+
+          return defer.promise;
+
+        };
+
         bmsSession.prototype.load = function() {
 
           var defer = $q.defer();
@@ -118,59 +163,16 @@ define([
       function($q, bmsSession, bmsManifestService, bmsWsService) {
 
         var sessions = {};
-        var viewToSessionIdMap = {};
 
         return {
-          getTemplateFolder: function(manifestFilePath) {
-            //TODO check if manifestFilePath is undefined
-            var filename = manifestFilePath.replace(/^.*[\\\/]/, '');
-            var folder = manifestFilePath.replace('/' + filename, '');
-            return folder;
-          },
-          initSession: function(manifestFilePath) {
-
-            var defer = $q.defer();
-
-            var self = this;
-
-            if (!manifestFilePath) {
-              defer.reject("Manifest file path must not be undefined.");
-            } else {
-              bmsManifestService.getManifest(manifestFilePath)
-                .then(function(_manifestData_) {
-
-                  var manifestData = _manifestData_;
-                  var templateFolder = self.getTemplateFolder(manifestFilePath);
-                  var modelPath = templateFolder + '/' + manifestData.model;
-
-                  bmsWsService.initSession(bms.uuid(), manifestFilePath, modelPath, manifestData.modelOptions)
-                    .then(function(_sessionId_) {
-                      var newBmsSession = new bmsSession(_sessionId_);
-                      newBmsSession.manifestFilePath = manifestFilePath;
-                      newBmsSession.manifestData = manifestData;
-                      newBmsSession.templateFolder = templateFolder;
-                      newBmsSession.modelPath = modelPath;
-                      sessions[_sessionId_] = newBmsSession;
-                      defer.resolve(newBmsSession);
-                    }, function(err) {
-                      defer.reject(err);
-                    });
-                }, function(err) {
-                  defer.reject(err);
-                });
-            }
-
-            return defer.promise;
-
-          },
-          getSession: function(sessionId) {
-            sessionId = sessionId ? sessionId : bms.uuid();
+          getSession: function(_sessionId_) {
+            sessionId = _sessionId_ ? _sessionId_ : bms.uuid();
             if (sessions[sessionId] === undefined) {
               sessions[sessionId] = new bmsSession(sessionId);
             }
             return sessions[sessionId];
           }
-        }
+        };
 
       }
     ]);

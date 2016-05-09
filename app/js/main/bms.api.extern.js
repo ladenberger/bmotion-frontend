@@ -14,7 +14,7 @@ define([
       apis[viewId] = {
         eval: function(options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
             service.evalExtern(sessionId, viewId, options);
@@ -22,7 +22,7 @@ define([
         },
         getModelData: function(what, options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
             return service.getModelData(sessionId, viewId, what, options);
@@ -33,7 +33,7 @@ define([
         },
         observe: function(what, options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
             service.addObserver(sessionId, viewId, what, options);
@@ -41,7 +41,7 @@ define([
         },
         registerEvent: function(type, options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
             service.addEvent(sessionId, viewId, type, options);
@@ -51,7 +51,7 @@ define([
           if (options.selector || options.element) {
             this.registerEvent('executeEvent', options);
           } else {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
             return service.executeEvent(sessionId, viewId, name, options);
@@ -59,7 +59,7 @@ define([
         },
         on: function(what, callback) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
             service.on(sessionId, viewId, what, callback);

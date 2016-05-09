@@ -98,8 +98,8 @@ define([
           var defer = $q.defer();
 
           $http.get(manifestFilePath)
-            .success(function(configData) {
-              defer.resolve(configData);
+            .success(function(data) {
+              defer.resolve(data);
             })
             .error(function(data, status, headers, config) {
               if (status === 404) {
@@ -108,7 +108,6 @@ define([
                 defer.reject("Some error occurred while requesting BMotionWeb manifest file (bmotion.json).");
               }
             });
-
 
           return defer.promise;
 

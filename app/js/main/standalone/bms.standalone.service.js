@@ -1,8 +1,9 @@
 define([
   'angular',
+  'bms.func',
   'bms.session',
   'bms.standalone.electron'
-], function(angular) {
+], function(angular, bms) {
 
   return angular.module('bms.standalone.service', ['bms.session', 'bms.standalone.electron'])
     .factory('createVisualizationService', ['$uibModal', '$q', 'electronDialog', 'fs', 'path', 'ncp', 'initVisualizationService',
@@ -216,10 +217,13 @@ define([
 
           bmsModalService.loading("Initializing visualization ...");
 
+          var sessionId = bms.uuid(); // Session id
+          var session = bmsSessionService.getSession(sessionId); // Get fresh session instance
+
           //var bmsSession = bmsSessionService.getSession();
-          bmsSessionService.initSession(manifestFilePath)
-            .then(function(bmsSession) {
-              $location.path('/vis/' + bmsSession.id);
+          session.init(manifestFilePath)
+            .then(function() {              
+              $location.path('/vis/' + sessionId);
               bmsModalService.endLoading();
             }, function(err) {
               bmsModalService.openErrorDialog(err);

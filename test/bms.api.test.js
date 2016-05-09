@@ -58,17 +58,16 @@ define([
           return defer.promise;
         });
 
-        var promise = bmsSessionService.initSession(manifestPath);
+        var bmsSessionInstance = bmsSessionService.getSession(sessionId);
+        var promise = bmsSessionInstance.init(manifestPath);
+        viewInstance = bmsSessionInstance.getView(viewId);
+        // Set manually container of view
+        loadFixtures('examples/lift.html');
+        viewInstance.container = $('body');
+
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(bmsSessionInstance) {
-
-          viewInstance = bmsSessionInstance.getView(viewId);
-          // Set manually container of view
-          loadFixtures('examples/lift.html');
-          viewInstance.container = $('body');
-
-        }).finally(done);
+        promise.then(done);
 
         $rootScope.$digest();
 

@@ -48,22 +48,21 @@ define([
           return deferred.promise;
         });
 
-        var promise = bmsSessionService.initSession(manifestPath);
+        bmsSessionInstance = bmsSessionService.getSession(sessionId);
+        viewInstance = bmsSessionInstance.getView(viewId);
+        refinementObserverInstance = new refinementObserver(viewInstance, {
+          selector: '#door',
+          refinement: 'ref1'
+        });
+
+        // Set manually container of view
+        loadFixtures('examples/lift.html');
+        viewInstance.container = $('body');
+
+        var promise = bmsSessionInstance.init(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(_bmsSessionInstance_) {
-          bmsSessionInstance = _bmsSessionInstance_;
-          viewInstance = bmsSessionInstance.getView(viewId);
-          refinementObserverInstance = new refinementObserver(viewInstance, {
-            selector: '#door',
-            refinement: 'ref1'
-          });
-
-          // Set manually container of view
-          loadFixtures('examples/lift.html');
-          viewInstance.container = $('body');
-
-        }).finally(done);
+        promise.then(done);
 
         $rootScope.$digest();
 
@@ -83,9 +82,11 @@ define([
 
     it('check function should return enable attribute values of observer if refinement is in animation', function(done) {
 
-      bmsSessionInstance.toolData['model'] = {};
-      bmsSessionInstance.toolData['model']['refinements'] = ['ref1'];
-
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['ref1']
+        }
+      };
       refinementObserverInstance.options.enable = function(origin) {
         expect(origin).toBeInDOM();
         return {
@@ -111,8 +112,11 @@ define([
 
     it('check function should return disable attribute values of observer if refinement is not in animation', function(done) {
 
-      bmsSessionInstance.toolData['model'] = {};
-      bmsSessionInstance.toolData['model']['refinements'] = [];
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
 
       refinementObserverInstance.options.disable = function(origin) {
         expect(origin).toBeInDOM();

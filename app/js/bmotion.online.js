@@ -1,4 +1,3 @@
-requirejs(['bmotion.config'], function () {
-    requirejs(['prob.online'], function () {
-    });
+requirejs(['bmotion.config'], function() {
+  requirejs(['bms.online.root'], function() {});
 });

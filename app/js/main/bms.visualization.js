@@ -13,8 +13,8 @@ define([
 ], function(angular, $, bms) {
 
   return angular.module('bms.visualization', ['bms.observers', 'bms.handlers', 'bms.session', 'bms.ws'])
-    .factory('bmsVisualization', ['$q', 'ws', '$injector', 'bmsWsService',
-      function($q, ws, $injector, bmsWsService) {
+    .factory('bmsVisualization', ['$q', 'ws', '$injector', '$compile', 'bmsWsService',
+      function($q, ws, $injector, $compile, bmsWsService) {
 
         var bmsVisualization = function(id, session) {
           this.id = id;
@@ -265,6 +265,18 @@ define([
 
           return defer.promise;
 
+        };
+
+        bmsVisualization.prototype.loadTemplate = function(template, $scope) {
+          var defer = $q.defer();
+          var self = this;
+          var path = self.session.templateFolder.length > 0 ? self.session.templateFolder + '/' + template : template;
+          self.container.attr('src', path);
+          self.container.load(function() {
+            $compile(self.container.contents())($scope);
+            defer.resolve();
+          });
+          return defer.promise;
         };
 
         bmsVisualization.prototype.triggerListeners = function(cause) {

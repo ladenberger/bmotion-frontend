@@ -42,13 +42,12 @@ define(['bms.visualization'], function() {
           return deferred.promise;
         });
 
-        var promise = bmsSessionService.initSession(manifestPath);
+        var bmsSessionInstance = bmsSessionService.getSession(sessionId);
+        viewInstance = bmsSessionInstance.getView(viewId);
+        var promise = bmsSessionInstance.init(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(_bmsSessionInstance_) {
-          var bmsSessionInstance = _bmsSessionInstance_;
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
-        }).finally(done);
+        promise.then(done);
 
         $rootScope.$digest();
 

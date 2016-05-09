@@ -66,62 +66,60 @@ define([
 
         });
 
-        var promise = bmsSessionService.initSession(manifestPath);
+        var bmsSessionInstance = bmsSessionService.getSession(sessionId);
+        viewInstance = bmsSessionInstance.getView(viewId);
+
+        cspEventObserverInstance = new cspEventObserver(viewInstance, {
+          "selector": "#crossing",
+          "observers": [{
+            "exp": "{gate.down,gate.up}",
+            "actions": [{
+              "selector": "g[id^=gate]",
+              "attr": "opacity",
+              "value": "0"
+            }]
+          }, {
+            "exp": "{gate.down}",
+            "actions": [{
+              "selector": "#gate-go_down-2, #gate-go_down-1",
+              "attr": "opacity",
+              "value": "100"
+            }]
+          }, {
+            "exp": "{gate.up}",
+            "actions": [{
+              "selector": "#gate-go_up-2, #gate-go_up-1",
+              "attr": "opacity",
+              "value": "100"
+            }]
+          }, {
+            "exp": "{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}",
+            "actions": [{
+              "selector": "#train_{{a2}}",
+              "attr": "x",
+              "value": "{{a1}}00"
+            }, {
+              "selector": "#train_{{a2}}",
+              "attr": "transform",
+              "value": ""
+            }]
+          }, {
+            "exp": "{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}",
+            "actions": [{
+              "selector": "#train_{{a2}}",
+              "attr": "transform",
+              "value": "translate(50,0)"
+            }]
+          }]
+        });
+
+        // Set manually container of view
+        loadFixtures('examples/crossing.html');
+        viewInstance.container = $('body');
+        var promise = bmsSessionInstance.init(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(bmsSessionInstance) {
-
-          viewInstance = bmsSessionInstance.getView(viewId);
-
-          cspEventObserverInstance = new cspEventObserver(viewInstance, {
-            "selector": "#crossing",
-            "observers": [{
-              "exp": "{gate.down,gate.up}",
-              "actions": [{
-                "selector": "g[id^=gate]",
-                "attr": "opacity",
-                "value": "0"
-              }]
-            }, {
-              "exp": "{gate.down}",
-              "actions": [{
-                "selector": "#gate-go_down-2, #gate-go_down-1",
-                "attr": "opacity",
-                "value": "100"
-              }]
-            }, {
-              "exp": "{gate.up}",
-              "actions": [{
-                "selector": "#gate-go_up-2, #gate-go_up-1",
-                "attr": "opacity",
-                "value": "100"
-              }]
-            }, {
-              "exp": "{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}",
-              "actions": [{
-                "selector": "#train_{{a2}}",
-                "attr": "x",
-                "value": "{{a1}}00"
-              }, {
-                "selector": "#train_{{a2}}",
-                "attr": "transform",
-                "value": ""
-              }]
-            }, {
-              "exp": "{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}",
-              "actions": [{
-                "selector": "#train_{{a2}}",
-                "attr": "transform",
-                "value": "translate(50,0)"
-              }]
-            }]
-          });
-
-          // Set manually container of view
-          loadFixtures('examples/crossing.html');
-          viewInstance.container = $('body');
-
-        }).finally(done);
+        promise.then(done);
 
         $rootScope.$digest();
 
