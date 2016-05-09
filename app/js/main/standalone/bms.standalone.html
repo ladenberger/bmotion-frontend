@@ -18,6 +18,10 @@
     </uib-tab>
   </uib-tabset>
 
+  <div ng-repeat="view in views track by $index" bms-dialog state="open" width="{{view.width}}" height="{{view.height}}" title="View ({{view.id}})">
+    <div data-bms-visualization-view="{{view.id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>
+  </div>
+
   <div bms-dialog type="UserInteractions" title="User Interactions Log">
     <div bms-user-interaction class="userInteractionsView"></div>
   </div>

@@ -19,6 +19,14 @@ define([
         $scope.id = bms.uuid(); // Visualization
         $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
 
+        $scope.views = bmsViewService.getViews();
+
+        $scope.$watch(function() {
+          return bmsViewService.getViews();
+        }, function(newValue) {
+          self.views = newValue;
+        }, true);
+
         $scope.session.load()
           .then(function() {
 
@@ -26,7 +34,7 @@ define([
 
             // Open additional views
             angular.forEach($scope.session.manifestData.views, function(view, i) {
-              if (i > 0) { // Ignore root view with id 1
+              if (i > 0) { // Ignore root view
                 bmsViewService.addView(view);
               }
             });
