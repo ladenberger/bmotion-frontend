@@ -7,14 +7,16 @@ define([
     'bms.func',
     'bms.session',
     'bms.modal',
-    'bms.directive'
+    'bms.directive',
+    'bms.view'
   ],
   function(angular, bms) {
 
     return angular.module('bms.online.directive', [
         'bms.session',
         'bms.modal',
-        'bms.directive'
+        'bms.directive',
+        'bms.view'
       ])
       .directive('bmsOnlineVisualization', ['$compile', '$rootScope', 'bmsModalService', 'bmsSessionService',
         function($compile, $rootScope, bmsModalService, bmsSessionService) {
@@ -56,40 +58,56 @@ define([
               '<div bms-dialog type="CurrentAnimations" title="Animations"><div prob-view></div></div>' +
               '<div bms-dialog type="BConsole" title="Console"><div prob-view></div></div>' +
               '<div bms-dialog type="ModelCheckingUI" title="ModelChecking"><div prob-view></div></div>' +
-              //'<div ng-controller="bmsViewsCtrl as tabsCtrl">' +
-              //'<div ng-repeat="view in tabsCtrl.views track by $index" bms-dialog state="open" width="{{view.width}}" height="{{view.height}}" title="View ({{view.id}})">' +
-              //'<div data-bms-visualisation-session="{{vis.sessionId}}" data-bms-visualisation-view="{{view.id}}" data-bms-visualisation-file="{{vis.file}}" class="fullWidthHeight"></div>' +
-              //'</div>' +
-              //'</div>' +
+              '<div ng-repeat="view in views track by $index" bms-dialog state="open" width="{{view.width}}" height="{{view.height}}" title="View ({{view.id}})">' +
+              '<div data-bms-visualization-view="{{view.id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>' +
+              '</div>' +
               '</div>',
             replace: false,
             scope: {
               manifestPath: '@bmsOnlineVisualization'
             },
-            controller: ['$scope', function($scope) {
+            controller: ['$scope', 'bmsViewService',
+              function($scope, bmsViewService) {
 
-              bmsModalService.loading("Initializing visualization ...");
+                bmsModalService.loading("Initializing visualization ...");
 
-              $scope.sessionId = bms.uuid(); // Session id
-              $scope.session = bmsSessionService.getSession($scope.sessionId); // Get fresh session instance
-              $scope.id = bms.uuid(); // Visualization
-              $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
+                $scope.sessionId = bms.uuid(); // Session id
+                $scope.session = bmsSessionService.getSession($scope.sessionId); // Get fresh session instance
+                $scope.id = bms.uuid(); // Visualization
+                $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
 
-              // Initialize session
-              $scope.session.init($scope.manifestPath)
-                .then(function(bmsSession) {
-                  $scope.viewId = bmsSession.manifestData.views[0].id; // Set view id
-                  bmsModalService.endLoading();
-                }, function(err) {
-                  bmsModalService.openErrorDialog(err);
-                });
+                // Initialize session
+                $scope.session.init($scope.manifestPath)
+                  .then(function(bmsSession) {
+                      // Set root view id
+                      $scope.viewId = bmsSession.manifestData.views[0].id;
+                      // Open other views in bms dialog directive
+                      angular.forEach(bmsSession.manifestData.views, function(view, i) {
+                        if (i > 0) { // Ignore root view
+                          bmsViewService.addView(view);
+                        }
+                      });
+                      bmsModalService.endLoading();
+                    },
+                    function(err) {
+                      bmsModalService.openErrorDialog(err);
+                    });
 
-              // Navigation button actions ...
-              $scope.openDialog = function(type) {
-                $rootScope.$broadcast('openDialog_' + type);
-              };
+                // Navigation button actions ...
+                $scope.openDialog = function(type) {
+                  $rootScope.$broadcast('openDialog_' + type);
+                };
 
-            }],
+                $scope.views = bmsViewService.getViews();
+
+                $scope.$watch(function() {
+                  return bmsViewService.getViews();
+                }, function(newValue) {
+                  self.views = newValue;
+                }, true);
+
+              }
+            ],
             link: function($scope, element, attrs) {
               element.attr('class', 'fullWidthHeight');
             }

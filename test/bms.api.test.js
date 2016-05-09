@@ -61,9 +61,17 @@ define([
         var bmsSessionInstance = bmsSessionService.getSession(sessionId);
         var promise = bmsSessionInstance.init(manifestPath);
         viewInstance = bmsSessionInstance.getView(viewId);
+
         // Set manually container of view
         loadFixtures('examples/lift.html');
         viewInstance.container = $('body');
+
+        // Simulate isInitialized function of view instance
+        spyOn(viewInstance, "isInitialized").and.callFake(function(evt, args) {
+          var defer = $q.defer();
+          defer.resolve();
+          return defer.promise;
+        });
 
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();

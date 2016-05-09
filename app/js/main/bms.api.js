@@ -27,23 +27,25 @@ define([
 
           var session = bmsSessionService.getSession(sessionId);
           var view = session.getView(viewId);
-          view.addObserver(type, data)
-            .then(
-              function success(observer) {
-                view.checkObserver(observer)
-                  .then(
-                    function success() {
-                      defer.resolve(observer);
-                    },
-                    function error(err) {
-                      bmsModalService.openErrorDialog(err);
-                      defer.reject(err);
-                    });
-              },
-              function error(err) {
-                bmsModalService.openErrorDialog(err);
-                defer.reject(err);
-              });
+          view.isInitialized().then(function() {
+            view.addObserver(type, data)
+              .then(
+                function success(observer) {
+                  view.checkObserver(observer)
+                    .then(
+                      function success() {
+                        defer.resolve(observer);
+                      },
+                      function error(err) {
+                        bmsModalService.openErrorDialog(err);
+                        defer.reject(err);
+                      });
+                },
+                function error(err) {
+                  bmsModalService.openErrorDialog(err);
+                  defer.reject(err);
+                });
+          });
 
           return defer.promise;
 
@@ -55,23 +57,25 @@ define([
 
           var session = bmsSessionService.getSession(sessionId);
           var view = session.getView(viewId);
-          view.addEvent(type, data)
-            .then(
-              function success(evt) {
-                view.setupEvent(evt)
-                  .then(
-                    function success() {
-                      defer.resolve(evt);
-                    },
-                    function error(err) {
-                      bmsModalService.openErrorDialog(err);
-                      defer.reject(err);
-                    });
-              },
-              function error(err) {
-                bmsModalService.openErrorDialog(err);
-                defer.reject(err);
-              });
+          view.isInitialized().then(function() {
+            view.addEvent(type, data)
+              .then(
+                function success(evt) {
+                  view.setupEvent(evt)
+                    .then(
+                      function success() {
+                        defer.resolve(evt);
+                      },
+                      function error(err) {
+                        bmsModalService.openErrorDialog(err);
+                        defer.reject(err);
+                      });
+                },
+                function error(err) {
+                  bmsModalService.openErrorDialog(err);
+                  defer.reject(err);
+                });
+          });
 
           return defer.promise;
 

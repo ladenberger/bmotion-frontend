@@ -16,6 +16,7 @@ define([
     var manifestPath = templateFolder + "/bmotion.json";
     var viewId = 'lift';
     var bmsSessionInstance;
+    var bmsViewService;
     var jsonObservers;
     var jsonEvents;
     var $httpBackend;
@@ -30,7 +31,7 @@ define([
 
       beforeEach(function() {
 
-        inject(function(bmsSessionService, bmsManifestService, bmsWsService, $compile, ws, _$rootScope_, $q, _$httpBackend_) {
+        inject(function(bmsSessionService, bmsManifestService, bmsWsService, _bmsViewService_, $compile, ws, _$rootScope_, $q, _$httpBackend_) {
 
           // Simulate ws on socket listener
           spyOn(ws, "on").and.callFake(function(evt, args) {});
@@ -38,6 +39,7 @@ define([
 
           $httpBackend = _$httpBackend_;
           $rootScope = _$rootScope_;
+          bmsViewService = _bmsViewService_;
 
           viewData = {
             "id": viewId,
@@ -49,7 +51,21 @@ define([
 
           manifestData = {
             "model": "model/m3.bcm",
-            "views": [viewData]
+            "views": [
+              viewData, {
+                "id": "secondView",
+                "name": "Lift controller",
+                "template": "controller.html",
+                "observers": "observers.json",
+                "events": "events.json"
+              }, {
+                "id": "thirdView",
+                "name": "Lift controller",
+                "template": "controller.html",
+                "observers": "observers.json",
+                "events": "events.json"
+              }
+            ]
           };
 
           jsonObservers = {
@@ -168,6 +184,20 @@ define([
           expect($scope.view.viewData).toEqual(viewData);
           expect($scope.view.getEvents().length).toBe(1);
           expect($scope.view.getObservers().length).toBe(2);
+        }).finally(function() {
+          expect(promise.$$state.status).toBe(1); // Resolved
+          done();
+        });
+
+        $rootScope.$digest();
+
+      });
+
+      it('additional views should be added', function(done) {
+
+        var promise = $scope.view.isInitialized();
+        promise.then(function() {
+          expect(bmsViewService.getViews().length).toBe(2);
         }).finally(function() {
           expect(promise.$$state.status).toBe(1); // Resolved
           done();
