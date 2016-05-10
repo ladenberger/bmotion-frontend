@@ -1,5 +1,5 @@
 /**
- * BMotionWeb for ProB Directive BMS Widget module
+ * BMotionWeb Directive BMS Widget module
  *
  */
 define([
@@ -9,9 +9,12 @@ define([
   'bms.api'
 ], function(angular, $) {
 
-  return angular.module('bms.directive.bms.widget', ['bms.modal', 'bms.api'])
-    .directive('bmsWidget', ['bmsVisualizationService', 'bmsApiService',
-      function(bmsVisualizationService, bmsApiService) {
+  return angular.module('bms.directive.bms.widget', [
+      'bms.modal',
+      'bms.api'
+    ])
+    .directive('bmsWidget', ['bmsVisualizationService', 'bmsApiService', 'bmsSessionService',
+      function(bmsVisualizationService, bmsApiService, bmsSessionService) {
         'use strict';
         return {
           link: function($scope, element, attr) {
@@ -41,8 +44,9 @@ define([
                   newInput.attr("name", parent.attr("id"));
                 }
 
-                var vis = bmsVisualizationService.getVisualization($scope.id);
-                vis.container.contents().find("body").append(newInput);
+                var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
+                var viewInstance = bmsSessionInstance.getView($scope.id);
+                viewInstance.container.contents().find("body").append(newInput);
                 jele.remove();
 
                 break;
@@ -66,8 +70,9 @@ define([
                   newInput.attr("name", parent.attr("id"));
                 }
 
-                var vis = bmsVisualizationService.getVisualization($scope.id);
-                vis.container.contents().find("body").append(newInput);
+                var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
+                var viewInstance = bmsSessionInstance.getView($scope.id);
+                viewInstance.container.contents().find("body").append(newInput);
                 jele.remove();
 
                 break;
@@ -87,8 +92,9 @@ define([
                   .css("height", parseInt(rect.attr("height")) + "px")
                   .css("left", offset.left + "px")
                   .css("top", offset.top + "px");
-                var vis = bmsVisualizationService.getVisualization($scope.id);
-                vis.container.contents().find("body").append(newInput);
+                var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
+                var viewInstance = bmsSessionInstance.getView($scope.id);
+                viewInstance.container.contents().find("body").append(newInput);
                 jele.remove();
 
                 break;
@@ -108,8 +114,9 @@ define([
                   .css("width", parseInt(rect.attr("width")) - 4 + "px")
                   .css("height", parseInt(rect.attr("height")) - 5 + "px");
                 jele.remove();
-                var vis = bmsVisualizationService.getVisualization($scope.id);
-                vis.container.contents().find("body").append(newInput);
+                var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
+                var viewInstance = bmsSessionInstance.getView($scope.id);
+                viewInstance.container.contents().find("body").append(newInput);
                 newInput.qtip({
                   content: {
                     text: ''
@@ -138,7 +145,7 @@ define([
                   var input = $(this);
                   var data = input.val();
                   if (!btype) return;
-                  bmsApiService.eval($scope.id, {
+                  bmsApiService.eval($scope.sessionId, {
                     formulas: ["bool(" + data + " : " + btype + ")"],
                     trigger: function(values) {
                       if (values[0] === 'FALSE') {
