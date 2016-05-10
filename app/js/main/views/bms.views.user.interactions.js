@@ -2,41 +2,63 @@
  * BMotionWeb User Interactions Directive View Module
  *
  */
-define(['jquery', 'angular', 'jquery-ui', 'ui-bootstrap'], function($, angular) {
+define([
+  'angular',
+  'jquery',
+  'jquery-ui',
+  'ui-bootstrap',
+  'prob.ws',
+  'bms.modal',
+  'bms.session'
+], function(angular, $) {
 
-  var module = angular.module('bms.views.user.interactions', ['ui.bootstrap'])
+  var module = angular.module('bms.views.user.interactions', [
+      'prob.ws',
+      'bms.modal',
+      'bms.session',
+      'ui.bootstrap'
+    ])
     .filter('reverse', function() {
       return function(items) {
         if (items) return items.slice().reverse();
       };
     })
-    .directive('bmsUserInteraction', ['ws',
-      function(ws) {
+    .directive('bmsUserInteraction', ['ws', 'probWsService', 'bmsModalService', 'bmsSessionService',
+      function(ws, probWsService, bmsModalService, bmsSessionService) {
         'use strict';
 
         return {
 
-          templateUrl: 'js/main/views/UserInteractions.html',
+          template: '<table class="table table-striped table-condensed">' +
+            '<tr><th>Transition</th><th>Executor</th></tr>' +
+            '<tr ng-repeat="trans in transitions | reverse" ng-click="gotoTraceIndex(trans)" class="userInteractionsView-item userInteractionsView-item-{{trans.group}}">' +
+            '<td>{{trans.opString}}</td>' +
+            '<td>{{trans.executor ? "#" + trans.executor : ""}}</td>' +
+            '</tr>' +
+            '</table>',
           controller: ['$scope', function($scope) {
 
-            ws.emiton('observeHistory', {
-              data: {
-                id: $scope.sessionId
-              }
-            }, function(data) {
-              $scope.events = data;
-            });
-
-            $scope.executeEvent = function(evt) {
-              ws.emit('executeEvent', {
-                data: {
-                  id: $scope.sessionId,
-                  index: $scope.events.indexOf(evt)
-                }
+            var bmsSession = bmsSessionService.getSession($scope.sessionId);
+            bmsSession.isInitialized()
+              .then(function() {
+                probWsService.observeHistory($scope.sessionId,
+                  function(transitions) {
+                    $scope.transitions = transitions;
+                  }).then(function() {}, function(err) {
+                  bmsModalService.openErrorDialog(err);
+                });
               });
+
+            $scope.gotoTraceIndex = function(evt) {
+
+              probWsService.gotoTraceIndex($scope.sessionId, {
+                index: $scope.transitions.indexOf(evt)
+              });
+
             }
 
           }]
+
         }
 
       }

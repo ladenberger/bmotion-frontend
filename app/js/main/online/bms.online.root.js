@@ -10,7 +10,8 @@ define([
     'bms.observers',
     'bms.handlers',
     'bms.directive',
-    'bms.online.directive'
+    'bms.online.directive',
+    'bms.views'
   ],
   function(angular, angularAMD) {
 
@@ -19,7 +20,8 @@ define([
         'bms.observers',
         'bms.handlers',
         'bms.directive',
-        'bms.online.directive'
+        'bms.online.directive',
+        'bms.views'
       ])
       .run(['$rootScope', 'bmsMainService',
         function($rootScope, bmsMainService) {

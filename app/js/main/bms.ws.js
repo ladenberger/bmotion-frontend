@@ -99,7 +99,7 @@ define([
             return defer.promise;
 
           },
-          executeEvent: function(sessionId, name, options) {
+          executeEvent: function(sessionId, options) {
 
             var defer = $q.defer();
 
@@ -109,7 +109,6 @@ define([
 
             ws.emit("executeEvent", {
               sessionId: sessionId,
-              name: name,
               options: options
             }).then(function(result) {
               defer.resolve(result);

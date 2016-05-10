@@ -15,6 +15,7 @@ define([
     'bms.standalone.service',
     'bms.standalone.routing',
     'bms.standalone.tabs',
+    'bms.views',
     'prob.graph'
   ],
   function(angular, angularAMD) {
@@ -29,6 +30,7 @@ define([
         'bms.standalone.service',
         'bms.standalone.routing',
         'bms.standalone.tabs',
+        'bms.views',
         'prob.graph'
       ])
       .run(['$rootScope', 'bmsTabsService', 'bmsMainService', 'bmsConfigService', 'bmsModalService', 'initVisualizationService', 'createVisualizationService', 'initFormalModelOnlyService',

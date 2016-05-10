@@ -34,7 +34,7 @@ define([
             return defer.promise;
 
           },
-          observeHistory: function(sessionId) {
+          observeHistory: function(sessionId, observable) {
 
             var defer = $q.defer();
 
@@ -43,13 +43,37 @@ define([
             }
 
             ws.emit('observeHistory', {
-              sessionId: sessionId,
-              options: {}
-            }).then(function(result) {
-              defer.resolve(result);
-            }, function(err) {
-              defer.reject(err);
-            });
+                sessionId: sessionId,
+                options: {}
+              }, observable)
+              .then(function(result) {
+                defer.resolve(result);
+              }, function(err) {
+                defer.reject(err);
+              });
+
+            return defer.promise;
+
+          },
+          gotoTraceIndex: function(sessionId, index) {
+
+            var defer = $q.defer();
+
+            if (!sessionId) {
+              defer.reject("Session id must not be undefined.");
+            }
+
+            ws.emit('gotoTraceIndex', {
+                sessionId: sessionId,
+                options: {
+                  index: index
+                }
+              }, callback)
+              .then(function(result) {
+                defer.resolve(result);
+              }, function(err) {
+                defer.reject(err);
+              });
 
             return defer.promise;
 

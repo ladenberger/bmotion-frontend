@@ -40,14 +40,13 @@ define([
       function($rootScope, bmsSocketService, bmsModalService, $q) {
         'use strict';
         return {
-          emiton: function(event, data, callback) {
-            this.removeAllListeners(event);
-            this.emit(event, data, callback);
-            this.on(event, callback);
-          },
-          emit: function(event, data) {
+          emit: function(event, data, observable) {
 
             var defer = $q.defer();
+
+            var self = this;
+
+            if (observable) self.removeAllListeners(event);
 
             bmsSocketService.socket()
               .then(function(socket) {
@@ -58,10 +57,13 @@ define([
                       if (args[0].error) {
                         defer.reject(args[0].error);
                       } else {
+                        if (observable) self.on(event, observable);
                         if (args.length > 1) {
                           defer.resolve(args);
+                          if (observable) observable(args);
                         } else {
                           defer.resolve(args[0]);
+                          if (observable) observable(args[0]);
                         }
                       }
                     } else {
@@ -76,13 +78,13 @@ define([
             return defer.promise;
 
           },
-          on: function(event, callback) {
+          on: function(event, observable) {
             bmsSocketService.socket()
               .then(function(socket) {
                 socket.on(event, function() {
                   var args = arguments;
                   $rootScope.$apply(function() {
-                    callback.apply(null, args);
+                    observable.apply(null, args);
                   });
                 });
               }, function(error) {

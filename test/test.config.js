@@ -43,6 +43,7 @@ requirejs.config({
     "prob.graph.projection": "js/main/graph/prob.graph.projection",
 
     // View modules
+    "bms.views": "js/main/views/bms.views",
     "bms.views.user.interactions": "js/main/views/bms.views.user.interactions",
 
     // Main modules

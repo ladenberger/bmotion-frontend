@@ -172,7 +172,7 @@ define([
 
         };
 
-        var executeEvent = function(sessionId, viewId, name, options) {
+        var executeEvent = function(sessionId, viewId, options) {
 
           var defer = $q.defer();
 
@@ -181,7 +181,7 @@ define([
 
           var nOptions = bms.normalize(options, ["callback"], view.container);
           nOptions.traceId = view.toolOptions.traceId;
-          bmsWsService.executeEvent(sessionId, name, nOptions)
+          bmsWsService.executeEvent(sessionId, nOptions)
             .then(
               function success(result) {
                 if (nOptions.callback) nOptions.callback.call(this, result, view.container);

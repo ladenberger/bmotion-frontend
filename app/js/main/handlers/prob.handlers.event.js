@@ -97,8 +97,9 @@ define([
                 if (evt.canExecute) {
                   var callbackFunc = bms.convertFunction('data,origin,container', self.options.callback);
                   labelSpan.click(function() {
-                    bmsWsService.executeEvent(sessionId, evt.name, {
+                    bmsWsService.executeEvent(sessionId, {
                       traceId: traceId,
+                      name: evt.name,
                       predicate: evt.predicate,
                       executor: element.attr("id") ? element.attr("id") : 'unknown'
                     }).then(function(result) {
@@ -227,8 +228,9 @@ define([
                       var predicate = enabledEvents[0].predicate; // Event predicate
 
                       // Execute event with name and predicate
-                      bmsWsService.executeEvent(self.view.session.id, name, {
+                      bmsWsService.executeEvent(self.view.session.id, {
                         traceId: traceId,
+                        name: name,
                         predicate: predicate,
                         executor: jele.attr("id") ? jele.attr("id") : 'unknown'
                       }).then(function(data) {

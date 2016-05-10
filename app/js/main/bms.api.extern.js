@@ -47,14 +47,14 @@ define([
             service.addEvent(sessionId, viewId, type, options);
           }, 0);
         },
-        executeEvent: function(name, options) {
+        executeEvent: function(options) {
           if (options.selector || options.element) {
             this.registerEvent('executeEvent', options);
           } else {
             var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
-            return service.executeEvent(sessionId, viewId, name, options);
+            return service.executeEvent(sessionId, viewId, options);
           }
         },
         on: function(what, callback) {

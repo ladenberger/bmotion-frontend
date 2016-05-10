@@ -36,6 +36,8 @@ define([
               '<ul class="uib-dropdown-menu" role="menu" aria-labelledby="single-button">' +
               '<li role="menuitem"><a href="" ng-click="openDialog(\'CurrentTrace\')">' +
               '<i class="glyphicon glyphicon-indent-left"></i> History</a></a></li>' +
+              '<li role="menuitem"><a href="" ng-click="openDialog(\'UserInteractions\')">' +
+              '<i class="glyphicon glyphicon-indent-left"></i> User Interactions</a></a></li>' +
               '<li role="menuitem"><a href="" ng-click="openDialog(\'Events\')">' +
               '<i class="glyphicon glyphicon-align-left"></i> Events</a></li>' +
               '<li role="menuitem"><a href="" ng-click="openDialog(\'StateInspector\')">' +
@@ -58,6 +60,7 @@ define([
               '<div bms-dialog type="CurrentAnimations" title="Animations"><div prob-view></div></div>' +
               '<div bms-dialog type="BConsole" title="Console"><div prob-view></div></div>' +
               '<div bms-dialog type="ModelCheckingUI" title="ModelChecking"><div prob-view></div></div>' +
+              '<div bms-dialog type="UserInteractions" title="User Interactions Log"><div bms-user-interaction class="userInteractionsView"></div></div>' +
               '<div ng-repeat="view in views track by $index" bms-dialog state="open" width="{{view.width}}" height="{{view.height}}" title="View ({{view.id}})">' +
               '<div data-bms-visualization-view="{{view.id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>' +
               '</div>' +
