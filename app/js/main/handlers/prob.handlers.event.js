@@ -46,6 +46,10 @@ define([
             });
           }
 
+          // TODO This is a workaround since angular.merge destroys the actual
+          // element after merging - consequently we manually add this element
+          fOptions.element = options.element;
+
           return fOptions;
 
         };

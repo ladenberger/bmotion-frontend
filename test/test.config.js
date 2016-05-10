@@ -15,13 +15,13 @@ requirejs.config({
 
     // Directive modules
     "bms.directive": "js/main/directives/bms.directive",
-    "bms.directive.execute.event": "js/main/directives/bms.directive.execute.event",
     "bms.directive.bms.widget": "js/main/directives/bms.directive.bms.widget",
     "bms.directive.visualization.view": "js/main/directives/bms.directive.visualization.view",
     "bms.directive.editor": "js/main/directives/bms.directive.editor",
     "bms.directive.dialog": "js/main/directives/bms.directive.dialog",
     "bms.directive.svg": "js/main/directives/bms.directive.svg",
 
+    "prob.directive.execute.event": "js/main/directives/prob.directive.execute.event",
     "prob.directive.view": "js/main/directives/prob.directive.view",
 
     // Handler modules
