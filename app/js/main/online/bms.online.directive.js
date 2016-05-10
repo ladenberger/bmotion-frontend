@@ -56,13 +56,13 @@ define([
               '</div>' +
               '</div>' +
               '</div>' +
-              '<div bms-dialog type="CurrentTrace" title="History"><div prob-view></div></div>' +
-              '<div bms-dialog type="Events" title="Events"><div prob-view></div></div>' +
-              '<div bms-dialog type="StateInspector" title="State"><div prob-view></div></div>' +
-              '<div bms-dialog type="CurrentAnimations" title="Animations"><div prob-view></div></div>' +
-              '<div bms-dialog type="BConsole" title="Console"><div prob-view></div></div>' +
-              '<div bms-dialog type="ModelCheckingUI" title="ModelChecking"><div prob-view></div></div>' +
-              '<div bms-dialog type="UserInteractions" title="User Interactions Log"><div bms-user-interaction class="userInteractionsView"></div></div>' +
+              '<div bms-dialog type="CurrentTrace" title="History"><div prob-view data-bms-session-id="{{sessionId}}"></div></div>' +
+              '<div bms-dialog type="Events" title="Events"><div prob-view data-bms-session-id="{{sessionId}}"></div></div>' +
+              '<div bms-dialog type="StateInspector" title="State"><div prob-view data-bms-session-id="{{sessionId}}"></div></div>' +
+              '<div bms-dialog type="CurrentAnimations" title="Animations"><div prob-view data-bms-session-id="{{sessionId}}"></div></div>' +
+              '<div bms-dialog type="BConsole" title="Console"><div prob-view data-bms-session-id="{{sessionId}}"></div></div>' +
+              '<div bms-dialog type="ModelCheckingUI" title="ModelChecking"><div prob-view data-bms-session-id="{{sessionId}}"></div></div>' +
+              '<div bms-dialog type="UserInteractions" title="User Interactions Log"><div bms-user-interaction data-bms-session-id="{{sessionId}}" class="userInteractionsView"></div></div>' +
               '<div ng-repeat="view in views track by $index" bms-dialog state="open" width="{{view.width}}" height="{{view.height}}" title="View ({{view.id}})">' +
               '<div data-bms-visualization-view="{{view.id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>' +
               '</div>' +

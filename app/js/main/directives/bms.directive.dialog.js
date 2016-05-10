@@ -19,8 +19,7 @@ define([
             title: '@',
             state: '@',
             width: '@',
-            height: '@',
-            sessionId: '@'
+            height: '@'
           },
           controller: ['$scope', function($scope) {
 
