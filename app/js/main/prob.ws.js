@@ -68,7 +68,7 @@ define([
                 options: {
                   index: index
                 }
-              }, callback)
+              })
               .then(function(result) {
                 defer.resolve(result);
               }, function(err) {

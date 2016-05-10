@@ -5,6 +5,7 @@
 define([
     'angular',
     'bms.func',
+    'angular-route',
     'bms.session',
     'bms.modal',
     'bms.directive',
@@ -16,10 +17,11 @@ define([
         'bms.session',
         'bms.modal',
         'bms.directive',
-        'bms.view'
+        'bms.view',
+        'ngRoute'
       ])
-      .directive('bmsOnlineVisualization', ['$compile', '$rootScope', 'bmsModalService', 'bmsSessionService',
-        function($compile, $rootScope, bmsModalService, bmsSessionService) {
+      .directive('bmsOnlineVisualization', ['$compile', '$rootScope', '$location', '$route', 'bmsModalService', 'bmsSessionService', 'bmsViewService',
+        function($compile, $rootScope, $location, $route, bmsModalService, bmsSessionService, bmsViewService) {
           return {
             template: '<div class="fullWidthHeight">' +
               '<div data-bms-visualization-view="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>' +
@@ -69,32 +71,55 @@ define([
             scope: {
               manifestPath: '@bmsOnlineVisualization'
             },
-            controller: ['$scope', 'bmsViewService',
-              function($scope, bmsViewService) {
+            controller: ['$scope',
+              function($scope) {
 
                 bmsModalService.loading("Initializing visualization ...");
 
-                $scope.sessionId = bms.uuid(); // Session id
-                $scope.session = bmsSessionService.getSession($scope.sessionId); // Get fresh session instance
-                $scope.id = bms.uuid(); // Visualization
-                $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
+                var initialize = function() {
 
-                // Initialize session
-                $scope.session.init($scope.manifestPath)
-                  .then(function(bmsSession) {
-                      // Set root view id
-                      $scope.viewId = bmsSession.manifestData.views[0].id;
-                      // Open other views in bms dialog directive
-                      angular.forEach(bmsSession.manifestData.views, function(view, i) {
-                        if (i > 0) { // Ignore root view
-                          bmsViewService.addView(view);
-                        }
+                  var initFunc;
+
+                  // Set session id
+                  var urlSessionId = $location.$$path.replace("/", "");
+                  if (urlSessionId.length > 0) {
+                    $scope.sessionId = urlSessionId;
+                    $scope.session = bmsSessionService.getSession($scope.sessionId);
+                    initFunc = $scope.session.load();
+                  } else {
+                    $scope.sessionId = bms.uuid();
+                    $scope.session = bmsSessionService.getSession($scope.sessionId);
+                    initFunc = $scope.session.init($scope.manifestPath);
+                    $location.path($scope.sessionId);
+                  }
+
+                  $scope.id = bms.uuid(); // Visualization
+                  $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
+
+                  // Initialize session
+                  initFunc
+                    .then(function(bmsSession) {
+                        // Set root view id
+                        $scope.viewId = bmsSession.manifestData.views[0].id;
+                        // Open other views in bms dialog directive
+                        angular.forEach(bmsSession.manifestData.views, function(view, i) {
+                          if (i > 0) { // Ignore root view
+                            bmsViewService.addView(view);
+                          }
+                        });
+                        bmsModalService.endLoading();
+                      },
+                      function(err) {
+                        bmsModalService.openErrorDialog(err)
+                          .then(function() {
+                            $location.path('');
+                            window.location.reload();
+                          });
                       });
-                      bmsModalService.endLoading();
-                    },
-                    function(err) {
-                      bmsModalService.openErrorDialog(err);
-                    });
+
+                };
+
+                initialize();
 
                 // Navigation button actions ...
                 $scope.openDialog = function(type) {

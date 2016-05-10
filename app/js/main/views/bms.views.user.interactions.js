@@ -50,12 +50,8 @@ define([
               });
 
             $scope.gotoTraceIndex = function(evt) {
-
-              probWsService.gotoTraceIndex($scope.sessionId, {
-                index: $scope.transitions.indexOf(evt)
-              });
-
-            }
+              probWsService.gotoTraceIndex($scope.sessionId, $scope.transitions.indexOf(evt));
+            };
 
           }]
 

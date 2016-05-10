@@ -50,14 +50,14 @@ define([
             defer.reject("Manifest file path must not be undefined.");
           } else {
             bmsManifestService.getManifest(manifestFilePath)
-              .then(function(_manifestData_) {
+              .then(function(manifestData) {
 
-                var manifestData = _manifestData_;
                 var templateFolder = self.getTemplateFolder(manifestFilePath);
                 var modelPath = templateFolder + '/' + manifestData.model;
 
                 bmsWsService.initSession(self.id, manifestFilePath, modelPath, manifestData.modelOptions)
                   .then(function(sessionData) {
+
                     self.tool = sessionData[0].tool;
                     self.toolData = sessionData[1];
                     self.manifestFilePath = manifestFilePath;
@@ -66,6 +66,7 @@ define([
                     self.modelPath = modelPath;
                     defer.resolve(self);
                     self.initialized.resolve(self);
+
                   }, function(err) {
                     defer.reject(err);
                   });
@@ -86,18 +87,20 @@ define([
 
           bmsWsService.loadSession(self.id)
             .then(function(sessionData) {
-              self.manifestFilePath = sessionData[0].manifestFilePath;
+
               self.tool = sessionData[0].tool;
               self.toolData = sessionData[1];
-              var filename = self.manifestFilePath.replace(/^.*[\\\/]/, '');
-              self.templateFolder = self.manifestFilePath.replace('/' + filename, '');
+              self.manifestFilePath = sessionData[0].manifestFilePath;
+              self.templateFolder = self.getTemplateFolder(self.manifestFilePath);
+
               bmsManifestService.getManifest(self.manifestFilePath)
-                .then(function(_manifestData_) {
-                  self.manifestData = _manifestData_;
+                .then(function(manifestData) {
+                  self.manifestData = manifestData;
                   self.modelPath = self.templateFolder + '/' + self.manifestData.model;
                   defer.resolve(self);
                   self.initialized.resolve(self);
                 });
+
             }, function(err) {
               defer.reject(err);
             });
