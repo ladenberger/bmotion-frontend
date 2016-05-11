@@ -2,6 +2,8 @@ requirejs.config({
 
   paths: {
 
+    "bmotion.online": "js/bmotion.online",
+
     // Directive modules
     "bms.directive": "js/main/directives/bms.directive",
     "bms.directive.bms.widget": "js/main/directives/bms.directive.bms.widget",
@@ -66,7 +68,6 @@ requirejs.config({
     "bms.standalone.directive": "js/main/standalone/bms.standalone.directive",
     "bms.standalone.electron": "js/main/standalone/bms.standalone.electron",
     "bms.standalone.nodejs": "js/main/standalone/bms.standalone.nodejs",
-    "bms.standalone.root": "js/main/standalone/bms.standalone.root",
     "bms.standalone.routing": "js/main/standalone/bms.standalone.routing",
     "bms.standalone.service": "js/main/standalone/bms.standalone.service",
     "bms.standalone.tabs": "js/main/standalone/bms.standalone.tabs",
@@ -85,7 +86,6 @@ requirejs.config({
     "tv4": "js/libs/bower/tv4/tv4",
     "cytoscape": "js/libs/bower/cytoscape/cytoscape",
     "cytoscape.navigator": "js/libs/ext/cytoscape.navigator/cytoscape.js-navigator",
-    "angular-sanitize": "js/libs/bower/angular-sanitize/angular-sanitize",
     "ui-bootstrap": "js/libs/bower/angular-bootstrap/ui-bootstrap",
     "ui-bootstrap-tpls": "js/libs/bower/angular-bootstrap/ui-bootstrap-tpls",
 
