@@ -7,12 +7,14 @@ define([
   'jquery',
   'bms.modal',
   'bms.session',
-  'bms.standalone.nodejs'
+  'bms.standalone.nodejs',
+  'bms.visualization',
+  'bms.standalone.electron'
 ], function(angular, $) {
 
-  return angular.module('bms.directive.editor', ['bms.modal', 'bms.session', 'bms.standalone.nodejs'])
-    .directive('bmsVisualizationEditor', ['bmsModalService', 'bmsSessionService', '$q', '$timeout', '$http', '$rootScope', 'fs',
-      function(bmsModalService, bmsSessionService, $q, $timeout, $http, $rootScope, fs) {
+  return angular.module('bms.directive.editor', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.standalone.nodejs', 'bms.standalone.electron'])
+    .directive('bmsVisualizationEditor', ['bmsModalService', 'bmsSessionService', 'bmsVisualizationService', '$q', '$timeout', '$http', '$rootScope', 'fs', 'electron',
+      function(bmsModalService, bmsSessionService, bmsVisualizationService, $q, $timeout, $http, $rootScope, fs, electron) {
         return {
           replace: false,
           scope: {
@@ -29,15 +31,24 @@ define([
             }
             // TODO check if session really exists!?
             $scope.session = bmsSessionService.getSession($scope.sessionId);
+            $scope.view = $scope.session.getView($scope.id);
 
             // Parent API (called from bms.editor.root)
             // --------------------------------------
-
-            $scope.addObserverEvent = function(list, type, data) {
-              bmsVisualizationService.addObserverEvent($scope.id, list, {
+            $scope.addObserver = function(type, data) {
+              $scope.view.jsonObservers.push({
                 type: type,
                 data: data
-              }, 'json');
+              });
+              $scope.view.addObserver(type, data);
+            };
+
+            $scope.addEvent = function(type, data) {
+              $scope.view.jsonEvents.push({
+                type: type,
+                data: data
+              });
+              $scope.view.addEvent(type, data);
             };
 
             $scope.disableEditor = function(reason) {
@@ -158,7 +169,7 @@ define([
                 .then(function() {
                   bmsModalService.endLoading("");
                   bmsModalService.openDialog("Visualization has been saved successfully.");
-                  $rootScope.$broadcast('visualizationSaved', $scope.svg);
+                  $rootScope.$broadcast('visualizationSaved', $scope.id, $scope.svg);
                 }, function(error) {
                   bmsModalService.openErrorDialog(error);
                 });

@@ -97,11 +97,8 @@ define([
           return events;
         },
         addObserver: function(type, data) {
-          service.addObserverEvent("observers", type, data);
-        },
-        addObserverEvent: function(list, type, data) {
-          bmsParentService.addObserverEvent(list, type, data);
-          return uiState[list].push({
+          bmsParentService.addObserver(type, data);
+          return uiState['observers'].push({
             isMenu: false,
             isCollapsed: true
           }) - 1;
@@ -119,13 +116,17 @@ define([
           });
         },
         addEvent: function(type, data) {
-          service.addObserverEvent("events", type, data);
+          bmsParentService.addEvent(type, data);
+          return uiState['events'].push({
+            isMenu: false,
+            isCollapsed: true
+          }) - 1;
         },
         removeEvent: function(index) {
           events.splice(index, 1);
           uiState['events'].splice(index, 1)
         },
-        duplicateEvents: function(index) {
+        duplicateEvent: function(index) {
           var newObject = $.extend(true, {}, events[index]);
           events.push(newObject);
           uiState['events'].push({
@@ -162,8 +163,11 @@ define([
         saveEvents: function() {
           $parentScope.saveEvents();
         },
-        addObserverEvent: function(list, type, data) {
-          $parentScope.addObserverEvent(list, type, data);
+        addObserver: function(type, data) {
+          $parentScope.addObserver(type, data);
+        },
+        addEvent: function(type, data) {
+          $parentScope.addEvent(type, data);
         },
         disableEditor: function(reason) {
           $parentScope.disableEditor(reason);
@@ -431,7 +435,7 @@ define([
           $scope.uiState = bmsEditorCommonService.getUiState('events');
           var session = bmsEditorCommonService.getSession();
           if (session.toolData.model) {
-            angular.forEach(session.toolData.model.events, function(ev) {
+            angular.forEach(session.toolData.model.transitions, function(ev) {
               $scope.events.push({
                 value: ev.name,
                 text: ev.name
@@ -494,16 +498,29 @@ define([
 
         var self = this;
 
-        var addObserverEvent = function(list, type, data) {
+        var addObserver = function(type, data) {
           var selectedElements = methodDraw.getSvgCanvas().getSelectedElems();
           if (selectedElements) {
             var selectors = selectedElements.map(function(element) {
               return "#" + $(element).attr("id");
             });
             data.selector = selectors.join(",");
-            var index = bmsEditorCommonService.addObserverEvent(list, type, data);
-            bmsEditorTabsService.activateTab(list);
-            bmsEditorCommonService.toggleCollapse(list, index);
+            var index = bmsEditorCommonService.addObserver(type, data);
+            bmsEditorTabsService.activateTab('observers');
+            bmsEditorCommonService.toggleCollapse('observers', index);
+          }
+        };
+
+        var addEvent = function(type, data) {
+          var selectedElements = methodDraw.getSvgCanvas().getSelectedElems();
+          if (selectedElements) {
+            var selectors = selectedElements.map(function(element) {
+              return "#" + $(element).attr("id");
+            });
+            data.selector = selectors.join(",");
+            var index = bmsEditorCommonService.addEvent(type, data);
+            bmsEditorTabsService.activateTab('events');
+            bmsEditorCommonService.toggleCollapse('events', index);
           }
         };
 
@@ -531,7 +548,7 @@ define([
             label: "Add Formula Observer",
             show: self.session.isBVisualization(),
             click: function() {
-              addObserverEvent("observers", "formula", {
+              addObserver("formula", {
                 formulas: []
               });
             }
@@ -539,7 +556,7 @@ define([
             label: "Add Refinement Observer",
             show: self.session.isEventBVisualization(),
             click: function() {
-              addObserverEvent("observers", "refinement", {
+              addObserver("refinement", {
                 refinement: ""
               });
             }
@@ -547,7 +564,7 @@ define([
             label: "Add CSP Observer",
             show: self.session.isCSPVisualization(),
             click: function() {
-              addObserverEvent("observers", "csp-event", {
+              addObserver("cspEvent", {
                 observers: []
               });
             }
@@ -557,7 +574,7 @@ define([
             label: "Add Execute Event Handler",
             show: self.session.isBVisualization(),
             click: function() {
-              addObserverEvent("events", "executeEvent", {
+              addEvent("executeEvent", {
                 events: []
               });
             }

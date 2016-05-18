@@ -111,34 +111,37 @@ define([
 
             // Listen to visualizationSaved event
             // (typically called from editor after saving)
-            $scope.$on('visualizationSaved', function(evt, svg) {
+            $scope.$on('visualizationSaved', function(evt, id, svg) {
 
-              var svgItem = $scope.view.getSvg(svg);
+              if ($scope.id === id) {
 
-              // Get defer of saved svg file
-              svgItem.deferSave = $q.defer();
+                var svgItem = $scope.view.getSvg(svg);
 
-              // Clear all observers, events and listeners
-              $scope.view.clearObservers();
-              $scope.view.clearEvents();
-              $scope.view.clearListeners();
+                // Get defer of saved svg file
+                svgItem.deferSave = $q.defer();
 
-              // Readd observer and events coming from json
-              $scope.addJsonData({
-                observers: $scope.view.jsonObservers,
-                events: $scope.view.jsonEvents
-              });
+                // Clear all observers, events and listeners
+                $scope.view.clearObservers();
+                $scope.view.clearEvents();
+                $scope.view.clearListeners();
 
-              // Reload template in order to readd observers
-              // and events coming from js
-              iframe.attr('src', iframe.attr('src'));
-              // Wait until svg content is successfully loaded
-              svgItem.deferSave.promise
-                .then(function() {
-                  // Finally check and setup events
-                  $scope.view.checkObservers();
-                  $scope.view.setupEvents();
+                // Readd observer and events coming from json
+                $scope.addJsonData({
+                  observers: $scope.view.jsonObservers,
+                  events: $scope.view.jsonEvents
                 });
+
+                // Reload template in order to readd observers
+                // and events coming from js
+                iframe.attr('src', iframe.attr('src'));
+                // Wait until svg content is successfully loaded
+                svgItem.deferSave.promise
+                  .then(function() {
+                    // Finally check and setup events
+                    $scope.view.checkObservers();
+                    $scope.view.setupEvents();
+                  });
+              }
 
             });
 
