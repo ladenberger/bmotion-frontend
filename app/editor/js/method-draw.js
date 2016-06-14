@@ -3292,7 +3292,7 @@ define(["jquery", "touch", "jquery.hotkeys", "jquery.bbq",
 
       // Test for embedImage support (use timeout to not interfere with page load)
       setTimeout(function() {
-        svgCanvas.embedImage('images/placeholder.svg', function(datauri) {
+        svgCanvas.embedImage('editor/images/placeholder.svg', function(datauri) {
           if (!datauri) {
             // Disable option
             $('#image_save_opts [value=embed]').attr('disabled', 'disabled');
