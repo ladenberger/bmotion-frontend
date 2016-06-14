@@ -157,7 +157,7 @@ define([
                 if (nOptions.selector) {
                   nOptions.trigger(view.container.contents().find(nOptions.selector), fresults);
                 } else {
-                  nOptions.trigger(fresults);
+                  nOptions.trigger(fresults, view.container.contents());
                 }
 
                 defer.resolve(results);

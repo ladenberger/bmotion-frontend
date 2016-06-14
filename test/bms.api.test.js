@@ -87,11 +87,12 @@ define([
       expect(bmsApiService).toBeDefined();
     }));
 
-    it('eval function should call trigger function with formula results', function(done) {
+    it('eval function should call trigger function with formula results and container', function(done) {
 
       bmsApiService.eval(sessionId, viewId, {
         formulas: ['door', 'floor'],
-        trigger: function(results) {
+        trigger: function(results, container) {
+          expect(container).toBeDefined();
           expect(results).toEqual(['closed', '1']);
           done();
         }
