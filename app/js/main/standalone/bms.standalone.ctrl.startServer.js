@@ -48,7 +48,7 @@ define([
             var exec = require('child_process').exec;
             var isWin = /^win/.test(process.platform);
             var separator = isWin ? ';' : ':';
-            var server = exec('java -Xmx1024m -cp ' + appPath + '/libs/*' + separator + appPath + '/libs/bmotion-prob-0.3.0-SNAPSHOT.jar de.bmotion.prob.Standalone -standalone -local');
+            var server = exec('java -Xmx1024m -cp ' + appPath + '/libs/*' + separator + appPath + '/libs/bmotion-prob-0.3.0-SNAPSHOT.jar de.bmotion.prob.Standalone -local');
             server.stdout.on('data', function(data) {
               try {
                 var json = JSON.parse(data.toString('utf8'));
