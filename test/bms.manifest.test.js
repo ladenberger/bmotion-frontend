@@ -7,12 +7,14 @@ define(['bms.manifest'], function() {
     var bmsManifestService;
     var $rootScope;
     var $q;
+    var $httpBackend;
 
     beforeEach(module('bms.manifest'));
 
-    beforeEach(inject(function(_bmsManifestService_, _$q_, _$rootScope_) {
+    beforeEach(inject(function(_bmsManifestService_, _$q_, _$rootScope_, _$httpBackend_) {
       bmsManifestService = _bmsManifestService_;
       $rootScope = _$rootScope_;
+      $httpBackend = _$httpBackend_;
       $q = _$q_;
     }));
 
@@ -109,20 +111,19 @@ define(['bms.manifest'], function() {
 
     it('valid manifest data should be returned', function(done) {
 
-      spyOn(bmsManifestService, "getManifestData").and.callFake(function() {
-        var defer = $q.defer();
-        defer.resolve({
+      $httpBackend.when('GET', "bmotion.json")
+        .respond({
           views: [{
             id: "someid",
             template: "template.html"
           }]
         });
-        return defer.promise;
-      });
 
       var promise = bmsManifestService.getManifest("bmotion.json");
+      $httpBackend.flush();
       promise
         .then(function(data) {
+          expect(data.modelOptions).toBeDefined();
           expect(data).toBeDefined();
         })
         .finally(function() {
@@ -136,18 +137,16 @@ define(['bms.manifest'], function() {
 
     it('invalid manifest data should cause error', function(done) {
 
-      spyOn(bmsManifestService, "getManifestData").and.callFake(function() {
-        var defer = $q.defer();
-        defer.resolve({
+      $httpBackend.when('GET', "bmotion.json")
+        .respond({
           views: [{
             // id is missing
             template: "template.html"
           }]
         });
-        return defer.promise;
-      });
 
-      var promise = bmsManifestService.getManifest("ingore");
+      var promise = bmsManifestService.getManifest("bmotion.json");
+      $httpBackend.flush();
       var error;
       promise
         .then(function(config) {}, function(er) {

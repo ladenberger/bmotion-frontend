@@ -29,7 +29,8 @@ define(['bms.session'], function() {
             "id": "lift",
             "name": "Lift environment",
             "template": "lift.html"
-          }]
+          }],
+          "modelOptions": {}
         };
         manifestPath = 'somepath/bmotion.json';
         $httpBackend.when('GET', manifestPath)

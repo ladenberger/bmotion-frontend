@@ -65,7 +65,8 @@ define([
                 "observers": "observers.json",
                 "events": "events.json"
               }
-            ]
+            ],
+            "modelOptions": {}
           };
 
           jsonObservers = {

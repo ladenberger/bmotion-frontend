@@ -75,7 +75,10 @@ define([
 
                     service.validate(manifestData)
                       .then(function(validatedManifestData) {
-                        defer.resolve(validatedManifestData);
+                        defer.resolve(angular.merge({
+                          modelOptions: {}
+                        }, validatedManifestData));
+
                       }, function(error) {
                         defer.reject(error);
                       })
