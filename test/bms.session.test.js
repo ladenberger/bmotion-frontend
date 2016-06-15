@@ -25,11 +25,9 @@ define(['bms.session'], function() {
         $rootScope = _$rootScope_;
         manifestData = {
           "model": "model/m3.bcm",
-          "views": [{
-            "id": "lift",
-            "name": "Lift environment",
-            "template": "lift.html"
-          }],
+          "id": "viewId",
+          "name": "Lift environment",
+          "template": "lift.html",
           "modelOptions": {}
         };
         manifestPath = 'somepath/bmotion.json';

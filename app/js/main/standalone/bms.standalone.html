@@ -2,7 +2,7 @@
 
   <uib-tabset class="fullWidthHeight">
     <uib-tab select="selectSimulatorTab()" heading="Simulator">
-      <div data-bms-visualization-view="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>
+      <div data-bms-visualization-view="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-session-id="{{sessionId}}" data-bms-root-view class="fullWidthHeight"></div>
     </uib-tab>
     <uib-tab select="selectEditorTab(svg)" ng-show="view.hasSvg()" ng-repeat="(svg, value) in view.svg" heading="Editor: {{svg}}" disable="isDisabled(svg)" ng-click="!isDisabled(svg) || whyDisabled(svg)">
       <div data-bms-visualization-editor="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-svg-file="{{svg}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>

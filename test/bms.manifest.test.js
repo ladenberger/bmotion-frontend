@@ -9,6 +9,18 @@ define(['bms.manifest'], function() {
     var $q;
     var $httpBackend;
 
+    var validatedManifestData = {
+      autoOpen: ["someView"],
+      id: "visid",
+      template: "template.html",
+      model: "somepath/model.mch",
+      views: [{
+        id: "viewId",
+        name: "additionalView",
+        template: "view.html"
+      }]
+    };
+
     beforeEach(module('bms.manifest'));
 
     beforeEach(inject(function(_bmsManifestService_, _$q_, _$rootScope_, _$httpBackend_) {
@@ -68,17 +80,10 @@ define(['bms.manifest'], function() {
 
     it('test valid bmotion.json manifest data', function(done) {
 
-      var manifestData = {
-        views: [{
-          id: "id",
-          template: "template.html"
-        }]
-      };
-
-      var promise = bmsManifestService.validate(manifestData);
+      var promise = bmsManifestService.validate(validatedManifestData);
       promise
         .then(function(data) {
-          expect(data).toEqual(manifestData);
+          expect(data).toEqual(validatedManifestData);
         })
         .finally(function() {
           expect(promise.$$state.status).toBe(1); // Resolved
@@ -112,12 +117,7 @@ define(['bms.manifest'], function() {
     it('valid manifest data should be returned', function(done) {
 
       $httpBackend.when('GET', "bmotion.json")
-        .respond({
-          views: [{
-            id: "someid",
-            template: "template.html"
-          }]
-        });
+        .respond(validatedManifestData);
 
       var promise = bmsManifestService.getManifest("bmotion.json");
       $httpBackend.flush();
@@ -139,6 +139,8 @@ define(['bms.manifest'], function() {
 
       $httpBackend.when('GET', "bmotion.json")
         .respond({
+          // template is missing
+          // model is missing
           views: [{
             // id is missing
             template: "template.html"

@@ -65,6 +65,7 @@ define([
             iframe.attr("sessionId", $scope.sessionId);
             var iframeContents;
             $scope.view.container = iframe;
+            $scope.rootView = 'bmsRootView' in attrs;
 
             // Watch for changes in attribute values
             $scope.$watch(function() {
@@ -147,16 +148,28 @@ define([
 
             $scope.loadViewData = function(viewId, manifestData) {
               var defer = $q.defer();
-              var views = manifestData['views'];
-              if (views) {
-                angular.forEach(manifestData['views'], function(v) {
-                  if (v['id'] === viewId) {
-                    defer.resolve(v);
-                  }
+
+              if ($scope.rootView) {
+                defer.resolve({
+                  id: manifestData['id'],
+                  template: manifestData['template'],
+                  name: manifestData['name'],
+                  observers: manifestData['observers'],
+                  events: manifestData['events']
                 });
               } else {
-                defer.reject("View with id " + viewId + " not found.");
+                var views = manifestData['views'];
+                if (views) {
+                  angular.forEach(manifestData['views'], function(v) {
+                    if (v['id'] === viewId) {
+                      defer.resolve(v);
+                    }
+                  });
+                } else {
+                  defer.reject("View with id " + viewId + " not found.");
+                }
               }
+
               return defer.promise;
             };
 

@@ -29,11 +29,9 @@ define([
 
         var manifestData = {
           "model": "model/m3.bcm",
-          "views": [{
-            "id": viewId,
-            "name": "Lift environment",
-            "template": "lift.html"
-          }]
+          "id": viewId,
+          "name": "Lift environment",
+          "template": "lift.html"
         };
         var manifestPath = 'somepath/bmotion.json';
         $httpBackend.when('GET', manifestPath)

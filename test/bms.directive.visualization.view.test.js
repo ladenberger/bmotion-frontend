@@ -48,6 +48,8 @@ define(['jquery', 'bms.directive.visualization.view'], function($) {
 
           manifestData = {
             "model": "model/m3.bcm",
+            "id": "rootId",
+            "template": "template.html",
             "views": [viewData]
           };
 

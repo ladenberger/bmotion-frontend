@@ -24,7 +24,7 @@ define([
         function($compile, $rootScope, $location, $route, bmsModalService, bmsSessionService, bmsViewService) {
           return {
             template: '<div class="fullWidthHeight">' +
-              '<div data-bms-visualization-view="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-session-id="{{sessionId}}" class="fullWidthHeight"></div>' +
+              '<div data-bms-visualization-view="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-session-id="{{sessionId}}" data-bms-root-view class="fullWidthHeight"></div>' +
               '<div>' +
               '<div class="navbar navbar-default navbar-fixed-bottom" role="navigation">' +
               '<div class="container-fluid">' +
@@ -100,12 +100,10 @@ define([
                   initFunc
                     .then(function(bmsSession) {
                         // Set root view id
-                        $scope.viewId = bmsSession.manifestData.views[0].id;
+                        $scope.viewId = bmsSession.manifestData.id;
                         // Open other views in bms dialog directive
                         angular.forEach(bmsSession.manifestData.views, function(view, i) {
-                          if (i > 0) { // Ignore root view
-                            bmsViewService.addView(view);
-                          }
+                          bmsViewService.addView(view);
                         });
                         bmsModalService.endLoading();
                       },

@@ -30,13 +30,11 @@ define([
         $scope.session.load()
           .then(function() {
 
-            $scope.viewId = $scope.session.manifestData.views[0].id;
+            $scope.viewId = $scope.session.manifestData.id;
 
             // Open additional views
             angular.forEach($scope.session.manifestData.views, function(view, i) {
-              if (i > 0) { // Ignore root view
-                bmsViewService.addView(view);
-              }
+              bmsViewService.addView(view);
             });
 
             electron.send({

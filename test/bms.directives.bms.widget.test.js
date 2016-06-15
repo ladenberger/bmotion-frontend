@@ -24,15 +24,11 @@ define([
 
         inject(function(_$compile_, _$rootScope_, $httpBackend, $q, bmsWsService, bmsSessionService) {
 
-          viewData = {
+          manifestData = {
+            "model": "model/m3.bcm",
             "id": viewId,
             "name": "Lift environment",
             "template": "lift.html"
-          };
-
-          manifestData = {
-            "model": "model/m3.bcm",
-            "views": [viewData]
           };
 
           $compile = _$compile_;

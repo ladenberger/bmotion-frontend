@@ -33,11 +33,9 @@ define([
 
         var manifestData = {
           "model": "model/crossing.csp",
-          "views": [{
-            "id": viewId,
-            "name": "Crossingl",
-            "template": "crossing.html"
-          }]
+          "id": viewId,
+          "name": "Crossing",
+          "template": "crossing.html"
         };
         var manifestPath = 'somepath/bmotion.json';
         $httpBackend.when('GET', manifestPath)

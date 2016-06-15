@@ -41,31 +41,26 @@ define([
           $rootScope = _$rootScope_;
           bmsViewService = _bmsViewService_;
 
-          viewData = {
+          manifestData = {
+            "model": "model/m3.bcm",
             "id": viewId,
             "name": "Lift environment",
             "template": "lift.html",
             "observers": "observers.json",
-            "events": "events.json"
-          };
-
-          manifestData = {
-            "model": "model/m3.bcm",
-            "views": [
-              viewData, {
-                "id": "secondView",
-                "name": "Lift controller",
-                "template": "controller.html",
-                "observers": "observers.json",
-                "events": "events.json"
-              }, {
-                "id": "thirdView",
-                "name": "Lift controller",
-                "template": "controller.html",
-                "observers": "observers.json",
-                "events": "events.json"
-              }
-            ],
+            "events": "events.json",
+            "views": [{
+              "id": "secondView",
+              "name": "Lift controller",
+              "template": "controller.html",
+              "observers": "observers.json",
+              "events": "events.json"
+            }, {
+              "id": "thirdView",
+              "name": "Lift controller",
+              "template": "controller.html",
+              "observers": "observers.json",
+              "events": "events.json"
+            }],
             "modelOptions": {}
           };
 
@@ -182,7 +177,13 @@ define([
 
         var promise = $scope.view.isInitialized();
         promise.then(function() {
-          expect($scope.view.viewData).toEqual(viewData);
+          expect($scope.view.viewData).toEqual({
+            "id": viewId,
+            "name": "Lift environment",
+            "template": "lift.html",
+            "observers": "observers.json",
+            "events": "events.json"
+          });
           expect($scope.view.getEvents().length).toBe(1);
           expect($scope.view.getObservers().length).toBe(2);
         }).finally(function() {
