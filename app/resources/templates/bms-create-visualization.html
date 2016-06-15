@@ -12,12 +12,10 @@
                     <input type="text" class="form-control" name="id" ng-minlength=3 ng-pattern="/^[a-zA-Z0-9]+$/"
                            ng-model="view.id" required
                            placeholder="ID"/>
-
                     <p class="help-block" ng-if="userForm.id.$error.required">The id is required.</p>
 
                     <p class="help-block" ng-if="userForm.id.$error.pattern">No special characters and whitespace are
                         allowed.</p>
-
                     <p class="help-block" ng-if="userForm.id.$error.minlength">The id is required to be at least 3
                         characters.</p>
                 </div>
@@ -25,6 +23,12 @@
                     <label class="control-label">Name</label>
                     <input type="text" class="form-control" name="name" ng-model="view.name"
                            placeholder="Name"/>
+                </div>
+                <div class="form-group" ng-class="{ 'has-error': userForm.model.$invalid && userForm.model.$dirty }">
+                    <label class="control-label">Relative Path to Model</label>
+                    <input type="text" class="form-control" name="name" ng-model="view.model"
+                           placeholder="Model Path"/>
+                    <p class="help-block" ng-if="userForm.id.$error.required">The model path is required.</p>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Auto Open ProB View:</label>

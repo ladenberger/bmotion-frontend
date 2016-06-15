@@ -69,22 +69,25 @@ define([
                         bmsModalService.openErrorDialog(err);
                       } else {
 
-                        view.template = 'index.html';
-                        view.observers = view.id + '.observers.json';
-                        view.events = view.id + '.events.json';
                         var manifestFile = 'bmotion.json';
+                        var observersFile = view.id + '.observers.json';
+                        var eventsFile = view.id + '.events.json';
 
-                        createJsonFile(folder, view.observers, {
+                        createJsonFile(folder, observersFile, {
                             observers: []
                           })
                           .then(function() {
-                            return createJsonFile(folder, view.events, {
+                            return createJsonFile(folder, eventsFile, {
                               events: []
                             });
                           })
                           .then(function() {
                             return createJsonFile(folder, manifestFile, {
-                              views: [view]
+                              id: view.id,
+                              template: 'index.html',
+                              model: view.model,
+                              observers: observersFile,
+                              events: eventsFile
                             });
                           })
                           .then(function() {
@@ -222,7 +225,7 @@ define([
 
           //var bmsSession = bmsSessionService.getSession();
           session.init(manifestFilePath)
-            .then(function() {              
+            .then(function() {
               $location.path('/vis/' + sessionId);
               bmsModalService.endLoading();
             }, function(err) {

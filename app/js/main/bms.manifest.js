@@ -137,7 +137,7 @@ define([
           if (tv4.validate(manifestData, manifestScheme)) {
             defer.resolve(manifestData);
           } else {
-            defer.reject("BMotionWeb manifest file invalid: " + tv4.error.message + " (" + tv4.error.dataPath + ")");
+            defer.reject("BMotionWeb manifest file invalid: " + tv4.error.message);
           }
 
           return defer.promise;
