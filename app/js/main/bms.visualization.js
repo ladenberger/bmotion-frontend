@@ -112,7 +112,11 @@ define([
         };
 
         bmsVisualization.prototype.clearListeners = function() {
-          this.listener = [];
+          this.listener = {};
+        };
+
+        bmsVisualization.prototype.getListeners = function(what) {
+          return this.listener[what];
         };
 
         bmsVisualization.prototype.getBmsIdForElement = function(element) {
@@ -282,7 +286,7 @@ define([
         bmsVisualization.prototype.triggerListeners = function(cause) {
           angular.forEach(this.listener[cause], function(l) {
             if (!l.executed) {
-              l.callback(vis);
+              l.callback();
               // Init listener should be called only once
               if (cause === "ModelInitialised") l.executed = true;
             }
