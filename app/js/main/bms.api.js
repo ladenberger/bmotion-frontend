@@ -86,7 +86,9 @@ define([
           var session = bmsSessionService.getSession(sessionId);
           var view = session.getView(viewId);
           var listener = view.addListener(what, callback);
-          if (listener && what === "ModelInitialised") {
+
+          // If page is reloaded and the model is initialized, trigger init listener once
+          if (listener && what === "ModelInitialised" && session.toolData.initialized) {
             // Init listener should be called only once
             listener.callback(view);
             listener.executed = true;
@@ -153,13 +155,7 @@ define([
                 angular.forEach(nOptions.formulas, function(formula) {
                   fresults.push(results[formula]);
                 });
-
-                if (nOptions.selector) {
-                  nOptions.trigger(view.container.contents().find(nOptions.selector), fresults);
-                } else {
-                  nOptions.trigger(fresults, view.container.contents());
-                }
-
+                nOptions.trigger(fresults, view.container.contents());
                 defer.resolve(results);
 
               },

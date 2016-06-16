@@ -90,24 +90,8 @@ define([
       bmsApiService.eval(sessionId, viewId, {
         formulas: ['door', 'floor'],
         trigger: function(results, container) {
-          expect(container).toBeDefined();
+          expect(container).toBeInDOM();
           expect(results).toEqual(['closed', '1']);
-          done();
-        }
-      });
-
-    });
-
-    it('eval function should call trigger function with origin and formula results', function(done) {
-
-      bmsApiService.eval(sessionId, viewId, {
-        selector: '#door',
-        formulas: ['door', 'floor'],
-        trigger: function(origin, results) {
-          // Origin should be passed to trigger function
-          expect(origin).toBeInDOM();
-          // Results should be passed to trigger function
-          expect(['closed', '1']).toEqual(results);
           done();
         }
       });
@@ -224,6 +208,17 @@ define([
             expect(promise.$$state.status).toBe(2); // Rejected
             done();
           });
+
+      });
+
+    });
+
+    it('on function should register listener in viewInstance', function() {
+
+      inject(function(bmsWsService) {
+
+        bmsApiService.on(sessionId, viewId, 'ModelInitialised', function() {});
+        expect(viewInstance.getListeners('ModelInitialised').length).toBe(1);
 
       });
 
