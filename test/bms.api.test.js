@@ -12,6 +12,7 @@ define([
     var viewId = 'lift';
     var sessionId = 'someSessionId';
     var viewInstance;
+    var bmsWsService;
     var ws;
     var $q;
 
@@ -20,9 +21,10 @@ define([
     beforeEach(module('bms.api'));
 
     beforeEach(function(done) {
-      inject(function(_bmsApiService_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService, bmsVisualization) {
+      inject(function(_bmsApiService_, _ws_, _$q_, _$rootScope_, $httpBackend, _bmsWsService_, bmsSessionService, bmsVisualization) {
 
         bmsApiService = _bmsApiService_;
+        bmsWsService = _bmsWsService_;
         $rootScope = _$rootScope_;
         ws = _ws_;
         $q = _$q_;
@@ -41,25 +43,6 @@ define([
           var deferred = $q.defer();
           deferred.resolve(sessionId);
           return deferred.promise;
-        });
-
-        spyOn(bmsWsService, "evaluateFormulas").and.callFake(function(evt, args) {
-          var defer = $q.defer();
-          var results = {};
-          for (var id in args) {
-            results[id] = {
-              'door': {
-                formula: 'door',
-                result: 'closed'
-              },
-              'floor': {
-                formula: 'floor',
-                result: '1'
-              }
-            }
-          }
-          defer.resolve(results);
-          return defer.promise;
         });
 
         var bmsSessionInstance = bmsSessionService.getSession(sessionId);
@@ -93,6 +76,25 @@ define([
 
     it('(2) eval function should call trigger function with formula results and container', function(done) {
 
+      spyOn(bmsWsService, "evaluateFormulas").and.callFake(function(evt, args) {
+        var defer = $q.defer();
+        var results = {};
+        for (var id in args) {
+          results[id] = {
+            'door': {
+              formula: 'door',
+              result: 'closed'
+            },
+            'floor': {
+              formula: 'floor',
+              result: '1'
+            }
+          }
+        }
+        defer.resolve(results);
+        return defer.promise;
+      });
+
       bmsApiService.eval(sessionId, viewId, {
         formulas: ['door', 'floor'],
         trigger: function(results, container) {
@@ -104,7 +106,65 @@ define([
 
     });
 
-    it('(3) addObserver function should add and check observer (trigger function should be called with origin and results)', function(done) {
+    it('(3) eval function should reject if formulas contain errors', function(done) {
+
+      spyOn(bmsWsService, "evaluateFormulas").and.callFake(function(evt, args) {
+        var defer = $q.defer();
+        var results = {};
+        for (var id in args) {
+          results[id] = {
+            'door': {
+              formula: 'door',
+              result: 'closed',
+              error: 'someerror'
+            },
+            'floor': {
+              formula: 'floor',
+              result: '1'
+            }
+          }
+        }
+        defer.resolve(results);
+        return defer.promise;
+      });
+
+      var promise = bmsApiService.eval(sessionId, viewId, {
+        formulas: ['door', 'floor'],
+        trigger: function(results, container) {}
+      });
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+
+    it('(4) addObserver function should add and check observer (trigger function should be called with origin and results)', function(done) {
+
+      spyOn(bmsWsService, "evaluateFormulas").and.callFake(function(evt, args) {
+        var defer = $q.defer();
+        var results = {};
+        for (var id in args) {
+          results[id] = {
+            'door': {
+              formula: 'door',
+              result: 'closed'
+            },
+            'floor': {
+              formula: 'floor',
+              result: '1'
+            }
+          }
+        }
+        defer.resolve(results);
+        return defer.promise;
+      });
 
       bmsApiService.addObserver(sessionId, viewId, 'formula', {
           selector: '#door',
@@ -125,7 +185,7 @@ define([
 
     });
 
-    it('(4) addEvent function should add and setup event', function(done) {
+    it('(5) addEvent function should add and setup event', function(done) {
 
       bmsApiService.addEvent(sessionId, viewId, 'executeEvent', {
           selector: '#door',
@@ -142,7 +202,7 @@ define([
 
     });
 
-    it('(5) addEvent function should reject if no selector was set in case of adding executeEvent event', function(done) {
+    it('(6) addEvent function should reject if no selector was set in case of adding executeEvent event', function(done) {
 
       var error;
 
@@ -162,7 +222,7 @@ define([
 
     });
 
-    it('(6) executeEvent function should resolve and call callback with result and container', function(done) {
+    it('(7) executeEvent function should resolve and call callback with result and container', function(done) {
 
       inject(function(bmsWsService) {
 
@@ -190,7 +250,7 @@ define([
 
     });
 
-    it('(7) executeEvent function should reject if executeEvent server call rejects', function(done) {
+    it('(8) executeEvent function should reject if executeEvent server call rejects', function(done) {
 
       inject(function(bmsWsService) {
 
@@ -219,7 +279,7 @@ define([
 
     });
 
-    it('on function should register listener in viewInstance', function() {
+    it('(9) on function should register listener in viewInstance', function() {
 
       inject(function(bmsWsService) {
 

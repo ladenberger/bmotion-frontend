@@ -152,11 +152,20 @@ define([
 
                 var results = r[randomId];
                 var fresults = [];
+                var ferrors = [];
                 angular.forEach(nOptions.formulas, function(formula) {
-                  fresults.push(results[formula]['result']);
+                  if (results[formula]['error']) {
+                    ferrors.push(results[formula]['error']);
+                  } else {
+                    fresults.push(results[formula]['result']);
+                  }
                 });
-                nOptions.trigger(fresults, view.container.contents());
-                defer.resolve(results);
+                if (ferrors.length > 0) {
+                  defer.reject(ferrors);
+                } else {
+                  nOptions.trigger(fresults, view.container.contents());
+                  defer.resolve(results);
+                }
 
               },
               function error(err) {

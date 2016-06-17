@@ -104,7 +104,28 @@ define([
 
     });
 
-    it('(5) check function should return true attribute values of observer if result of predicate is true', function(done) {
+    it('(5) check function should reject if formulas contain errors', function(done) {
+
+      var promise = predicateObserverInstance.check({
+        'predicate1': {
+          'formula': 'predicate1',
+          'result': 'TRUE',
+          'error': 'someerror'
+        }
+      });
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(6) check function should return true attribute values of observer if result of predicate is true', function(done) {
 
       predicateObserverInstance.options.true = function(origin) {
         // Origin should be passed to true function
@@ -134,7 +155,7 @@ define([
 
     });
 
-    it('(6) check function should return false attribute values of observer if result of predicate is false', function(done) {
+    it('(7) check function should return false attribute values of observer if result of predicate is false', function(done) {
 
       predicateObserverInstance.options.false = function(origin) {
         // Origin should be passed to false function
@@ -165,7 +186,7 @@ define([
 
     });
 
-    it('(7) shouldBeChecked should return true if given refinement is in animation', function() {
+    it('(8) shouldBeChecked should return true if given refinement is in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
@@ -175,7 +196,7 @@ define([
       expect(predicateObserverInstance.shouldBeChecked()).toBeTruthy();
     });
 
-    it('(8) shouldBeChecked should return false if given refinement is not in animation', function() {
+    it('(9) shouldBeChecked should return false if given refinement is not in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
