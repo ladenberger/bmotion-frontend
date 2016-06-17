@@ -81,7 +81,7 @@ define([
             };
 
             $scope.$on('visualizationLoaded', function(evt, view) {
-              var autoOpen = view.viewData.autoOpen;
+              var autoOpen = view.session.manifestData.autoOpen;
               if (autoOpen && bms.inArray($scope.type, autoOpen)) {
                 self.open();
               }

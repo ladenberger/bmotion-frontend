@@ -87,7 +87,8 @@ define([
                               template: 'index.html',
                               model: view.model,
                               observers: observersFile,
-                              events: eventsFile
+                              events: eventsFile,
+                              autoOpen: view.autoOpen
                             });
                           })
                           .then(function() {
