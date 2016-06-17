@@ -44,11 +44,11 @@ define([
             ws.on('checkObserver', function(cause, toolData) {
               $scope.session.toolData = angular.merge($scope.session.toolData, toolData);
               $scope.view.clearValues();
+              $scope.view.triggerListeners(cause);
               $scope.view.checkObservers()
                 .then(function() {}, function(err) {
                   bmsModalService.openErrorDialog(err);
                 });
-              $scope.view.triggerListeners(cause);
             });
 
             // Remove all checkObserver event listeners if session is destroyed
