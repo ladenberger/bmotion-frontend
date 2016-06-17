@@ -31,8 +31,7 @@ define([
 
           var fOptions = angular.merge({
             events: [],
-            tooltip: true,
-            label: function(event) {
+            label: function(origin, event) {
               var predicateStr = event.predicate ? '(' + event.predicate + ')' : '';
               return '<span>' + event.name + predicateStr + '</span>';
             },
@@ -96,7 +95,7 @@ define([
                   .addClass('glyphicon')
                   .addClass(evt.canExecute ? 'glyphicon-ok-circle' : 'glyphicon-remove-circle');
 
-                var labelSpan = $('<span>' + bms.convertFunction('event,origin,container', self.options.label)(evt, element, container) + '</span>');
+                var labelSpan = $('<span>' + bms.convertFunction('event,origin,container', self.options.label)(element, evt, container) + '</span>');
 
                 if (evt.canExecute) {
                   var callbackFunc = bms.convertFunction('data,origin,container', self.options.callback);
