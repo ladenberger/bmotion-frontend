@@ -1,7 +1,8 @@
 define([
   'angular',
+  'jquery',
   'bms.standalone.service'
-], function(angular) {
+], function(angular, $) {
 
   return angular.module('bms.standalone.directive', ['bms.standalone.service'])
     .directive('bmsDropZone', ['initVisualizationService', function(initVisualizationService) {

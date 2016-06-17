@@ -15,6 +15,7 @@ define([
     'bms.standalone.service',
     'bms.standalone.routing',
     'bms.standalone.tabs',
+    'bms.standalone.directive',
     'bms.views',
     'prob.graph'
   ],
@@ -30,6 +31,7 @@ define([
         'bms.standalone.service',
         'bms.standalone.routing',
         'bms.standalone.tabs',
+        'bms.standalone.directive',
         'bms.views',
         'prob.graph'
       ])
