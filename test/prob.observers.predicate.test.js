@@ -73,24 +73,38 @@ define([
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(predicateObserver).toBeDefined();
     }));
 
-    it('should implement functions: getFormulas and getDefaultOptions', inject(function() {
-
+    it('(2) should implement functions: getFormulas and getDefaultOptions', inject(function() {
       expect(predicateObserverInstance.getId).toBeDefined();
       expect(predicateObserverInstance.getFormulas).toBeDefined();
       expect(predicateObserverInstance.getDefaultOptions).toBeDefined();
       expect(predicateObserverInstance.getDiagramData).toBeDefined();
-
     }));
 
-    it('getFormulas function should return one formula objects', inject(function() {
+    it('(3) getFormulas function should return one formula objects', inject(function() {
       expect(predicateObserverInstance.getFormulas().length).toBe(1);
     }));
 
-    it('check function should return true attribute values of observer if result of predicate is true', function(done) {
+    it('(4) apply function should reject if no selector is given', function(done) {
+
+      predicateObserverInstance.options.selector = undefined;
+      var promise = predicateObserverInstance.apply("TRUE");
+      var error;
+
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(5) check function should return true attribute values of observer if result of predicate is true', function(done) {
 
       predicateObserverInstance.options.true = function(origin) {
         // Origin should be passed to true function
@@ -107,12 +121,11 @@ define([
         }
       });
       var doorBmsId = $('#door').attr('data-bms-id');
-      var expectedObj = {};
-      expectedObj[doorBmsId] = {
-        'fill': 'green'
-      };
-
       promise.then(function(attributeValues) {
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'fill': 'green'
+        };
         expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
@@ -121,7 +134,7 @@ define([
 
     });
 
-    it('check function should return false attribute values of observer if result of predicate is false', function(done) {
+    it('(6) check function should return false attribute values of observer if result of predicate is false', function(done) {
 
       predicateObserverInstance.options.false = function(origin) {
         // Origin should be passed to false function
@@ -139,12 +152,11 @@ define([
       });
 
       var doorBmsId = $('#door').attr('data-bms-id');
-      var expectedObj = {};
-      expectedObj[doorBmsId] = {
-        'fill': 'red'
-      };
-
       promise.then(function(attributeValues) {
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'fill': 'red'
+        };
         expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
@@ -153,70 +165,24 @@ define([
 
     });
 
-    it('check function should call true function if result of predicate is true', function(done) {
-
-      predicateObserverInstance.options.true = function(element) {
-        // Origin should be passed to true function
-        expect(element).toBeInDOM();
-        done();
-      };
-
-      var promise = predicateObserverInstance.check({
-        'predicate1': {
-          'formula': 'predicate1',
-          'result': 'TRUE'
-        }
-      });
-      promise.then(function() {}).finally(function() {
-        expect(promise.$$state.status).toBe(1); // Resolved
-      });
-
-    });
-
-    it('check function should call false function if result of predicate is false', function(done) {
-
-      predicateObserverInstance.options.false = function(element) {
-        // Origin should be passed to true function
-        expect(element).toBeInDOM();
-        done();
-      };
-
-      var promise = predicateObserverInstance.check({
-        'predicate1': {
-          'formula': 'predicate1',
-          'result': 'FALSE'
-        }
-      });
-      promise.then(function() {}).finally(function() {
-        expect(promise.$$state.status).toBe(1); // Resolved
-      });
-
-    });
-
-    it('shouldBeChecked should return true if given refinement is in animation', function() {
-
+    it('(7) shouldBeChecked should return true if given refinement is in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
         }
       };
       predicateObserverInstance.options.refinement = 'm3';
-
       expect(predicateObserverInstance.shouldBeChecked()).toBeTruthy();
-
     });
 
-    it('shouldBeChecked should return false if given refinement is not in animation', function() {
-
+    it('(8) shouldBeChecked should return false if given refinement is not in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
         }
       };
       predicateObserverInstance.options.refinement = 'm3';
-
       expect(predicateObserverInstance.shouldBeChecked()).toBe(false);
-
     });
 
   });

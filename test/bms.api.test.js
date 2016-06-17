@@ -87,11 +87,11 @@ define([
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(bmsApiService).toBeDefined();
     }));
 
-    it('eval function should call trigger function with formula results and container', function(done) {
+    it('(2) eval function should call trigger function with formula results and container', function(done) {
 
       bmsApiService.eval(sessionId, viewId, {
         formulas: ['door', 'floor'],
@@ -104,7 +104,7 @@ define([
 
     });
 
-    it('addObserver function should add and check observer (trigger function should be called with origin and results)', function(done) {
+    it('(3) addObserver function should add and check observer (trigger function should be called with origin and results)', function(done) {
 
       bmsApiService.addObserver(sessionId, viewId, 'formula', {
           selector: '#door',
@@ -125,7 +125,7 @@ define([
 
     });
 
-    it('addEvent function should add and setup event', function(done) {
+    it('(4) addEvent function should add and setup event', function(done) {
 
       bmsApiService.addEvent(sessionId, viewId, 'executeEvent', {
           selector: '#door',
@@ -142,7 +142,7 @@ define([
 
     });
 
-    it('addEvent function should reject if no selector was set in case of adding executeEvent event', function(done) {
+    it('(5) addEvent function should reject if no selector was set in case of adding executeEvent event', function(done) {
 
       var error;
 
@@ -162,7 +162,7 @@ define([
 
     });
 
-    it('executeEvent function should resolve and call callback with result and container', function(done) {
+    it('(6) executeEvent function should resolve and call callback with result and container', function(done) {
 
       inject(function(bmsWsService) {
 
@@ -190,7 +190,7 @@ define([
 
     });
 
-    it('executeEvent function should reject if executeEvent server call rejects', function(done) {
+    it('(7) executeEvent function should reject if executeEvent server call rejects', function(done) {
 
       inject(function(bmsWsService) {
 

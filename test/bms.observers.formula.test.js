@@ -73,27 +73,40 @@ define([
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(formulaObserver).toBeDefined();
     }));
 
-    it('should implement functions: getId, getFormulas and getDefaultOptions', inject(function() {
-
+    it('(2) should implement functions: getId, getFormulas and getDefaultOptions', inject(function() {
       expect(formulaObserverInstance.getId).toBeDefined();
       expect(formulaObserverInstance.getFormulas).toBeDefined();
       expect(formulaObserverInstance.getDefaultOptions).toBeDefined();
       expect(formulaObserverInstance.getDiagramData).toBeDefined();
-
     }));
 
-    it('getFormulas function should return two formula objects', inject(function() {
+    it('(3) getFormulas function should return two formula objects', inject(function() {
       expect(formulaObserverInstance.getFormulas().length).toBe(2);
     }));
 
-    it('check function should call trigger function (with origin and results parameters and return attribute values)', function(done) {
+    it('(4) apply function should reject if no selector is given', function(done) {
+
+      formulaObserverInstance.options.selector = undefined;
+      var promise = formulaObserverInstance.apply(['closed', '1']);
+      var error;
+
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(5) check function should call trigger function and return attribute values)', function(done) {
 
       formulaObserverInstance.options.trigger = function(origin, results) {
-
         // Origin should be passed to trigger function
         expect(origin).toBeInDOM();
         // Results should be passed to trigger function
@@ -101,7 +114,6 @@ define([
         return {
           'stroke-width': 1
         };
-
       };
 
       var promise = formulaObserverInstance.check({
@@ -129,57 +141,24 @@ define([
 
     });
 
-    /*it('check function should call trigger function with results only if no selector was passed', function(done) {
-
-      // Set manually selector option to undefined
-      formulaObserverInstance.options.selector = undefined;
-      formulaObserverInstance.options.trigger = function(results) {
-        // Results should be passed to trigger function
-        expect(['closed', '1']).toEqual(results);
-      };
-
-      var promise = formulaObserverInstance.check({
-        'door': {
-          formula: 'door',
-          result: 'closed'
-        },
-        'floor': {
-          formula: 'floor',
-          result: '1'
-        }
-      });
-
-      promise.then(function() {}).finally(function() {
-        expect(promise.$$state.status).toBe(1); // Resolved
-        done();
-      });
-
-    });*/
-
-    it('shouldBeChecked should return true if given refinement is in animation', function() {
-
+    it('(6) shouldBeChecked should return true if given refinement is in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
         }
       };
       formulaObserverInstance.options.refinement = 'm3';
-
       expect(formulaObserverInstance.shouldBeChecked()).toBeTruthy();
-
     });
 
-    it('shouldBeChecked should return false if given refinement is not in animation', function() {
-
+    it('(7) shouldBeChecked should return false if given refinement is NOT in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
         }
       };
       formulaObserverInstance.options.refinement = 'm3';
-
       expect(formulaObserverInstance.shouldBeChecked()).toBe(false);
-
     });
 
   });

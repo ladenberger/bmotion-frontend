@@ -36,21 +36,27 @@ define([
           var obj = {};
 
           var self = this;
-          var el = self.view.container.find(self.options.selector);
-          var jcontainer = $(self.view.container);
-          el.each(function(i, v) {
-            var rr;
-            var e = $(v);
-            if (isRefinement) {
-              rr = bms.callOrReturn(self.options.enable, e, jcontainer);
-            } else {
-              rr = bms.callOrReturn(self.options.disable, e, jcontainer);
-            }
-            if (rr) {
-              var bmsid = self.view.getBmsIdForElement(e);
-              obj[bmsid] = rr;
-            }
-          });
+          var selector = self.options.selector;
+
+          if (!selector && !self.options.element) {
+            defer.reject("Please specify a selector or an element.");
+          } else {
+            var el = self.view.container.find(self.options.selector);
+            var jcontainer = $(self.view.container);
+            el.each(function(i, v) {
+              var rr;
+              var e = $(v);
+              if (isRefinement) {
+                rr = bms.callOrReturn(self.options.enable, e, jcontainer);
+              } else {
+                rr = bms.callOrReturn(self.options.disable, e, jcontainer);
+              }
+              if (rr) {
+                var bmsid = self.view.getBmsIdForElement(e);
+                obj[bmsid] = rr;
+              }
+            });
+          }
 
           defer.resolve(obj);
 

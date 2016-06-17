@@ -76,24 +76,38 @@ define([
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(setObserver).toBeDefined();
     }));
 
-    it('should implement functions: getId, getFormulas and getDefaultOptions', inject(function() {
-
+    it('(2) should implement functions: getId, getFormulas and getDefaultOptions', inject(function() {
       expect(setObserverInstance.getId).toBeDefined();
       expect(setObserverInstance.getFormulas).toBeDefined();
       expect(setObserverInstance.getDefaultOptions).toBeDefined();
       expect(setObserverInstance.getDiagramData).toBeDefined();
-
     }));
 
-    it('getFormulas function should return one formula object', inject(function() {
+    it('(3) getFormulas function should return one formula object', inject(function() {
       expect(setObserverInstance.getFormulas().length).toBe(1);
     }));
 
-    it('check function should call trigger function (with origin and set elements)', function(done) {
+    it('(4) apply function should reject if no selector is given', function(done) {
+
+      setObserverInstance.options.selector = undefined;
+      var promise = setObserverInstance.apply([-1, 0, 1]);
+      var error;
+
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(5) check function should call trigger function (with origin and set elements)', function(done) {
 
       setObserverInstance.options.trigger = function(origin, set) {
         // Origin should be passed to trigger function
@@ -115,7 +129,7 @@ define([
 
     });
 
-    it('shouldBeChecked should return true if given refinement is in animation', function() {
+    it('(6) shouldBeChecked should return true if given refinement is in animation', function() {
 
       bmsSessionInstance.toolData = {
         'model': {
@@ -128,7 +142,7 @@ define([
 
     });
 
-    it('shouldBeChecked should return false if given refinement is not in animation', function() {
+    it('(7) shouldBeChecked should return false if given refinement is not in animation', function() {
 
       bmsSessionInstance.toolData = {
         'model': {

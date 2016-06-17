@@ -48,13 +48,17 @@ define([
         });
 
         bmsSessionInstance = bmsSessionService.getSession(sessionId);
+
         spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
           return true;
         });
+
         viewInstance = bmsSessionInstance.getView(viewId);
+
         // Set manually container of view
         loadFixtures('examples/lift.html');
         viewInstance.container = $('body');
+
         executeEventEventInstance = new executeEventEvent(viewInstance, {
           events: [{
             name: 'close_door'
@@ -74,18 +78,16 @@ define([
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(executeEventEventInstance).toBeDefined();
     }));
 
-    it('should implement functions: getId and getDefaultOptions', inject(function() {
-
+    it('(2) should implement functions: getId and getDefaultOptions', inject(function() {
       expect(executeEventEventInstance.getId).toBeDefined();
       expect(executeEventEventInstance.getDefaultOptions).toBeDefined();
-
     }));
 
-    it('setup should reject if no selector or element is given', function(done) {
+    it('(3) setup should reject if no selector or element is given', function(done) {
 
       var promise = executeEventEventInstance.setup();
       var error;
@@ -100,7 +102,7 @@ define([
 
     });
 
-    it('setup should init tooltip on given selector', function(done) {
+    it('(4) setup should init tooltip on given selector', function(done) {
 
       executeEventEventInstance.options.selector = '#door';
       executeEventEventInstance.options.element = '';
@@ -117,7 +119,7 @@ define([
 
     });
 
-    it('setup should init tooltip on given element', function(done) {
+    it('(5) setup should init tooltip on given element', function(done) {
 
       var door = $('#door');
 
@@ -136,31 +138,24 @@ define([
 
     });
 
-    it('shouldBeChecked should return true if given refinement is in animation', function() {
-
+    it('(6) shouldBeChecked should return true if given refinement is in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
         }
       };
       executeEventEventInstance.options.refinement = 'm3';
-
       expect(executeEventEventInstance.shouldBeChecked()).toBeTruthy();
-
     });
 
-    it('shouldBeChecked should return false if given refinement is not in animation', function() {
-
+    it('(7) shouldBeChecked should return false if given refinement is not in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
         }
       };
-
       executeEventEventInstance.options.refinement = 'm3';
-
       expect(executeEventEventInstance.shouldBeChecked()).toBe(false);
-
     });
 
   });

@@ -68,17 +68,31 @@ define([
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(refinementObserver).toBeDefined();
     }));
 
-    it('should implement functions: getFormulas and getDefaultOptions', inject(function() {
-
+    it('(2) should implement functions: getFormulas and getDefaultOptions', inject(function() {
       expect(refinementObserverInstance.getDefaultOptions).toBeDefined();
-
     }));
 
-    it('check function should return enable attribute values of observer if refinement is in animation', function(done) {
+    it('(3) apply function should reject if no selector is given', function(done) {
+
+      refinementObserverInstance.options.selector = undefined;
+      var promise = refinementObserverInstance.apply(true);
+      var error;
+
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(4) check function should return enable attribute values of observer if refinement is in animation', function(done) {
 
       bmsSessionInstance.toolData = {
         'model': {
@@ -94,12 +108,11 @@ define([
 
       var promise = refinementObserverInstance.check();
       var doorBmsId = $('#door').attr('data-bms-id');
-      var expectedObj = {};
-      expectedObj[doorBmsId] = {
-        'opacity': 1
-      };
-
       promise.then(function(attributeValues) {
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'opacity': 1
+        };
         expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
@@ -108,7 +121,7 @@ define([
 
     });
 
-    it('check function should return disable attribute values of observer if refinement is not in animation', function(done) {
+    it('(5) check function should return disable attribute values of observer if refinement is not in animation', function(done) {
 
       bmsSessionInstance.toolData = {
         'model': {
@@ -126,12 +139,11 @@ define([
       var promise = refinementObserverInstance.check();
 
       var doorBmsId = $('#door').attr('data-bms-id');
-      var expectedObj = {};
-      expectedObj[doorBmsId] = {
-        'opacity': 0
-      };
-
       promise.then(function(attributeValues) {
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'opacity': 0
+        };
         expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
