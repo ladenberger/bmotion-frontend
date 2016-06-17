@@ -1,4 +1,7 @@
-define(['bms.visualization'], function() {
+define([
+  'jquery',
+  'bms.visualization'
+], function($) {
 
   "use strict";
 
@@ -12,6 +15,8 @@ define(['bms.visualization'], function() {
     var vis;
     var ws;
     var $q;
+
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('bms.visualization'));
 
@@ -42,6 +47,11 @@ define(['bms.visualization'], function() {
 
         var bmsSessionInstance = bmsSessionService.getSession(sessionId);
         viewInstance = bmsSessionInstance.getView(viewId);
+
+        // Set manually container of view
+        loadFixtures('examples/lift.html');
+        viewInstance.container = $('body');
+
         var promise = bmsSessionInstance.init(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
@@ -78,7 +88,7 @@ define(['bms.visualization'], function() {
         });
 
         $q.all([viewInstance.addObserver('formula', {
-          selector: '#someselector',
+          selector: '#door',
           formulas: ['formula1', 'formula2'],
           trigger: function() {
             return {
@@ -86,7 +96,7 @@ define(['bms.visualization'], function() {
             };
           }
         }), viewInstance.addObserver('formula', {
-          selector: '#someselector',
+          selector: '#door',
           formulas: ['formula1'],
           trigger: function() {
             return {
@@ -106,33 +116,22 @@ define(['bms.visualization'], function() {
             return true;
           });
 
-          // Simulate apply function of formula observer
-          spyOn(observer1, "apply").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve({
-              'somebmsid': {
-                'fill': 'green'
-              }
-            });
-            return deferred.promise;
-          });
-          spyOn(observer2, "apply").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve({
-              'somebmsid': {
-                'stroke-width': 1
-              }
-            });
-            return deferred.promise;
-          });
-
           result[observer1.getId()] = {
-            'formula1': 'result1',
-            'formula2': 'result2'
+            'formula1': {
+              formula: 'fromula1',
+              result: 'result1'
+            },
+            'formula2': {
+              formula: 'formula2',
+              result: 'result2'
+            }
           };
 
           result[observer2.getId()] = {
-            'formula1': 'result1'
+            'formula1': {
+              formula: 'formula1',
+              result: 'result1'
+            }
           };
 
           done();
@@ -182,7 +181,7 @@ define(['bms.visualization'], function() {
         expect(formulas2.formulas.length).toBe(1);
       }));
 
-      it('evaluateFormulas should return map with formula -> result entries', function(done) {
+      it('evaluateFormulas should return map with formula return objects', function(done) {
 
         var promise = viewInstance.evaluateFormulas();
         promise.then(function(data) {
@@ -198,12 +197,13 @@ define(['bms.visualization'], function() {
 
         var promise = viewInstance.checkObservers();
         promise.then(function() {
-          expect(viewInstance.attributeValues).toEqual({
-            'somebmsid': {
-              'fill': 'green',
-              'stroke-width': 1
-            }
-          });
+          var doorBmsId = $('#door').attr('data-bms-id');
+          var expectedObj = {};
+          expectedObj[doorBmsId] = {
+            'fill': 'green',
+            'stroke-width': 1
+          };
+          expect(viewInstance.attributeValues).toEqual(expectedObj);
         }).finally(function() {
           expect(promise.$$state.status).toBe(1); // Resolved
           done();
@@ -215,11 +215,12 @@ define(['bms.visualization'], function() {
 
         var promise = viewInstance.checkObservers([observer2]);
         promise.then(function() {
-          expect(viewInstance.attributeValues).toEqual({
-            'somebmsid': {
-              'stroke-width': 1
-            }
-          });
+          var doorBmsId = $('#door').attr('data-bms-id');
+          var expectedObj = {};
+          expectedObj[doorBmsId] = {
+            'stroke-width': 1
+          };
+          expect(viewInstance.attributeValues).toEqual(expectedObj);
         }).finally(function() {
           expect(promise.$$state.status).toBe(1); // Resolved
           done();
@@ -231,11 +232,12 @@ define(['bms.visualization'], function() {
 
         var promise = viewInstance.checkObserver(observer1);
         promise.then(function() {
-          expect(viewInstance.attributeValues).toEqual({
-            'somebmsid': {
-              'fill': 'green'
-            }
-          });
+          var doorBmsId = $('#door').attr('data-bms-id');
+          var expectedObj = {};
+          expectedObj[doorBmsId] = {
+            'fill': 'green'
+          };
+          expect(viewInstance.attributeValues).toEqual(expectedObj);
         }).finally(function() {
           expect(promise.$$state.status).toBe(1); // Resolved
           done();

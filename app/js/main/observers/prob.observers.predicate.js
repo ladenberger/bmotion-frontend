@@ -71,13 +71,12 @@ define([
           }];
         };
 
-        observer.prototype.apply = function(data) {
+        observer.prototype.apply = function(result) {
 
           var defer = $q.defer();
 
           var self = this;
 
-          var result = data.result;
           var selector = self.options.selector;
 
           if (selector) {
@@ -87,9 +86,9 @@ define([
               var ele = $(this);
               var returnValue;
               //var normalized = bms.normalize(observer.data, [], ele);
-              if (result[0] === "TRUE") {
+              if (result === "TRUE") {
                 returnValue = bms.callOrReturn(self.options.true, ele, self.view.container);
-              } else if (result[0] === "FALSE") {
+              } else if (result === "FALSE") {
                 returnValue = bms.callOrReturn(self.options.false, ele, self.view.container);
               }
               if (returnValue) {
@@ -99,9 +98,9 @@ define([
             });
             defer.resolve(fvalues);
           } else {
-            if (result[0] === "TRUE") {
+            if (result === "TRUE") {
               bms.callFunction(this.options.true, 'container', self.view.container);
-            } else if (result[0] === "FALSE") {
+            } else if (result === "FALSE") {
               bms.callFunction(this.options.false, 'container', self.view.container);
             }
             defer.resolve();
@@ -112,19 +111,18 @@ define([
         };
 
         observer.prototype.check = function(results) {
-
           var defer = $q.defer();
-
           var self = this;
-
-          self.apply({
-            result: [results[self.options.predicate]]
-          }).then(function(values) {
-            defer.resolve(values);
-          });
-
+          var error = results[self.options.predicate]['error'];
+          if(!error) {
+            self.apply(results[self.options.predicate]['result'])
+              .then(function(values) {
+                defer.resolve(values);
+              });
+          } else {
+            defer.reject(error);
+          }
           return defer.promise;
-
         };
 
         return observer;

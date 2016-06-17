@@ -56,12 +56,12 @@ define([
 
         observer.prototype.getDiagramData = function(node) {
           var self = this;
-          if(node.results) {
+          if (node.results) {
             return self.getFormulas().map(function(fobj) {
               return node.results[self.getId()][fobj.formula];
             });
           } else {
-              return [];
+            return [];
           }
         };
 
@@ -113,13 +113,22 @@ define([
           var defer = $q.defer();
 
           var fresults = [];
+          var ferrors = [];
           angular.forEach(this.options.formulas, function(formula) {
-            fresults.push(results[formula]);
+            if (!results[formula]['error']) {
+              fresults.push(results[formula]['result']);
+            } else {
+              ferrors.push(results[formula]['error']);
+            }
           });
 
-          this.apply(fresults).then(function(values) {
-            defer.resolve(values);
-          });
+          if (ferrors.length === 0) {
+            this.apply(fresults).then(function(values) {
+              defer.resolve(values);
+            });
+          } else {
+            defer.reject(ferrors);
+          }
 
           return defer.promise;
 

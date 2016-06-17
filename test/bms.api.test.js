@@ -48,8 +48,14 @@ define([
           var results = {};
           for (var id in args) {
             results[id] = {
-              'door': 'closed',
-              'floor': '1'
+              'door': {
+                formula: 'door',
+                result: 'closed'
+              },
+              'floor': {
+                formula: 'floor',
+                result: '1'
+              }
             }
           }
           defer.resolve(results);

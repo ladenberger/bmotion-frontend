@@ -90,7 +90,7 @@ define([
       expect(formulaObserverInstance.getFormulas().length).toBe(2);
     }));
 
-    it('check function should call trigger function (with origin and results parameters and return attribute values', function(done) {
+    it('check function should call trigger function (with origin and results parameters and return attribute values)', function(done) {
 
       formulaObserverInstance.options.trigger = function(origin, results) {
 
@@ -105,8 +105,14 @@ define([
       };
 
       var promise = formulaObserverInstance.check({
-        'door': 'closed',
-        'floor': '1'
+        'door': {
+          formula: 'door',
+          result: 'closed'
+        },
+        'floor': {
+          formula: 'floor',
+          result: '1'
+        }
       });
 
       var doorBmsId = $('#door').attr('data-bms-id');
@@ -133,8 +139,14 @@ define([
       };
 
       var promise = formulaObserverInstance.check({
-        'door': 'closed',
-        'floor': '1'
+        'door': {
+          formula: 'door',
+          result: 'closed'
+        },
+        'floor': {
+          formula: 'floor',
+          result: '1'
+        }
       });
 
       promise.then(function() {}).finally(function() {

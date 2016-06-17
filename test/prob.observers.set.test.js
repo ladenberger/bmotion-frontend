@@ -104,23 +104,12 @@ define([
       };
 
       var promise = setObserverInstance.check({
-        'request': [-1, 0, 1]
+        'request': {
+          formula: 'request',
+          result: [-1, 0, 1]
+        }
       });
-      promise.then(function() {
-      }).finally(function() {
-        expect(promise.$$state.status).toBe(1); // Resolved
-      });
-
-    });
-
-    it('empty set should resolve', function(done) {
-
-      var promise = setObserverInstance.check({
-        'request': []
-      });
-      promise.then(function() {
-      }).finally(function() {
-        done();
+      promise.then(function() {}).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
       });
 

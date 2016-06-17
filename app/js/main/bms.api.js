@@ -153,7 +153,7 @@ define([
                 var results = r[randomId];
                 var fresults = [];
                 angular.forEach(nOptions.formulas, function(formula) {
-                  fresults.push(results[formula]);
+                  fresults.push(results[formula]['result']);
                 });
                 nOptions.trigger(fresults, view.container.contents());
                 defer.resolve(results);

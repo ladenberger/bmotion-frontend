@@ -31,8 +31,7 @@ define([
             convert: function(element) {
               return "#" + element;
             },
-            trigger: function(origin, set) {
-            }
+            trigger: function(origin, set) {}
           }, options);
         };
 
@@ -56,8 +55,14 @@ define([
         };
 
         observer.prototype.getDiagramData = function(node) {
-          // TODO Implement me!
-          return [];
+          var self = this;
+          if (node.results) {
+            return self.getFormulas().map(function(fobj) {
+              return node.results[self.getId()][fobj.formula];
+            });
+          } else {
+            return [];
+          }
         };
 
         observer.prototype.getFormulas = function() {
@@ -69,20 +74,18 @@ define([
           }];
         };
 
-        observer.prototype.apply = function(data, _container_) {
+        observer.prototype.apply = function(result, _container_) {
 
           var defer = $q.defer();
           var self = this;
           var selector = self.options.selector;
           var fvalues = {};
-          var result = data.result[0];
           var container = _container_ ? _container_ : self.view.container.contents();
 
-          var convertedResult = result.map(function(ele) {
-            return self.options.convert(ele);
-          });
-
-          if (convertedResult.length > 0) {
+          if (Object.prototype.toString.call(result) === '[object Array]' && result.length > 0) {
+            var convertedResult = result.map(function(ele) {
+              return self.options.convert(ele);
+            });
             var setSelector = convertedResult.join(",");
             var element = container.find(selector);
             element.each(function() {
@@ -103,19 +106,18 @@ define([
         };
 
         observer.prototype.check = function(results) {
-
           var defer = $q.defer();
-
           var self = this;
-
-          self.apply({
-            result: [results[self.options.set]]
-          }).then(function(values) {
-            defer.resolve(values);
-          });
-
+          var error = results[self.options.set]['error'];
+          if(!error) {
+            self.apply(results[self.options.set]['result'])
+              .then(function(values) {
+                defer.resolve(values);
+              });
+          } else {
+            defer.reject(error);
+          }
           return defer.promise;
-
         };
 
         return observer;

@@ -101,7 +101,10 @@ define([
       };
 
       var promise = predicateObserverInstance.check({
-        'predicate1': 'TRUE'
+        'predicate1': {
+          'formula': 'predicate1',
+          'result': 'TRUE'
+        }
       });
       var doorBmsId = $('#door').attr('data-bms-id');
       var expectedObj = {};
@@ -129,7 +132,10 @@ define([
       };
 
       var promise = predicateObserverInstance.check({
-        'predicate1': 'FALSE'
+        'predicate1': {
+          'formula': 'predicate1',
+          'result': 'FALSE'
+        }
       });
 
       var doorBmsId = $('#door').attr('data-bms-id');
@@ -156,7 +162,10 @@ define([
       };
 
       var promise = predicateObserverInstance.check({
-        'predicate1': 'TRUE'
+        'predicate1': {
+          'formula': 'predicate1',
+          'result': 'TRUE'
+        }
       });
       promise.then(function() {}).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved

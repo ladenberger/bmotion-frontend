@@ -192,7 +192,6 @@ define([
 
             self.evaluateFormulas(observers)
               .then(function(results) {
-
                 var checks = observers.map(function(observer) {
                   var check = true;
                   if (typeof observer.shouldBeChecked === 'function') {
