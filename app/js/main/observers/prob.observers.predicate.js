@@ -71,7 +71,7 @@ define([
           }];
         };
 
-        observer.prototype.apply = function(result) {
+        observer.prototype.apply = function(result, _container_) {
 
           var defer = $q.defer();
 
@@ -79,17 +79,22 @@ define([
 
           var selector = self.options.selector;
 
-          if (selector) {
+          if (!selector && !self.options.element) {
+            defer.reject("Please specify a selector or an element.");
+          } else {
+
             var fvalues = {};
-            var element = self.view.container.find(selector);
+            var container = _container_ ? _container_ : self.view.container.contents();
+
+            var element = container.find(selector);
             element.each(function() {
               var ele = $(this);
               var returnValue;
               //var normalized = bms.normalize(observer.data, [], ele);
               if (result === "TRUE") {
-                returnValue = bms.callOrReturn(self.options.true, ele, self.view.container);
+                returnValue = bms.callOrReturn(self.options.true, ele);
               } else if (result === "FALSE") {
-                returnValue = bms.callOrReturn(self.options.false, ele, self.view.container);
+                returnValue = bms.callOrReturn(self.options.false, ele);
               }
               if (returnValue) {
                 var bmsid = self.view.getBmsIdForElement(ele);
@@ -97,13 +102,7 @@ define([
               }
             });
             defer.resolve(fvalues);
-          } else {
-            if (result === "TRUE") {
-              bms.callFunction(this.options.true, 'container', self.view.container);
-            } else if (result === "FALSE") {
-              bms.callFunction(this.options.false, 'container', self.view.container);
-            }
-            defer.resolve();
+
           }
 
           return defer.promise;
@@ -114,7 +113,7 @@ define([
           var defer = $q.defer();
           var self = this;
           var error = results[self.options.predicate]['error'];
-          if(!error) {
+          if (!error) {
             self.apply(results[self.options.predicate]['result'])
               .then(function(values) {
                 defer.resolve(values);

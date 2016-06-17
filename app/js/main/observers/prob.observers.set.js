@@ -79,24 +79,32 @@ define([
           var defer = $q.defer();
           var self = this;
           var selector = self.options.selector;
-          var fvalues = {};
-          var container = _container_ ? _container_ : self.view.container.contents();
+          var selector = self.options.selector;
 
-          if (Object.prototype.toString.call(result) === '[object Array]' && result.length > 0) {
-            var convertedResult = result.map(function(ele) {
-              return self.options.convert(ele);
-            });
-            var setSelector = convertedResult.join(",");
-            var element = container.find(selector);
-            element.each(function() {
-              var ele = $(this);
-              var setElements = ele.find(setSelector);
-              var returnValue = bms.callElementFunction(self.options.trigger, ele, 'set', setElements);
-              if (returnValue) {
-                var bmsid = self.view.getBmsIdForElement(ele);
-                fvalues[bmsid] = returnValue;
-              }
-            });
+          if (!selector && !self.options.element) {
+            defer.reject("Please specify a selector or an element.");
+          } else {
+
+            var fvalues = {};
+            var container = _container_ ? _container_ : self.view.container.contents();
+
+            if (Object.prototype.toString.call(result) === '[object Array]' && result.length > 0) {
+              var convertedResult = result.map(function(ele) {
+                return self.options.convert(ele);
+              });
+              var setSelector = convertedResult.join(",");
+              var element = container.find(selector);
+              element.each(function() {
+                var ele = $(this);
+                var setElements = ele.find(setSelector);
+                var returnValue = bms.callElementFunction(self.options.trigger, ele, 'set', setElements);
+                if (returnValue) {
+                  var bmsid = self.view.getBmsIdForElement(ele);
+                  fvalues[bmsid] = returnValue;
+                }
+              });
+            }
+
           }
 
           defer.resolve(fvalues);
@@ -109,7 +117,7 @@ define([
           var defer = $q.defer();
           var self = this;
           var error = results[self.options.set]['error'];
-          if(!error) {
+          if (!error) {
             self.apply(results[self.options.set]['result'])
               .then(function(values) {
                 defer.resolve(values);

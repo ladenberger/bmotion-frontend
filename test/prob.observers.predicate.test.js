@@ -155,10 +155,10 @@ define([
 
     it('check function should call true function if result of predicate is true', function(done) {
 
-      predicateObserverInstance.options.selector = '';
-      predicateObserverInstance.options.true = function(container) {
+      predicateObserverInstance.options.true = function(element) {
         // Origin should be passed to true function
-        expect(container).toBeInDOM();
+        expect(element).toBeInDOM();
+        done();
       };
 
       var promise = predicateObserverInstance.check({
@@ -169,25 +169,26 @@ define([
       });
       promise.then(function() {}).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
-        done();
       });
 
     });
 
     it('check function should call false function if result of predicate is false', function(done) {
 
-      predicateObserverInstance.options.selector = '';
-      predicateObserverInstance.options.false = function(container) {
+      predicateObserverInstance.options.false = function(element) {
         // Origin should be passed to true function
-        expect(container).toBeInDOM();
+        expect(element).toBeInDOM();
+        done();
       };
 
       var promise = predicateObserverInstance.check({
-        'predicate1': 'FALSE'
+        'predicate1': {
+          'formula': 'predicate1',
+          'result': 'FALSE'
+        }
       });
       promise.then(function() {}).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
-        done();
       });
 
     });

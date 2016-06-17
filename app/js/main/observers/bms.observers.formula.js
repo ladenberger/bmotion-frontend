@@ -86,7 +86,10 @@ define([
           var defer = $q.defer();
           var self = this;
           var selector = self.options.selector;
-          if (selector) {
+
+          if (!selector && !self.options.element) {
+            defer.reject("Please specify a selector or an element.");
+          } else {
             var fvalues = {};
             var container = _container_ ? _container_ : self.view.container.contents();
             var element = container.find(selector);
@@ -99,9 +102,6 @@ define([
               }
             });
             defer.resolve(fvalues);
-          } else {
-            bms.callFunction(this.options.trigger, 'values', result);
-            defer.resolve();
           }
 
           return defer.promise;

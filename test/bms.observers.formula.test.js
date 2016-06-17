@@ -129,7 +129,7 @@ define([
 
     });
 
-    it('check function should call trigger function with results only if no selector was passed', function(done) {
+    /*it('check function should call trigger function with results only if no selector was passed', function(done) {
 
       // Set manually selector option to undefined
       formulaObserverInstance.options.selector = undefined;
@@ -154,7 +154,7 @@ define([
         done();
       });
 
-    });
+    });*/
 
     it('shouldBeChecked should return true if given refinement is in animation', function() {
 
