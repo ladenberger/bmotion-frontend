@@ -185,7 +185,30 @@ define([
 
     });
 
-    it('(5) addEvent function should add and setup event', function(done) {
+    it('(5) addObserver function should reject if no selector was set', function(done) {
+
+      spyOn(bmsWsService, "evaluateFormulas").and.callFake(function(evt, args) {
+        var defer = $q.defer();
+        defer.resolve({});
+        return defer.promise;
+      });
+
+      var error;
+      var promise = bmsApiService.addObserver(sessionId, viewId, 'formula', {});
+      promise.then(
+          function() {},
+          function(err) {
+            error = err;
+          })
+        .finally(function() {
+          expect(error).toBeDefined();
+          expect(promise.$$state.status).toBe(2); // Rejected
+          done();
+        });
+
+    });
+
+    it('(6) addEvent function should add and setup event', function(done) {
 
       bmsApiService.addEvent(sessionId, viewId, 'executeEvent', {
           selector: '#door',
@@ -202,7 +225,7 @@ define([
 
     });
 
-    it('(6) addEvent function should reject if no selector was set in case of adding executeEvent event', function(done) {
+    it('(7) addEvent function should reject if no selector was set', function(done) {
 
       var error;
 
@@ -222,72 +245,58 @@ define([
 
     });
 
-    it('(7) executeEvent function should resolve and call callback with result and container', function(done) {
+    it('(8) executeEvent function should resolve and call callback with result and container', function(done) {
 
-      inject(function(bmsWsService) {
-
-        // Simulate resolving executeEvent server call
-        spyOn(bmsWsService, "executeEvent").and.callFake(function(evt, args) {
-          var defer = $q.defer();
-          defer.resolve('someresults');
-          return defer.promise;
-        });
-
-        var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {
-          callback: function(result, container) {
-            // Callback should be called
-            expect(result).toBe('someresults');
-            expect(container).toBe(viewInstance.container);
-          }
-        });
-        promise.then(
-          function(result) {
-            // Function should be resolved
-            expect(result).toBe('someresults');
-          }).finally(done);
-
+      // Simulate resolving executeEvent server call
+      spyOn(bmsWsService, "executeEvent").and.callFake(function(evt, args) {
+        var defer = $q.defer();
+        defer.resolve('someresults');
+        return defer.promise;
       });
+
+      var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {
+        callback: function(result, container) {
+          // Callback should be called
+          expect(result).toBe('someresults');
+          expect(container).toBe(viewInstance.container);
+        }
+      });
+      promise.then(
+        function(result) {
+          // Function should be resolved
+          expect(result).toBe('someresults');
+        }).finally(done);
 
     });
 
-    it('(8) executeEvent function should reject if executeEvent server call rejects', function(done) {
+    it('(9) executeEvent function should reject if executeEvent server call rejects', function(done) {
 
-      inject(function(bmsWsService) {
-
-        // Simulate resolving executeEvent server call
-        spyOn(bmsWsService, "executeEvent").and.callFake(function(evt, args) {
-          var defer = $q.defer();
-          defer.reject('somerror');
-          return defer.promise;
-        });
-
-        var error;
-
-        var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {});
-        promise.then(
-            function() {},
-            function(err) {
-              error = err;
-            })
-          .finally(function() {
-            expect(error).toBeDefined();
-            expect(promise.$$state.status).toBe(2); // Rejected
-            done();
-          });
-
+      // Simulate resolving executeEvent server call
+      spyOn(bmsWsService, "executeEvent").and.callFake(function(evt, args) {
+        var defer = $q.defer();
+        defer.reject('somerror');
+        return defer.promise;
       });
+
+      var error;
+
+      var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {});
+      promise.then(
+          function() {},
+          function(err) {
+            error = err;
+          })
+        .finally(function() {
+          expect(error).toBeDefined();
+          expect(promise.$$state.status).toBe(2); // Rejected
+          done();
+        });
 
     });
 
-    it('(9) on function should register listener in viewInstance', function() {
-
-      inject(function(bmsWsService) {
-
-        bmsApiService.on(sessionId, viewId, 'ModelInitialised', function() {});
-        expect(viewInstance.getListeners('ModelInitialised').length).toBe(1);
-
-      });
-
+    it('(10) on function should register listener in viewInstance', function() {
+      bmsApiService.on(sessionId, viewId, 'ModelInitialised', function() {});
+      expect(viewInstance.getListeners('ModelInitialised').length).toBe(1);
     });
 
   });

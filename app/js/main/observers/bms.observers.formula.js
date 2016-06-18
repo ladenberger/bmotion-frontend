@@ -112,22 +112,39 @@ define([
 
           var defer = $q.defer();
 
-          var fresults = [];
-          var ferrors = [];
-          angular.forEach(this.options.formulas, function(formula) {
-            if (!results[formula]['error']) {
-              fresults.push(results[formula]['result']);
-            } else {
-              ferrors.push(results[formula]['error']);
-            }
-          });
-
-          if (ferrors.length === 0) {
-            this.apply(fresults).then(function(values) {
-              defer.resolve(values);
-            });
+          if (!results) {
+            defer.reject("Results must be passed to formula observer check function.");
           } else {
-            defer.reject(ferrors);
+
+            var fresults = [];
+            var ferrors = [];
+            // Iterate formulas and get result or error
+            angular.forEach(this.options.formulas, function(formula) {
+              if (results[formula]) {
+                if (results[formula]['result']) {
+                  fresults.push(results[formula]['result']);
+                }
+                if (results[formula]['error']) {
+                  ferrors.push(results[formula]['error']);
+                }
+              }
+            });
+
+            if (ferrors.length > 0) {
+              defer.reject(ferrors);
+            }
+            if (this.options.formulas.length !== fresults.length) {
+              defer.reject("Some error occurred in formula check function.");
+            } else {
+              this.apply(fresults).then(
+                function(values) {
+                  defer.resolve(values);
+                },
+                function(error) {
+                  defer.reject(error);
+                });
+            }
+
           }
 
           return defer.promise;

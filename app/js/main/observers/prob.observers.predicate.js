@@ -110,18 +110,37 @@ define([
         };
 
         observer.prototype.check = function(results) {
+
           var defer = $q.defer();
           var self = this;
-          var error = results[self.options.predicate]['error'];
-          if (!error) {
-            self.apply(results[self.options.predicate]['result'])
-              .then(function(values) {
-                defer.resolve(values);
-              });
+
+          if (!results) {
+            defer.reject("Results must be passed to predicate observer check function");
           } else {
-            defer.reject(error);
+
+            if (results[self.options.predicate]) {
+
+              if (results[self.options.predicate]['error']) {
+                defer.reject(results[self.options.predicate]['error']);
+              } else {
+                self.apply(results[self.options.predicate]['result'])
+                  .then(
+                    function(values) {
+                      defer.resolve(values);
+                    },
+                    function(error) {
+                      defer.reject(error);
+                    });
+              }
+
+            } else {
+              defer.reject("Some error occurred in predicate check function.");
+            }
+
           }
+
           return defer.promise;
+
         };
 
         return observer;

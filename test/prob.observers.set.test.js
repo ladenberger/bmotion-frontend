@@ -128,7 +128,45 @@ define([
 
     });
 
-    it('(6) check function should call trigger function (with origin and set elements)', function(done) {
+    it('(6) check function should reject if no selector was set', function(done) {
+
+      setObserverInstance.options.selector = undefined;
+
+      var promise = setObserverInstance.check({
+        'request': {
+          formula: 'request',
+          result: [-1, 0, 1],
+          error: 'someerror'
+        }
+      });
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(7) check function should reject if no results were passed', function(done) {
+
+      var promise = setObserverInstance.check();
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(8) check function should call trigger function (with origin and set elements)', function(done) {
 
       setObserverInstance.options.trigger = function(origin, set) {
         // Origin should be passed to trigger function
@@ -150,7 +188,7 @@ define([
 
     });
 
-    it('(7) shouldBeChecked should return true if given refinement is in animation', function() {
+    it('(9) shouldBeChecked should return true if given refinement is in animation', function() {
 
       bmsSessionInstance.toolData = {
         'model': {
@@ -163,7 +201,7 @@ define([
 
     });
 
-    it('(8) shouldBeChecked should return false if given refinement is not in animation', function() {
+    it('(10) shouldBeChecked should return false if given refinement is not in animation', function() {
 
       bmsSessionInstance.toolData = {
         'model': {

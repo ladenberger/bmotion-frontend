@@ -129,7 +129,48 @@ define([
 
     });
 
-    it('(6) check function should call trigger function and return attribute values)', function(done) {
+    it('(6) check function should reject if no selector was set', function(done) {
+
+      formulaObserverInstance.options.selector = undefined;
+
+      var promise = formulaObserverInstance.check({
+        'door': {
+          formula: 'door',
+          result: 'closed'
+        },
+        'floor': {
+          formula: 'floor',
+          result: '1'
+        }
+      });
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(7) check function should reject if no results were passed', function(done) {
+
+      var promise = formulaObserverInstance.check();
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(8) check function should call trigger function and return attribute values)', function(done) {
 
       formulaObserverInstance.options.trigger = function(origin, results) {
         // Origin should be passed to trigger function
@@ -166,7 +207,7 @@ define([
 
     });
 
-    it('(7) shouldBeChecked should return true if given refinement is in animation', function() {
+    it('(9) shouldBeChecked should return true if given refinement is in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
@@ -176,7 +217,7 @@ define([
       expect(formulaObserverInstance.shouldBeChecked()).toBeTruthy();
     });
 
-    it('(8) shouldBeChecked should return false if given refinement is NOT in animation', function() {
+    it('(10) shouldBeChecked should return false if given refinement is NOT in animation', function() {
       bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
