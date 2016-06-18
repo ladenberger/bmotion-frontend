@@ -132,8 +132,7 @@ define([
 
             if (ferrors.length > 0) {
               defer.reject(ferrors);
-            }
-            if (this.options.formulas.length !== fresults.length) {
+            } else if (this.options.formulas.length !== fresults.length) {
               defer.reject("Some error occurred in formula check function.");
             } else {
               this.apply(fresults).then(
