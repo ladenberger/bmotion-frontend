@@ -55,15 +55,15 @@ define([
         });
 
         var promise = bmsSessionInstance.init(manifestPath);
+        //$httpBackend.expectGET(manifestPath).respond(200, manifestData);
 
-        if (callFunc) {
-          callFunc();
-        }
+        promise.then(function() {
+          if (callFunc) {
+            callFunc();
+          }
+        }).finally(done);
 
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(done);
-
         $rootScope.$digest();
 
       }));

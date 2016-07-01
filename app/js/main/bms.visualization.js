@@ -62,7 +62,7 @@ define([
           try {
             var instance = $injector.get(type + "Event", "");
             var eventInstance = new instance(self, data);
-            this.events.push(eventInstance);
+            self.events.push(eventInstance);
             defer.resolve(eventInstance);
           } catch (err) {
             defer.reject("An error occurred while adding event '" + type + "': " + err);
