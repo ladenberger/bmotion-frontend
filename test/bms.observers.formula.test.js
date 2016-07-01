@@ -1,73 +1,28 @@
 define([
+  'sharedTest',
   'jquery',
   'bms.observers.formula'
-], function($) {
+], function(sharedTest, $) {
 
   "use strict";
 
   describe('bms.observers.formula', function() {
 
-    var bmsVisualizationService;
-    var bmsSessionInstance;
     var formulaObserver;
     var formulaObserverInstance;
-    var $rootScope;
-    var viewId = 'lift';
-    var sessionId = 'someSessionId';
-    var viewInstance;
-    var ws;
-    var $q;
-
-    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('bms.observers.formula'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _formulaObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(_formulaObserver_) {
 
         formulaObserver = _formulaObserver_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
-        $q = _$q_;
-
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "id": viewId,
-          "name": "Lift environment",
-          "template": "lift.html"
-        };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+        sharedTest.setup(done, function() {
+          formulaObserverInstance = new formulaObserver(window.viewInstance, {
+            selector: '#door',
+            formulas: ['door', 'floor']
+          });
         });
-
-        bmsSessionInstance = bmsSessionService.getSession(sessionId);
-
-        spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
-          return true;
-        });
-
-        viewInstance = bmsSessionInstance.getView(viewId);
-        formulaObserverInstance = new formulaObserver(viewInstance, {
-          selector: '#door',
-          formulas: ['door', 'floor']
-        });
-
-        // Set manually container of view
-        loadFixtures('examples/lift.html');
-        viewInstance.container = $('body');
-
-        var promise = bmsSessionInstance.init(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(done);
-
-        $rootScope.$digest();
 
       });
 
@@ -228,7 +183,7 @@ define([
     });
 
     it('(10) shouldBeChecked should return true if given refinement is in animation', function() {
-      bmsSessionInstance.toolData = {
+      window.bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
         }
@@ -238,7 +193,7 @@ define([
     });
 
     it('(11) shouldBeChecked should return false if given refinement is NOT in animation', function() {
-      bmsSessionInstance.toolData = {
+      window.bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
         }

@@ -1,7 +1,8 @@
 define([
+  'sharedTest',
   'jquery',
   'bms.api'
-], function($) {
+], function(sharedTest, $) {
 
   "use strict";
 
@@ -11,68 +12,24 @@ define([
     var $rootScope;
     var viewId = 'lift';
     var sessionId = 'someSessionId';
-    var viewInstance;
     var bmsWsService;
     var ws;
     var $q;
 
-    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
-
     beforeEach(module('bms.api'));
 
     beforeEach(function(done) {
-      inject(function(_bmsApiService_, _ws_, _$q_, _$rootScope_, $httpBackend, _bmsWsService_, bmsSessionService, bmsVisualization) {
-
+      inject(function(_bmsApiService_, _bmsWsService_, _$q_, bmsSessionService) {
         bmsApiService = _bmsApiService_;
         bmsWsService = _bmsWsService_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
         $q = _$q_;
-
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "id": viewId,
-          "name": "Lift environment",
-          "template": "lift.html"
-        };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
-        });
-
-        var bmsSessionInstance = bmsSessionService.getSession(sessionId);
-        var promise = bmsSessionInstance.init(manifestPath);
-        viewInstance = bmsSessionInstance.getView(viewId);
-
-        // Set manually container of view
-        loadFixtures('examples/lift.html');
-        viewInstance.container = $('body');
-
-        // Simulate isInitialized function of view instance
-        spyOn(viewInstance, "isInitialized").and.callFake(function(evt, args) {
-          var defer = $q.defer();
-          defer.resolve();
-          return defer.promise;
-        });
-
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(done);
-
-        $rootScope.$digest();
-
-      });
-
+        sharedTest.setup(done);
+      })
     });
 
-    it('(1) should exist', inject(function() {
+    it('(1) should exist', function() {
       expect(bmsApiService).toBeDefined();
-    }));
+    });
 
     it('(2) eval function should call trigger function with formula results and container', function(done) {
 
@@ -179,7 +136,7 @@ define([
         .then(function(observer) {
           expect(observer).toBeDefined();
           // Observer should be added to view instance
-          expect(viewInstance.getObservers().length).toBe(1);
+          expect(window.viewInstance.getObservers().length).toBe(1);
         })
         .finally(done);
 
@@ -219,7 +176,7 @@ define([
           // Tooltip should be installed
           expect($('#door')).toHaveAttr('data-hasqtip');
           // Event should be added to view instance
-          expect(viewInstance.getEvents().length).toBe(1);
+          expect(window.viewInstance.getEvents().length).toBe(1);
         })
         .finally(done);
 
@@ -258,7 +215,7 @@ define([
         callback: function(result, container) {
           // Callback should be called
           expect(result).toBe('someresults');
-          expect(container).toBe(viewInstance.container);
+          expect(container).toBe(window.viewInstance.container);
         }
       });
       promise.then(
@@ -296,7 +253,7 @@ define([
 
     it('(10) on function should register listener in viewInstance', function() {
       bmsApiService.on(sessionId, viewId, 'ModelInitialised', function() {});
-      expect(viewInstance.getListeners('ModelInitialised').length).toBe(1);
+      expect(window.viewInstance.getListeners('ModelInitialised').length).toBe(1);
     });
 
   });

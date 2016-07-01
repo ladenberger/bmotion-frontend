@@ -1,78 +1,32 @@
 define([
+  'sharedTest',
   'jquery',
   'prob.handlers.event'
-], function($) {
+], function(sharedTest, $) {
 
   "use strict";
 
   describe('prob.handlers.event', function() {
 
-    var bmsVisualizationService;
-    var bmsSessionInstance;
-    var viewInstance;
     var executeEventEvent;
     var executeEventEventInstance;
-    var $rootScope;
-    var viewId = 'lift';
-    var sessionId = 'someSessionId';
-    var viewInstance;
-    var ws;
-    var $q;
-
-    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('prob.handlers.event'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _executeEventEvent_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(_executeEventEvent_) {
 
         executeEventEvent = _executeEventEvent_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
-        $q = _$q_;
 
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "id": viewId,
-          "name": "Lift environment",
-          "template": "lift.html"
-        };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+        sharedTest.setup(done, function() {
+          executeEventEventInstance = new executeEventEvent(viewInstance, {
+            events: [{
+              name: 'close_door'
+            }, {
+              name: 'open_door'
+            }]
+          });
         });
-
-        bmsSessionInstance = bmsSessionService.getSession(sessionId);
-
-        spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
-          return true;
-        });
-
-        viewInstance = bmsSessionInstance.getView(viewId);
-
-        // Set manually container of view
-        loadFixtures('examples/lift.html');
-        viewInstance.container = $('body');
-
-        executeEventEventInstance = new executeEventEvent(viewInstance, {
-          events: [{
-            name: 'close_door'
-          }, {
-            name: 'open_door'
-          }]
-        });
-
-        var promise = bmsSessionInstance.init(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(done);
-
-        $rootScope.$digest();
 
       });
 

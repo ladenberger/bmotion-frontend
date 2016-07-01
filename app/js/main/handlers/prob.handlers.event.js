@@ -58,18 +58,15 @@ define([
         };
 
         event.prototype.shouldBeChecked = function() {
-
           var self = this;
-
           var session = self.view.session;
-          if (session.isBVisualization()) {
+          if (session.isBVisualization() && session.toolData.model !== undefined) {
             var refinements = session.toolData.model.refinements;
-            var isRefinement = self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
-            return isRefinement;
+            if (refinements) {
+              return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+            }
           }
-
           return true;
-
         };
 
         event.prototype.getTooltipContent = function(sessionId, element, container, traceId, api) {

@@ -131,7 +131,10 @@ requirejs.config({
     "svgcanvas": "editor/js/svgcanvas",
     "svgtransformlist": "editor/js/svgtransformlist",
     "svgutils": "editor/js/svgutils",
-    "units": "editor/js/units"
+    "units": "editor/js/units",
+
+    // Additional test modules
+    "sharedTest" : "../test/bms.test.shared"
 
   },
   shim: {

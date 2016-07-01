@@ -1,73 +1,29 @@
 define([
+  'sharedTest',
   'jquery',
   'prob.observers.predicate'
-], function($) {
+], function(sharedTest, $) {
 
   "use strict";
 
   describe('prob.observers.predicate', function() {
 
-    var bmsVisualizationService;
-    var bmsSessionInstance;
     var predicateObserver;
     var predicateObserverInstance;
-    var $rootScope;
-    var viewId = 'lift';
-    var sessionId = 'someSessionId';
-    var viewInstance;
-    var ws;
-    var $q;
-
-    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('prob.observers.predicate'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _predicateObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(_predicateObserver_) {
 
         predicateObserver = _predicateObserver_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
-        $q = _$q_;
 
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "id": viewId,
-          "name": "Lift environment",
-          "template": "lift.html"
-        };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+        sharedTest.setup(done, function() {
+          predicateObserverInstance = new predicateObserver(window.viewInstance, {
+            selector: '#door',
+            predicate: 'predicate1'
+          });
         });
-
-        bmsSessionInstance = bmsSessionService.getSession(sessionId);
-        spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
-          return true;
-        });
-
-        viewInstance = bmsSessionInstance.getView(viewId);
-
-        predicateObserverInstance = new predicateObserver(viewInstance, {
-          selector: '#door',
-          predicate: 'predicate1'
-        });
-
-        // Set manually container of view
-        loadFixtures('examples/lift.html');
-        viewInstance.container = $('body');
-
-        var promise = bmsSessionInstance.init(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(done);
-
-        $rootScope.$digest();
 
       });
 
@@ -224,7 +180,7 @@ define([
     });
 
     it('(10) shouldBeChecked should return true if given refinement is in animation', function() {
-      bmsSessionInstance.toolData = {
+      window.bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
         }
@@ -234,7 +190,7 @@ define([
     });
 
     it('(11) shouldBeChecked should return false if given refinement is not in animation', function() {
-      bmsSessionInstance.toolData = {
+      window.bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
         }

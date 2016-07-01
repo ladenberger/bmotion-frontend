@@ -1,76 +1,32 @@
 define([
+  'sharedTest',
   'jquery',
   'prob.observers.set'
-], function($) {
+], function(sharedTest, $) {
 
   "use strict";
 
   describe('prob.observers.set', function() {
 
-    var bmsVisualizationService;
-    var bmsSessionInstance;
     var setObserver;
     var setObserverInstance;
-    var $rootScope;
-    var viewId = 'lift';
-    var sessionId = 'someSessionId';
-    var viewInstance;
-    var ws;
-    var $q;
-
-    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
     beforeEach(module('prob.observers.set'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _setObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(_setObserver_) {
 
         setObserver = _setObserver_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
-        $q = _$q_;
 
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "id": viewId,
-          "name": "Lift environment",
-          "template": "lift.html"
-        };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+        sharedTest.setup(done, function() {
+          setObserverInstance = new setObserver(viewInstance, {
+            selector: '#request',
+            set: 'request',
+            convert: function(element) {
+              return "#label_floor_" + element;
+            }
+          });
         });
-
-        bmsSessionInstance = bmsSessionService.getSession(sessionId);
-
-        spyOn(bmsSessionInstance, "isBVisualization").and.callFake(function(evt, args) {
-          return true;
-        });
-
-        viewInstance = bmsSessionInstance.getView(viewId);
-        setObserverInstance = new setObserver(viewInstance, {
-          selector: '#request',
-          set: 'request',
-          convert: function(element) {
-            return "#label_floor_" + element;
-          }
-        });
-
-        // Set manually container of view
-        loadFixtures('examples/lift.html');
-        viewInstance.container = $('body');
-
-        var promise = bmsSessionInstance.init(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(done);
-
-        $rootScope.$digest();
 
       });
 
