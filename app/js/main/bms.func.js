@@ -63,6 +63,7 @@ define([
       }
 
     },
+    // Calls function with origin and one optional additional parameter
     callElementFunction: function(functor, element, paraName, paraData) {
       if (typeof functor === 'function') {
         if (paraName && paraData) {
@@ -78,6 +79,7 @@ define([
         }
       }
     },
+    // Calls function with one optional parameter
     callFunction: function(functor, paraName, paraData) {
       if (typeof functor === 'function') {
         if (paraName && paraData) {
@@ -93,6 +95,7 @@ define([
         }
       }
     },
+    // Calls function or returns object (used for observer properties)
     callOrReturn: function(subject, element, isJsString, container) {
       if (typeof subject === "boolean") {
         return subject;
@@ -118,6 +121,7 @@ define([
         return subject;
       }
     },
+    // Converts or returns the given function
     convertFunction: function(parameters, func) {
       if (typeof func === 'function') {
         return func;
