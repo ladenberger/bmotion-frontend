@@ -31,7 +31,7 @@ define([
 
           var fOptions = angular.merge({
             events: [],
-            label: function(origin, event) {
+            label: function(origin, event, container) {
               var predicateStr = event.predicate ? '(' + event.predicate + ')' : '';
               return '<span>' + event.name + predicateStr + '</span>';
             },
@@ -60,10 +60,12 @@ define([
         event.prototype.shouldBeChecked = function() {
           var self = this;
           var session = self.view.session;
-          if (session.isBVisualization() && session.toolData.model !== undefined) {
-            var refinements = session.toolData.model.refinements;
-            if (refinements) {
-              return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+          if (session.isBVisualization()) {
+            if (session.toolData.model !== undefined) {
+              var refinements = session.toolData.model.refinements;
+              if (refinements) {
+                return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+              }
             }
           }
           return true;
@@ -92,10 +94,9 @@ define([
                   .addClass('glyphicon')
                   .addClass(evt.canExecute ? 'glyphicon-ok-circle' : 'glyphicon-remove-circle');
 
-                var labelSpan = $('<span>' + bms.convertFunction('event,origin,container', self.options.label)(element, evt, container) + '</span>');
-
+                var labelSpan = $('<span>' + bms.convertFunction('origin,event,container', self.options.label)(element, evt, container) + '</span>');
                 if (evt.canExecute) {
-                  var callbackFunc = bms.convertFunction('data,origin,container', self.options.callback);
+                  var callbackFunc = bms.convertFunction('origin,data,container', self.options.callback);
                   labelSpan.click(function() {
                     bmsWsService.executeEvent(sessionId, {
                       traceId: traceId,
@@ -103,7 +104,7 @@ define([
                       predicate: evt.predicate,
                       executor: element.attr("id") ? element.attr("id") : 'unknown'
                     }).then(function(result) {
-                      callbackFunc(result, element, container);
+                      callbackFunc(element, result, container);
                     }, function(err) {
                       bmsModalService.openErrorDialog(err);
                     }).finally(function() {

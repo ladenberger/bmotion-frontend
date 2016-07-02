@@ -40,7 +40,7 @@ define([
             api._normalize(obj[property], exclude, origin, container);
           } else {
             if ($.inArray(property, exclude) === -1) {
-              obj[property] = api.callOrReturn(obj[property], origin, obj[property + "Js"]);
+              obj[property] = api.callOrReturn(obj[property], origin, obj[property + "Js"], container);
             }
           }
         }
@@ -65,7 +65,7 @@ define([
     },
     callElementFunction: function(functor, element, paraName, paraData) {
       if (typeof functor === 'function') {
-        if (paraData) {
+        if (paraName && paraData) {
           return functor.call(self, element, paraData);
         } else {
           return functor.call(self);
@@ -93,15 +93,24 @@ define([
         }
       }
     },
-    callOrReturn: function(subject, element, isJsString) {
+    callOrReturn: function(subject, element, isJsString, container) {
       if (typeof subject === "boolean") {
         return subject;
       } else if (api.isFunction(subject)) {
-        return subject.call(this, element);
+        if (container) {
+          return subject.call(this, element, container);
+        } else {
+          return subject.call(this, element);
+        }
       } else if (isJsString) {
         try {
-          var func = new Function('origin', subject);
-          return func(element);
+          if (container) {
+            var func = new Function('origin,container', subject);
+            return func(element, container);
+          } else {
+            var func = new Function('origin', subject);
+            return func(element);
+          }
         } catch (err) {
           return subject;
         }

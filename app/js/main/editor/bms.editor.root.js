@@ -56,21 +56,25 @@ define([
 
         observers = view.jsonObservers;
         events = view.jsonEvents;
+        uiState = {};
 
-        uiState = {
-          observers: observers.map(function() {
+        if (observers) {
+          uiState.observers = observers.map(function() {
             return {
               isMenu: false,
               isCollapsed: true
             };
-          }),
-          events: events.map(function() {
+          });
+        }
+
+        if (events) {
+          uiState.events = events.map(function() {
             return {
               isMenu: false,
               isCollapsed: true
             }
-          })
-        };
+          });
+        }
 
       });
 

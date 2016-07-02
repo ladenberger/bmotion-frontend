@@ -122,56 +122,57 @@ define([
 
           var session = bmsSessionService.getSession(sessionId);
           var view = session.getView(viewId);
+          view.isInitialized().then(function() {
+            var nOptions = bms.normalize(angular.merge({
+              formulas: [],
+              translate: false,
+              trigger: function() {},
+              error: function() {}
+            }, options), ["trigger", "error"]);
 
-          var nOptions = bms.normalize(angular.merge({
-            formulas: [],
-            translate: false,
-            trigger: function() {},
-            error: function() {}
-          }, options), ["trigger", "error"]);
-
-          var randomId = bms.uuid();
-          var formulas = {};
-          formulas[randomId] = {
-            formulas: nOptions.formulas.map(function(f) {
-              return {
-                formula: f,
-                options: {
-                  translate: nOptions.translate
-                }
-              }
-            })
-          };
-
-          bmsWsService.evaluateFormulas(
-              sessionId,
-              formulas
-            )
-            .then(
-              function success(r) {
-
-                var results = r[randomId];
-                var fresults = [];
-                var ferrors = [];
-                angular.forEach(nOptions.formulas, function(formula) {
-                  if (results[formula]['error']) {
-                    ferrors.push(results[formula]['error']);
-                  } else {
-                    fresults.push(results[formula]['result']);
+            var randomId = bms.uuid();
+            var formulas = {};
+            formulas[randomId] = {
+              formulas: nOptions.formulas.map(function(f) {
+                return {
+                  formula: f,
+                  options: {
+                    translate: nOptions.translate
                   }
-                });
-                if (ferrors.length > 0) {
-                  defer.reject(ferrors);
-                } else {
-                  nOptions.trigger(fresults, view.container.contents());
-                  defer.resolve(results);
                 }
+              })
+            };
 
-              },
-              function error(err) {
-                bmsModalService.openErrorDialog(err);
-                defer.reject(err);
-              });
+            bmsWsService.evaluateFormulas(
+                sessionId,
+                formulas
+              )
+              .then(
+                function success(r) {
+
+                  var results = r[randomId];
+                  var fresults = [];
+                  var ferrors = [];
+                  angular.forEach(nOptions.formulas, function(formula) {
+                    if (results[formula]['error']) {
+                      ferrors.push(results[formula]['error']);
+                    } else {
+                      fresults.push(results[formula]['result']);
+                    }
+                  });
+                  if (ferrors.length > 0) {
+                    defer.reject(ferrors);
+                  } else {
+                    nOptions.trigger(fresults, view.container.contents());
+                    defer.resolve(results);
+                  }
+
+                },
+                function error(err) {
+                  bmsModalService.openErrorDialog(err);
+                  defer.reject(err);
+                });
+          });
 
           return defer.promise;
 

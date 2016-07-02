@@ -36,10 +36,15 @@ define([
         observer.prototype.shouldBeChecked = function() {
           var self = this;
           var session = self.view.session;
-          if (session.isBVisualization() && session.toolData.model !== undefined) {
-            var refinements = session.toolData.model.refinements;
-            if (refinements) {
-              return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+          if (session.isBVisualization()) {
+            if (typeof session.toolData.initialized === 'boolean' && session.toolData.initialized === false) {
+              return false;
+            }
+            if (session.toolData.model !== undefined) {
+              var refinements = session.toolData.model.refinements;
+              if (refinements) {
+                return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+              }
             }
           }
           return true;
@@ -80,14 +85,18 @@ define([
 
           var defer = $q.defer();
           var self = this;
-          var selector = self.options.selector;
+          var element;
 
-          if (!selector && !self.options.element) {
-            defer.reject("Please specify a selector or an element.");
-          } else {
-            var fvalues = {};
+          // Determine graphical element of observer
+          if (self.options.element !== undefined) {
+            element = self.options.element;
+          } else if (self.options.selector !== undefined) {
             var container = _container_ ? _container_ : self.view.container.contents();
-            var element = container.find(selector);
+            element = container.find(self.options.selector);
+          }
+
+          if (element instanceof $) {
+            var fvalues = {};
             element.each(function() {
               var ele = $(this);
               var returnValue = bms.callElementFunction(self.options.trigger, ele, 'values', result);
@@ -97,6 +106,9 @@ define([
               }
             });
             defer.resolve(fvalues);
+          } else {
+            bms.callFunction(self.options.trigger, 'values', result);
+            defer.resolve({});
           }
 
           return defer.promise;
@@ -116,7 +128,7 @@ define([
             // Iterate formulas and get result or error
             angular.forEach(this.options.formulas, function(formula) {
               if (results[formula]) {
-                if (results[formula]['result']) {
+                if (results[formula]['result'] !== undefined) {
                   fresults.push(results[formula]['result']);
                 }
                 if (results[formula]['error']) {

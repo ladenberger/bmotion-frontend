@@ -47,23 +47,7 @@ define([
       expect(setObserverInstance.getFormulas().length).toBe(1);
     }));
 
-    it('(4) apply function should reject if no selector is given', function(done) {
-
-      setObserverInstance.options.selector = undefined;
-      var promise = setObserverInstance.apply([-1, 0, 1]);
-      var error;
-
-      promise.then(function() {}, function(err) {
-        error = err;
-      }).finally(function() {
-        expect(error).toBeDefined();
-        expect(promise.$$state.status).toBe(2); // Rejected
-        done();
-      });
-
-    });
-
-    it('(5) check function should reject if formulas contain errors', function(done) {
+    it('(4) check function should reject if formulas contain errors', function(done) {
 
       var promise = setObserverInstance.check({
         'request': {
@@ -84,30 +68,7 @@ define([
 
     });
 
-    it('(6) check function should reject if no selector was set', function(done) {
-
-      setObserverInstance.options.selector = undefined;
-
-      var promise = setObserverInstance.check({
-        'request': {
-          formula: 'request',
-          result: [-1, 0, 1],
-          error: 'someerror'
-        }
-      });
-
-      var error;
-      promise.then(function() {}, function(err) {
-        error = err;
-      }).finally(function() {
-        expect(error).toBeDefined();
-        expect(promise.$$state.status).toBe(2); // Rejected
-        done();
-      });
-
-    });
-
-    it('(7) check function should reject if no results were passed', function(done) {
+    it('(5) check function should reject if no results were passed', function(done) {
 
       var promise = setObserverInstance.check();
 
@@ -122,7 +83,7 @@ define([
 
     });
 
-    it('(8) check function should call trigger function (with origin and set elements)', function(done) {
+    it('(6) check function should call trigger function (with origin and set elements)', function(done) {
 
       setObserverInstance.options.trigger = function(origin, set) {
         // Origin should be passed to trigger function
@@ -144,7 +105,31 @@ define([
 
     });
 
-    it('(9) shouldBeChecked should return true if given refinement is in animation', function() {
+    it('(7) check function should call trigger function (with origin and set elements) (element was passed)', function(done) {
+
+      var requestElement = $("#request");
+      setObserverInstance.options.element = requestElement;
+      setObserverInstance.options.trigger = function(origin, set) {
+        // Origin should be passed to trigger function
+        expect(origin).toEqual(requestElement);
+        // Set should be passed to trigger function
+        expect(set).toBeInDOM();
+        done();
+      };
+
+      var promise = setObserverInstance.check({
+        'request': {
+          formula: 'request',
+          result: [-1, 0, 1]
+        }
+      });
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+      });
+
+    });
+
+    it('(8) shouldBeChecked should return true if given refinement is in animation', function() {
 
       bmsSessionInstance.toolData = {
         'model': {
@@ -157,7 +142,7 @@ define([
 
     });
 
-    it('(10) shouldBeChecked should return false if given refinement is not in animation', function() {
+    it('(9) shouldBeChecked should return false if given refinement is not in animation', function() {
 
       bmsSessionInstance.toolData = {
         'model': {
@@ -168,6 +153,31 @@ define([
 
       expect(setObserverInstance.shouldBeChecked()).toBe(false);
 
+    });
+
+    it('(10) shouldBeChecked should return false if model is not initialized', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': false
+      };
+      expect(setObserverInstance.shouldBeChecked()).toBe(false);
+    });
+
+    it('(11) shouldBeChecked should return true if model is initialized', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': true
+      };
+      expect(setObserverInstance.shouldBeChecked()).toBe(true);
+    });
+
+    it('(12) shouldBeChecked should return false if model is initialized and given refinement is not in animation', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': true,
+        'model': {
+          'refinements': ['m1']
+        }
+      };
+      setObserverInstance.options.refinement = 'm3';
+      expect(setObserverInstance.shouldBeChecked()).toBe(false);
     });
 
   });

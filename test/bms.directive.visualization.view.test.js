@@ -50,6 +50,8 @@ define(['jquery', 'bms.directive.visualization.view'], function($) {
             "model": "model/m3.bcm",
             "id": "rootId",
             "template": "template.html",
+            "observers": "observers.json",
+            "events": "events.json",
             "views": [viewData]
           };
 

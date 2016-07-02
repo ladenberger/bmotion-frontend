@@ -36,18 +36,19 @@ define([
         };
 
         observer.prototype.shouldBeChecked = function() {
-
           var self = this;
-
           var session = self.view.session;
           if (session.isBVisualization()) {
-            var refinements = session.toolData.model.refinements;
-            var isRefinement = self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
-            return isRefinement;
+            if (typeof session.toolData.initialized === 'boolean' && session.toolData.initialized === false) {
+              return false;
+            } else if (session.toolData.model !== undefined) {
+              var refinements = session.toolData.model.refinements;
+              if (refinements) {
+                return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+              }
+            }
           }
-
           return true;
-
         };
 
         observer.prototype.getId = function() {
@@ -78,22 +79,25 @@ define([
 
           var defer = $q.defer();
           var self = this;
-          var selector = self.options.selector;
-          var selector = self.options.selector;
+          var element;
 
-          if (!selector && !self.options.element) {
-            defer.reject("Please specify a selector or an element.");
-          } else {
+          // Determine graphical element of observer
+          if (self.options.element !== undefined) {
+            element = self.options.element;
+          } else if (self.options.selector !== undefined) {
+            var container = _container_ ? _container_ : self.view.container.contents();
+            element = container.find(self.options.selector);
+          }
+
+          if (element instanceof $) {
 
             var fvalues = {};
-            var container = _container_ ? _container_ : self.view.container.contents();
 
             if (Object.prototype.toString.call(result) === '[object Array]' && result.length > 0) {
               var convertedResult = result.map(function(ele) {
                 return self.options.convert(ele);
               });
               var setSelector = convertedResult.join(",");
-              var element = container.find(selector);
               element.each(function() {
                 var ele = $(this);
                 var setElements = ele.find(setSelector);
@@ -105,9 +109,12 @@ define([
               });
             }
 
-          }
+            defer.resolve(fvalues);
 
-          defer.resolve(fvalues);
+          } else {
+            bms.callFunction(self.options.trigger, 'set', setElements);
+            defer.resolve({});
+          }
 
           return defer.promise;
 

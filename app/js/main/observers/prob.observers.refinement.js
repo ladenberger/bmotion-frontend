@@ -47,9 +47,9 @@ define([
               var rr;
               var e = $(v);
               if (isRefinement) {
-                rr = bms.callOrReturn(self.options.enable, e, jcontainer);
+                rr = bms.callOrReturn(self.options.enable, e);
               } else {
-                rr = bms.callOrReturn(self.options.disable, e, jcontainer);
+                rr = bms.callOrReturn(self.options.disable, e);
               }
               if (rr) {
                 var bmsid = self.view.getBmsIdForElement(e);

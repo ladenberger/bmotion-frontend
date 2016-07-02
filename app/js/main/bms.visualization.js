@@ -158,7 +158,7 @@ define([
           var formulas = {};
           angular.forEach(self.getObservers(), function(observer) {
             // Only handle observers which implement the getFormulas function
-            if (typeof observer.getFormulas === 'function' && typeof observer.getId === 'function') {
+            if (typeof observer.getFormulas === 'function' && typeof observer.getId === 'function' && observer.shouldBeChecked()) {
               formulas[observer.getId()] = {
                 formulas: observer.getFormulas()
               };

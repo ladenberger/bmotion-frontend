@@ -33,10 +33,14 @@ define([
         observer.prototype.shouldBeChecked = function() {
           var self = this;
           var session = self.view.session;
-          if (session.isBVisualization() && session.toolData.model !== undefined) {
-            var refinements = session.toolData.model.refinements;
-            if (refinements) {
-              return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+          if (session.isBVisualization()) {
+            if (typeof session.toolData.initialized === 'boolean' && session.toolData.initialized === false) {
+              return false;
+            } else if (session.toolData.model !== undefined) {
+              var refinements = session.toolData.model.refinements;
+              if (refinements) {
+                return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+              }
             }
           }
           return true;
@@ -69,19 +73,19 @@ define([
         observer.prototype.apply = function(result, _container_) {
 
           var defer = $q.defer();
-
           var self = this;
+          var element;
 
-          var selector = self.options.selector;
-
-          if (!selector && !self.options.element) {
-            defer.reject("Please specify a selector or an element.");
-          } else {
-
-            var fvalues = {};
+          // Determine graphical element of observer
+          if (self.options.element !== undefined) {
+            element = self.options.element;
+          } else if (self.options.selector !== undefined) {
             var container = _container_ ? _container_ : self.view.container.contents();
+            element = container.find(self.options.selector);
+          }
 
-            var element = container.find(selector);
+          if (element instanceof $) {
+            var fvalues = {};
             element.each(function() {
               var ele = $(this);
               var returnValue;
@@ -97,7 +101,9 @@ define([
               }
             });
             defer.resolve(fvalues);
-
+          } else {
+            bms.callFunction(self.options.trigger, 'values', result);
+            defer.resolve({});
           }
 
           return defer.promise;
@@ -112,7 +118,6 @@ define([
           if (!results) {
             defer.reject("Results must be passed to predicate observer check function");
           } else {
-
             if (results[self.options.predicate]) {
 
               if (results[self.options.predicate]['error']) {

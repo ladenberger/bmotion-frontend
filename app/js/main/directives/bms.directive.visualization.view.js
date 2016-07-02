@@ -126,7 +126,7 @@ define([
                 $scope.view.clearEvents();
                 $scope.view.clearListeners();
 
-                // Readd observer and events coming from json
+                // Read observer and events coming from json
                 $scope.addJsonData({
                   observers: $scope.view.jsonObservers,
                   events: $scope.view.jsonEvents
@@ -214,13 +214,20 @@ define([
 
               var defer = $q.defer();
 
-              var observerPromises = data.observers.map(function(e) {
-                return $scope.view.addObserver(e.type, e.data);
-              });
+              var observerPromises = [];
+              var eventsPromises = [];
 
-              var eventsPromises = data.events.map(function(e) {
-                return $scope.view.addEvent(e.type, e.data);
-              });
+              if (data.observers) {
+                observerPromises = data.observers.map(function(e) {
+                  return $scope.view.addObserver(e.type, e.data);
+                });
+              }
+
+              if (data.events) {
+                eventsPromises = data.events.map(function(e) {
+                  return $scope.view.addEvent(e.type, e.data);
+                });
+              }
 
               // Check all observers
               $q.all(observerPromises)
@@ -315,7 +322,7 @@ define([
                           $scope.view.initialized.resolve();
                         },
                         function error(err) {
-                          bmsModalService.openErrorDialog('An error occurred while initializing view ' + $scope.id + ':' + err);
+                          bmsModalService.openErrorDialog('<strong>An error occurred while initializing view ' + $scope.id + '</strong><br/>' + err);
                         });
                   });
               }

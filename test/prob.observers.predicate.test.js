@@ -44,23 +44,7 @@ define([
       expect(predicateObserverInstance.getFormulas().length).toBe(1);
     }));
 
-    it('(4) apply function should reject if no selector is given', function(done) {
-
-      predicateObserverInstance.options.selector = undefined;
-      var promise = predicateObserverInstance.apply("TRUE");
-      var error;
-
-      promise.then(function() {}, function(err) {
-        error = err;
-      }).finally(function() {
-        expect(error).toBeDefined();
-        expect(promise.$$state.status).toBe(2); // Rejected
-        done();
-      });
-
-    });
-
-    it('(5) check function should reject if formulas contain errors', function(done) {
+    it('(4) check function should reject if formulas contain errors', function(done) {
 
       var promise = predicateObserverInstance.check({
         'predicate1': {
@@ -81,29 +65,7 @@ define([
 
     });
 
-    it('(6) check function should reject if no selector was set', function(done) {
-
-      predicateObserverInstance.options.selector = undefined;
-
-      var promise = predicateObserverInstance.check({
-        'predicate1': {
-          'formula': 'predicate1',
-          'result': 'TRUE'
-        }
-      });
-
-      var error;
-      promise.then(function() {}, function(err) {
-        error = err;
-      }).finally(function() {
-        expect(error).toBeDefined();
-        expect(promise.$$state.status).toBe(2); // Rejected
-        done();
-      });
-
-    });
-
-    it('(7) check function should reject if no results were passed', function(done) {
+    it('(5) check function should reject if no results were passed', function(done) {
 
       var promise = predicateObserverInstance.check();
 
@@ -118,7 +80,7 @@ define([
 
     });
 
-    it('(8) check function should return true attribute values of observer if result of predicate is true', function(done) {
+    it('(6) check function should return true attribute values of observer if result of predicate is true', function(done) {
 
       predicateObserverInstance.options.true = function(origin) {
         // Origin should be passed to true function
@@ -148,7 +110,7 @@ define([
 
     });
 
-    it('(9) check function should return false attribute values of observer if result of predicate is false', function(done) {
+    it('(7) check function should return false attribute values of observer if result of predicate is false', function(done) {
 
       predicateObserverInstance.options.false = function(origin) {
         // Origin should be passed to false function
@@ -179,6 +141,45 @@ define([
 
     });
 
+    it('(8) check function should call true function if result of predicate is true (element passed)', function(done) {
+
+      var doorElement = $('#door');
+      predicateObserverInstance.options.element = doorElement;
+      predicateObserverInstance.options.true = function(origin) {
+        // Origin should be passed to true function
+        expect(origin).toEqual(doorElement);
+      };
+
+      var promise = predicateObserverInstance.check({
+        'predicate1': {
+          'formula': 'predicate1',
+          'result': 'TRUE'
+        }
+      });
+      promise.then(function() {
+      }).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('(9) check function should resolve if result is boolean value', function(done) {
+
+      var promise = predicateObserverInstance.check({
+        'predicate1': {
+          'formula': 'predicate1',
+          'result': false
+        }
+      });
+
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
     it('(10) shouldBeChecked should return true if given refinement is in animation', function() {
       window.bmsSessionInstance.toolData = {
         'model': {
@@ -191,6 +192,31 @@ define([
 
     it('(11) shouldBeChecked should return false if given refinement is not in animation', function() {
       window.bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
+      predicateObserverInstance.options.refinement = 'm3';
+      expect(predicateObserverInstance.shouldBeChecked()).toBe(false);
+    });
+
+    it('(12) shouldBeChecked should return false if model is not initialized', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': false
+      };
+      expect(predicateObserverInstance.shouldBeChecked()).toBe(false);
+    });
+
+    it('(13) shouldBeChecked should return true if model is initialized', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': true
+      };
+      expect(predicateObserverInstance.shouldBeChecked()).toBe(true);
+    });
+
+    it('(14) shouldBeChecked should return false if model is initialized and given refinement is not in animation', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': true,
         'model': {
           'refinements': ['m1']
         }
