@@ -30,6 +30,10 @@ define([
               bmsModalService.openErrorDialog("Session id must not be undefined.");
             }
 
+            if(!$scope.id) {
+              $scope.id = bms.uuid();
+            }
+
             // Get session instance
             $scope.session = bmsSessionService.getSession($scope.sessionId);
             // Get view instance
