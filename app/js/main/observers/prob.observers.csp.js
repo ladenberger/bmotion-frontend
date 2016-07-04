@@ -71,7 +71,7 @@ define([
               .then(function(results) {
                 var res = {};
                 angular.forEach(results[self.getId()], function(value, key) {
-                  res[key] = value.replace("{", "").replace("}", "").split(",");
+                  res[key] = value.result.replace("{", "").replace("}", "").split(",");
                 });
                 expressionCache = res;
                 defer.resolve(res);

@@ -54,8 +54,12 @@ define([
           var result = {};
 
           result[cspEventObserverInstance.id] = {
-            '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': '{enter.1.Train1}',
-            '{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}': '{leave.0.Train1}'
+            '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': {
+              result: '{enter.1.Train1}'
+            },
+            '{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}': {
+              result: '{leave.0.Train1}'
+            }
           };
 
           defer.resolve(result);
