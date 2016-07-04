@@ -6467,8 +6467,8 @@ $.SvgCanvas = function(container, config) {
           var jimage = $(this);
           if (!jimage.attr("data-bms-widget")) {
             // adapt image path
-            var vis = methodDraw.getVisualization(val);
-            val = vis['templateFolder'] + '/' + val;
+            var session = methodDraw.getSession();
+            val = session.templateFolder + '/' + val;
             jimage.attr('xlink:href', val);
           }
         }
