@@ -131,7 +131,7 @@ define([
                 if (results[formula]['result'] !== undefined) {
                   fresults.push(results[formula]['result']);
                 }
-                if (results[formula]['error']) {
+                if (results[formula]['error'] !== undefined) {
                   ferrors.push(results[formula]['error']);
                 }
               }

@@ -58,6 +58,7 @@ define([
 
           if (!expressionCache) {
 
+            // Collect formula to be evaluated
             var formulas = {};
             formulas[self.getId()] = {
               formulas: bms.toList(self.options.observers).map(function(observer) {
@@ -67,14 +68,28 @@ define([
               })
             };
 
+            // Evaluate formulas
             bmsWsService.evaluateFormulas(sessionId, formulas)
               .then(function(results) {
+
                 var res = {};
+                var errors = [];
                 angular.forEach(results[self.getId()], function(value, key) {
-                  res[key] = value.result.replace("{", "").replace("}", "").split(",");
+                  if (value['result'] !== undefined) {
+                    res[key] = value.result.replace("{", "").replace("}", "").split(",");
+                  }
+                  if (value['error'] !== undefined) {
+                    errors.push(value['error']);
+                  }
                 });
-                expressionCache = res;
-                defer.resolve(res);
+
+                if (errors.length > 0) {
+                  defer.reject(ferrors);
+                } else {
+                  expressionCache = res;
+                  defer.resolve(res);
+                }
+
               });
 
           } else {
@@ -165,6 +180,8 @@ define([
 
                   defer.resolve(fmap);
 
+                }, function(error) {
+                  defer.reject(error);
                 });
 
             });

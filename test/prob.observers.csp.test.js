@@ -11,6 +11,7 @@ define([
     var cspEventObserver;
     var cspEventObserverInstance;
     var probWsService;
+    var bmsWsService;
     var viewInstance;
     var $rootScope;
     var viewId = 'someViewId';
@@ -23,10 +24,11 @@ define([
     beforeEach(module('prob.observers.csp'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _probWsService_, _cspEventObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(bmsVisualization, _probWsService_, _cspEventObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, _bmsWsService_, bmsSessionService) {
 
         cspEventObserver = _cspEventObserver_;
         probWsService = _probWsService_;
+        bmsWsService = _bmsWsService_;
         $rootScope = _$rootScope_;
         ws = _ws_;
         $q = _$q_;
@@ -129,17 +131,17 @@ define([
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(cspEventObserver).toBeDefined();
     }));
 
-    it('should implement functions', inject(function() {
+    it('(2) should implement functions', inject(function() {
       expect(cspEventObserverInstance.getDefaultOptions).toBeDefined();
       expect(cspEventObserverInstance.shouldBeChecked).toBeDefined();
       expect(cspEventObserverInstance.getDiagramData).toBeDefined();
     }));
 
-    it('evaluateExpressions should translate expression results', function(done) {
+    it('(3) evaluateExpressions should translate expression results', function(done) {
 
       var promise = cspEventObserverInstance.evaluateExpressions();
       promise.then(function(results) {
@@ -154,12 +156,12 @@ define([
 
     });
 
-    it('replaceParameter should replace parameters', function() {
+    it('(4) replaceParameter should replace parameters', function() {
       var replaced = cspEventObserverInstance.replaceParameter('#some{{a1}}selector{{a2}}', ['1', '2']);
       expect(replaced).toBe('#some1selector2');
     });
 
-    it('future events should be ignored', function(done) {
+    it('(5) future events should be ignored', function(done) {
 
       spyOn(probWsService, "observeHistory").and.callFake(function(evt, args) {
 
@@ -203,7 +205,7 @@ define([
 
     });
 
-    it('override attribute values', function(done) {
+    it('(6) override attribute values', function(done) {
 
       spyOn(probWsService, "observeHistory").and.callFake(function(evt, args) {
 
