@@ -460,7 +460,7 @@ app.on('ready', function() {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    title: 'BMotionWeb',
+    title: 'BMotionWeb v0.3.0-SNAPSHOT',
     icon: __dirname + '/resources/icons/bmsicon16x16.png'
   });
   mainWindow.loadUrl('file://' + __dirname + '/index.html#/startServer');
