@@ -124,6 +124,7 @@ define([
                   $rootScope.$broadcast('openDialog_' + type);
                 };
 
+                bmsViewService.clearViews();
                 $scope.views = bmsViewService.getViews();
 
                 $scope.$watch(function() {

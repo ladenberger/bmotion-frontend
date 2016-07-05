@@ -13,6 +13,9 @@ define([
         },
         getViews: function() {
           return views;
+        },
+        clearViews: function() {
+          views = [];
         }
       };
 

@@ -19,6 +19,7 @@ define([
         $scope.id = bms.uuid(); // Visualization
         $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
 
+        bmsViewService.clearViews();
         $scope.views = bmsViewService.getViews();
 
         $scope.$watch(function() {
