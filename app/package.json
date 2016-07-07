@@ -1,7 +1,7 @@
 {
-  "version": "0.3.0-SNAPSHOT",
+  "version": "0.3.0",
   "name": "bmotion",
-  "productName": "BMotionWeb v0.3.0-SNAPSHOT",
+  "productName": "BMotionWeb v0.3.0",
   "main": "./bmotion.main.js",
   "license": "EPL-1.0",
   "author": {
