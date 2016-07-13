@@ -76,6 +76,10 @@ define([
           var self = this;
           var element;
 
+          if(Object.prototype.toString.call(result) === '[object Array]') {
+            result = result[0];
+          }
+
           // Determine graphical element of observer
           if (self.options.element !== undefined) {
             element = self.options.element;
