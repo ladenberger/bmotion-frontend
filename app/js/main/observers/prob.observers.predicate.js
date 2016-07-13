@@ -91,9 +91,9 @@ define([
               var returnValue;
               //var normalized = bms.normalize(observer.data, [], ele);
               if (result === "TRUE") {
-                returnValue = bms.callOrReturn(self.options.true, ele);
+                returnValue = bms.callElementFunction(self.options.true, ele);
               } else if (result === "FALSE") {
-                returnValue = bms.callOrReturn(self.options.false, ele);
+                returnValue = bms.callElementFunction(self.options.false, ele);
               }
               if (returnValue) {
                 var bmsid = self.view.getBmsIdForElement(ele);

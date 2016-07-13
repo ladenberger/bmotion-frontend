@@ -69,7 +69,7 @@ define([
         if (paraName && paraData) {
           return functor.call(self, element, paraData);
         } else {
-          return functor.call(self);
+          return functor.call(self, element);
         }
       } else {
         if (paraName && paraData) {
@@ -97,9 +97,10 @@ define([
     },
     // Calls function or returns object (used for observer properties)
     callOrReturn: function(subject, element, isJsString, container) {
-      if (typeof subject === "boolean") {
-        return subject;
-      } else if (api.isFunction(subject)) {
+      //if (typeof subject === "boolean") {
+      //  return subject;
+      //} else
+      if (api.isFunction(subject)) {
         if (container) {
           return subject.call(this, element, container);
         } else {

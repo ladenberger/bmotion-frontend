@@ -557,6 +557,14 @@ define([
               });
             }
           }, {
+            label: "Add Predicate Observer",
+            show: self.session.isBVisualization(),
+            click: function() {
+              addObserver("predicate", {
+                predicate: ""
+              });
+            }
+          }, {
             label: "Add Refinement Observer",
             show: self.session.isEventBVisualization(),
             click: function() {

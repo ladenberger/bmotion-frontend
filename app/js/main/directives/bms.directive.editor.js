@@ -93,8 +93,7 @@ define([
             var saveSvg = function(templateFolder, svg) {
 
               var defer = $q.defer();
-
-              svg = svg.replace(templateFolder + '/', "");
+              svg = svg.replace(new RegExp(templateFolder + '/', "g"), "");
               fs.writeFile(templateFolder + '/' + $scope.svg, svg,
                 function(err) {
                   if (err) {
