@@ -34,6 +34,7 @@
     "diskdb": "^0.1.14",
     "ncp": "^2.0.0",
     "angular": "~1.5.3",
-    "requirejs": "~2.2.0"
+    "requirejs": "~2.2.0",
+    "tree-kill": "^1.1.0"
   }
 }

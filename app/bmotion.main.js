@@ -4,12 +4,18 @@ var app = require('app');
 var BrowserWindow = require('browser-window');
 var angular = require('./js/libs/bower/ng-electron/ng-bridge');
 var ncp = require('ncp').ncp;
+var kill = require('tree-kill');
+var cp = require('child_process');
 ncp.limit = 16;
+
+var server;
 
 // Quit when all windows are closed and no other one is listening to this.
 app.on('window-all-closed', function() {
-  if (app.listeners('window-all-closed').length == 1)
+  if (app.listeners('window-all-closed').length == 1) {
+    kill(server.pid, 'SIGKILL');
     app.quit();
+  }
 });
 
 var mainWindow = null;
@@ -453,6 +459,25 @@ var buildEditMenu = function(mainMenu) {
 
 };
 
+var shouldQuit = app.makeSingleInstance(function(commandLine, workingDirectory) {
+  // Someone tried to run a second instance, we should focus our window
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+  return true;
+});
+
+if (shouldQuit) {
+  kill(server.pid, 'SIGKILL');
+  app.quit();
+  return;
+}
+
+app.on('before-quit', function() {
+  kill(server.pid, 'SIGKILL');
+});
+
 app.on('ready', function() {
 
   var viewWindows;
@@ -460,13 +485,12 @@ app.on('ready', function() {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
-    title: 'BMotionWeb v0.3.0',
+    title: 'BMotionWeb v0.3.1-SNAPSHOT',
     icon: __dirname + '/resources/icons/bmsicon16x16.png'
   });
-  mainWindow.loadUrl('file://' + __dirname + '/index.html#/startServer');
+  mainWindow.loadUrl('file://' + __dirname + '/index.html');
 
-  mainWindow.on('close', function() {
-  });
+  mainWindow.on('close', function() {});
 
   var mainMenu = new Menu();
   buildStandardMenu(mainMenu);
@@ -475,6 +499,28 @@ app.on('ready', function() {
   } else {
     mainWindow.setMenu(mainMenu);
   }
+
+  // Start BMotionWeb server
+  var path = require('path');
+  var appPath = path.dirname(__dirname);
+  //var appPath = '/home/lukas/git/bmotion-frontend/dev/standalone/electron-v0.36.2/resources';
+  //var exec = require('child_process').exec;
+  var isWin = /^win/.test(process.platform);
+  var separator = isWin ? ';' : ':';
+  //server = cp.exec('java -Xmx1024m -cp ' + appPath + '/libs/*' + separator + appPath + '/libs/bmotion-prob-0.3.0.jar de.bmotion.prob.Standalone -local');
+  server = cp.spawn('java', ['-Xmx1024m', '-cp', appPath + '/libs/*' + separator + appPath + '/libs/bmotion-prob-0.3.1-SNAPSHOT.jar', 'de.bmotion.prob.Standalone', '-local'], {
+    detached: true
+  });
+
+  server.stdout.on('data', function(data) {
+    console.log('BMotionWeb Server: ' + data.toString('utf8'));
+  });
+  server.stderr.on('data', function(data) {
+    console.log('BMotionWeb Server: ' + data.toString('utf8'));
+  });
+  server.on('close', function(code) {
+    console.log('BMotionWeb Server process exited with code ' + code);
+  });
 
   angular.listen(function(data) {
     if (data.type === 'buildWelcomeMenu') {
