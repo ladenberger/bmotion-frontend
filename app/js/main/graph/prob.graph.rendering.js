@@ -445,6 +445,10 @@ define([
                 var nodes = data[0];
                 var edges = data[1];
 
+                edges = edges.filter(function(val) {
+                  return val.data.source !== val.data.target;
+                });
+
                 var promises = [];
                 // Get HTML data
                 angular.forEach(nodes, function(node) {
