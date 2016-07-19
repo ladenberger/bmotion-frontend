@@ -502,8 +502,8 @@ app.on('ready', function() {
 
   // Start BMotionWeb server
   var path = require('path');
-  var appPath = path.dirname(__dirname);
-  //var appPath = '/home/lukas/git/bmotion-frontend/dev/standalone/electron-v0.36.2/resources';
+  //var appPath = path.dirname(__dirname);
+  var appPath = '/home/lukas/git/bmotion-frontend/dev/standalone/electron-v0.36.2/resources';
   //var exec = require('child_process').exec;
   var isWin = /^win/.test(process.platform);
   var separator = isWin ? ';' : ':';

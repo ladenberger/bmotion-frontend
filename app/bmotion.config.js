@@ -64,7 +64,6 @@ requirejs.config({
 
     // Standalone modules
     "bms.standalone.ctrl.session": "js/main/standalone/bms.standalone.ctrl.session",
-    "bms.standalone.ctrl.startServer": "js/main/standalone/bms.standalone.ctrl.startServer",
     "bms.standalone.ctrl.welcome": "js/main/standalone/bms.standalone.ctrl.welcome",
     "bms.standalone.directive": "js/main/standalone/bms.standalone.directive",
     "bms.standalone.electron": "js/main/standalone/bms.standalone.electron",
