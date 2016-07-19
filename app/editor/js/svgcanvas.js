@@ -3931,12 +3931,12 @@ $.SvgCanvas = function(container, config) {
         leaveContext();
       }
 
-      if ((parent.tagName !== 'g' && parent.tagName !== 'a') ||
+      /*if ((parent.tagName !== 'g' && parent.tagName !== 'a') ||
         parent === getCurrentDrawing().getCurrentLayer() ||
         mouse_target === selectorManager.selectorParentGroup) {
         // Escape from in-group edit
         return;
-      }
+      }*/
 
       setContext(mouse_target);
 
