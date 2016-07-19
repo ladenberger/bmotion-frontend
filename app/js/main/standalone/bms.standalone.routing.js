@@ -20,10 +20,10 @@ define([
       .config(['$routeProvider', '$locationProvider',
         function($routeProvider) {
           $routeProvider
-            .when('/startServer', {
+            /*.when('/startServer', {
               template: '',
               controller: 'bmsStartServerCtrl'
-            })
+            })*/
             .when('/welcome', {
               templateUrl: 'js/main/standalone/bms.standalone.welcome.html',
               controller: 'bmsWelcomeCtrl'
@@ -33,7 +33,7 @@ define([
               controller: 'bmsSessionCtrl'
             })
             .otherwise({
-              redirectTo: '/startServer'
+              redirectTo: '/welcome'
             });
         }
       ]);
