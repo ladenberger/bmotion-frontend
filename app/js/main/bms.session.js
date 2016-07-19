@@ -40,6 +40,21 @@ define([
           return folder;
         };
 
+        bmsSession.prototype.getSvgData = function() {
+          var self = this;
+          var svgData = [];
+          angular.forEach(this.views, function(view) {
+            for (svg in view.svg) {
+              svgData.push({
+                file: svg,
+                viewId: view.viewData.id,
+                id: view.id
+              });
+            }
+          });
+          return svgData;
+        };
+
         bmsSession.prototype.init = function(manifestFilePath) {
 
           var defer = $q.defer();

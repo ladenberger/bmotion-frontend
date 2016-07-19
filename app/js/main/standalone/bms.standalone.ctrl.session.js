@@ -21,17 +21,25 @@ define([
 
         bmsViewService.clearViews();
         $scope.views = bmsViewService.getViews();
+        $scope.svgs = $scope.session.getSvgData();
 
         $scope.$watch(function() {
           return bmsViewService.getViews();
         }, function(newValue) {
-          self.views = newValue;
+          $scope.views = newValue;
+        }, true);
+
+        $scope.$watch(function() {
+          return $scope.session.getSvgData();
+        }, function(newValue) {
+          $scope.svgs = newValue;
         }, true);
 
         $scope.session.load()
           .then(function() {
 
             $scope.viewId = $scope.session.manifestData.id;
+            $scope.view.viewId = $scope.viewId;
 
             // Open additional views
             angular.forEach($scope.session.manifestData.views, function(view, i) {
