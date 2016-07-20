@@ -181,7 +181,7 @@ define([
 
               bmsModalService.loading("Creating projection diagram for selector " + $scope.selector);
 
-              if (!$scope.selectedView || !$scope.selectedSelector) {
+              if (!$scope.selectedView || !$scope.selector) {
                 bmsModalService.openErrorDialog("Please select a view and selector.");
               } else {
                 var view = $scope.session.getView($scope.selectedView.id);
