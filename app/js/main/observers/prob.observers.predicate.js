@@ -54,7 +54,7 @@ define([
           var self = this;
           if (node.results) {
             return self.getFormulas().map(function(fobj) {
-              return node.results[self.getId()][fobj.formula];
+              return node.results[self.getId()][fobj.formula]['result'];
             });
           } else {
             return [];
