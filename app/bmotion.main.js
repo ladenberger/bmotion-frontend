@@ -22,7 +22,7 @@ var Dialog = require('dialog');
 // Quit when all windows are closed and no other one is listening to this.
 app.on('window-all-closed', function() {
   if (app.listeners('window-all-closed').length == 1) {
-    kill(server.pid, 'SIGKILL');
+    if(server) kill(server.pid, 'SIGKILL');
     app.quit();
   }
 });
@@ -473,13 +473,13 @@ var shouldQuit = app.makeSingleInstance(function(commandLine, workingDirectory) 
 });
 
 if (shouldQuit) {
-  kill(server.pid, 'SIGKILL');
+  if(server) kill(server.pid, 'SIGKILL');
   app.quit();
   return;
 }
 
 app.on('before-quit', function() {
-  kill(server.pid, 'SIGKILL');
+  if(server) kill(server.pid, 'SIGKILL');
 });
 
 app.on('ready', function() {
