@@ -46,12 +46,6 @@ define([
               bmsViewService.addView(view);
             });
 
-            electron.send({
-              type: "buildVisualizationMenu",
-              tool: $scope.session.tool,
-              addMenu: true
-            });
-
             bmsModalService.endLoading();
 
           }, function(err) {

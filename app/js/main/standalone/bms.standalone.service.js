@@ -2,10 +2,11 @@ define([
   'angular',
   'bms.func',
   'bms.session',
-  'bms.standalone.electron'
+  'bms.standalone.electron',
+  'ng-electron'
 ], function(angular, bms) {
 
-  return angular.module('bms.standalone.service', ['bms.session', 'bms.standalone.electron'])
+  return angular.module('bms.standalone.service', ['bms.session', 'bms.standalone.electron', 'ngElectron'])
     .factory('createVisualizationService', ['$uibModal', '$q', 'electronDialog', 'fs', 'path', 'ncp', 'initVisualizationService',
       function($uibModal, $q, electronDialog, fs, path, ncp, initVisualizationService) {
 
@@ -204,8 +205,8 @@ define([
 
       }
     ])
-    .factory('initVisualizationService', ['$location', 'bmsSessionService', 'bmsModalService', 'electronWindow', 'electronWindowService',
-      function($location, bmsSessionService, bmsModalService, electronWindow, electronWindowService) {
+    .factory('initVisualizationService', ['$location', 'bmsSessionService', 'bmsModalService', 'electronWindow', 'electronWindowService', 'electron',
+      function($location, bmsSessionService, bmsModalService, electronWindow, electronWindowService, electron) {
 
         /*var getModel = function(modelPath) {
           var defer = $q.defer();
@@ -224,10 +225,15 @@ define([
           var sessionId = bms.uuid(); // Session id
           var session = bmsSessionService.getSession(sessionId); // Get fresh session instance
 
-          //var bmsSession = bmsSessionService.getSession();
           session.init(manifestFilePath)
             .then(function() {
-              $location.path('/vis/' + sessionId);
+              electron.send({
+                type: "openVisualizationWindow",
+                sessionId: sessionId,
+                tool: session.tool,
+                name: session.manifestData.name,
+                addMenu: false
+              });
               bmsModalService.endLoading();
             }, function(err) {
               bmsModalService.openErrorDialog(err);

@@ -4,11 +4,20 @@ var app = require('app');
 var BrowserWindow = require('browser-window');
 var angular = require('./js/libs/bower/ng-electron/ng-bridge');
 var ncp = require('ncp').ncp;
-var kill = require('tree-kill');
-var cp = require('child_process');
 ncp.limit = 16;
 
+var kill = require('tree-kill');
+var cp = require('child_process');
+
 var server;
+
+var visualizationWindows = [];
+
+var mainWindow = null;
+
+var Menu = require('menu');
+var MenuItem = require('menu-item');
+var Dialog = require('dialog');
 
 // Quit when all windows are closed and no other one is listening to this.
 app.on('window-all-closed', function() {
@@ -17,12 +26,6 @@ app.on('window-all-closed', function() {
     app.quit();
   }
 });
-
-var mainWindow = null;
-
-var Menu = require('menu');
-var MenuItem = require('menu-item');
-var Dialog = require('dialog');
 
 var openDialog = function(type) {
   angular.send({
@@ -123,7 +126,7 @@ var buildFileMenu = function(mainMenu) {
     })(),
     click: function() {
       Dialog.showOpenDialog({
-          title: 'Open BMotionWeb Visualisation',
+          title: 'Open BMotionWeb Visualization',
           filters: [{
             name: 'BMotionWeb Manifest (bmotion.json)',
             extensions: ['json']
@@ -407,14 +410,6 @@ var buildWindowMenu = function(mainMenu) {
 
 };
 
-var buildStandardMenu = function(mainMenu) {
-  if (process.platform == 'darwin') buildOsxMenu(mainMenu);
-  if (process.platform == 'darwin') buildEditMenu(mainMenu);
-  buildViewMenu(mainMenu);
-  buildHelpMenu(mainMenu);
-  buildWindowMenu(mainMenu);
-};
-
 var buildEditMenu = function(mainMenu) {
 
   var editMenu = new Menu();
@@ -462,8 +457,17 @@ var buildEditMenu = function(mainMenu) {
 var shouldQuit = app.makeSingleInstance(function(commandLine, workingDirectory) {
   // Someone tried to run a second instance, we should focus our window
   if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
+    if (!mainWindow.isDestroyed()) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    } else {
+      visualizationWindows.forEach(function(win) {
+        if (!win.isDestroyed()) {
+          if (win.isMinimized()) win.restore();
+          win.focus();
+        }
+      });
+    }
   }
   return true;
 });
@@ -480,8 +484,6 @@ app.on('before-quit', function() {
 
 app.on('ready', function() {
 
-  var viewWindows;
-
   mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
@@ -490,10 +492,14 @@ app.on('ready', function() {
   });
   mainWindow.loadUrl('file://' + __dirname + '/index.html');
 
-  mainWindow.on('close', function() {});
+  mainWindow.on('close', function() {
+    visualizationWindows.forEach(function(win) {
+      win.close();
+    });
+  });
 
   var mainMenu = new Menu();
-  buildStandardMenu(mainMenu);
+  buildWelcomeMenu(mainMenu);
   if (process.platform == 'darwin') {
     Menu.setApplicationMenu(mainMenu);
   } else {
@@ -523,22 +529,7 @@ app.on('ready', function() {
   });
 
   angular.listen(function(data) {
-    if (data.type === 'buildWelcomeMenu') {
-      var mainMenu = new Menu();
-      buildWelcomeMenu(mainMenu);
-      if (process.platform == 'darwin') {
-        Menu.setApplicationMenu(mainMenu);
-      } else {
-        mainWindow.setMenu(mainMenu);
-      }
-    } else if (data.type === 'buildVisualizationMenu') {
-      var mainMenu = new Menu();
-      buildVisualizationMenu(mainMenu, data['tool'], data['addMenu']);
-      if (process.platform == 'darwin') {
-        Menu.setApplicationMenu(mainMenu);
-      }
-      mainWindow.setMenu(mainMenu);
-    } else if (data.type === 'buildModelMenu') {
+    if (data.type === 'buildModelMenu') {
       var mainMenu = new Menu();
       var win = BrowserWindow.fromId(data['win']);
       buildModelMenu(mainMenu);
@@ -546,8 +537,23 @@ app.on('ready', function() {
         Menu.setApplicationMenu(mainMenu);
       }
       win.setMenu(mainMenu);
-    } else if (data.type === 'setWindows') {
-      viewWindows = data.data;
+    } else if (data.type === 'openVisualizationWindow') {
+      var newVisualizationWindow = new BrowserWindow({
+        height: 600,
+        width: 800,
+        icon: __dirname + '/resources/icons/bmsicon16x16.png'
+      });
+      newVisualizationWindow.loadUrl('file://' + __dirname + '/index.html#/vis/' + data.sessionId);
+      newVisualizationWindow.webContents.on('did-finish-load', () => {
+        newVisualizationWindow.setTitle(data.name ? data.name : 'Visualization');
+      });
+      var menu = new Menu();
+      buildVisualizationMenu(menu, data.tool, data.addMenu);
+      newVisualizationWindow.setMenu(menu);
+      visualizationWindows.push(newVisualizationWindow);
+      newVisualizationWindow.on('close', function() {
+        visualizationWindows.splice(visualizationWindows.indexOf(newVisualizationWindow), 1);
+      });
     }
   });
 
