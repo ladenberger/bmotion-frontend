@@ -30,6 +30,11 @@ repositories {
     }
 }
 
+configurations.all {
+    // check for updates every build
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 dependencies {
     compile group: 'de.hhu.stups', name: 'bmotion-prob', version: bmotionVersion, changing: true
 }
