@@ -3,6 +3,7 @@ requirejs.config({
   paths: {
 
     "bmotion.online": "js/bmotion.online",
+    "bmotion.integrated": "js/bmotion.integrated",
 
     // Directive modules
     "bms.directive": "js/main/directives/bms.directive",
@@ -58,6 +59,10 @@ requirejs.config({
     "bms.standalone.root": "js/main/standalone/bms.standalone.root",
     "bms.editor.root": "js/main/editor/bms.editor.root",
     "bms.online.root": "js/main/online/bms.online.root",
+    "bms.integrated.root": "js/main/integrated/bms.integrated.root",
+
+    // Integrated modules
+    "bms.integrated.directive": "js/main/integrated/bms.integrated.directive",
 
     // Online modules
     "bms.online.directive": "js/main/online/bms.online.directive",

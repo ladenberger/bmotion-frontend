@@ -124,38 +124,38 @@ module.exports = function(grunt) {
       }
     },
     requirejs: {
-      'js-online': {
+      'js-extern': {
         options: {
           mainConfigFile: "app/bmotion.config.js",
           baseUrl: "app",
           removeCombined: true,
           findNestedDependencies: true,
-          name: "bmotion.online",
-          out: "build/online/js/bmotion.online.js",
+          name: "bmotion.<%= mode %>",
+          out: "build/<%= mode %>/js/bmotion.<%= mode %>.js",
           optimize: 'none',
           skipDirOptimize: true,
           keepBuildDir: false,
           noBuildTxt: true
         }
       },
-      'css-online': {
+      'css-extern': {
         options: {
           keepBuildDir: true,
           //optimizeCss: "standard.keepLines.keepWhitespace",
           optimizeCss: "standard",
           cssPrefix: "",
           cssIn: "app/css/bms.main.css",
-          out: "build/online/css/bms.main.css"
+          out: "build/<%= mode %>/css/bms.main.css"
         }
       }
     },
     copy: {
-      online: {
+      extern: {
         files: [{
           expand: true,
           cwd: 'app/',
-          src: ['css/**', 'images/**', 'js/require.js', 'bmotion.json'],
-          dest: 'build/online/'
+          src: ['css/**', 'images/**', 'js/libs/bower/requirejs/require.js'],
+          dest: 'build/<%= mode %>/'
         }]
       },
       template: {
@@ -192,7 +192,15 @@ module.exports = function(grunt) {
   grunt.registerTask('prepare', ['bower:install']);
   grunt.registerTask('build', ['standalone_all']);
 
-  grunt.registerTask('online', ['prepare', 'test', 'requirejs:js-online', 'requirejs:css-online', 'copy:online']);
+  grunt.registerTask('integrated', '', function() {
+    grunt.config.set('mode', 'integrated');
+    grunt.task.run(['prepare', 'test', 'requirejs:js-extern', 'requirejs:css-extern', 'copy:extern']);
+  });
+
+  grunt.registerTask('online', '', function() {
+    grunt.config.set('mode', 'online');
+    grunt.task.run(['prepare', 'test', 'requirejs:js-extern', 'requirejs:css-extern', 'copy:extern']);
+  });
 
   targets.forEach(function(target) {
     grunt.registerTask('standalone_' + target, '', function() {
