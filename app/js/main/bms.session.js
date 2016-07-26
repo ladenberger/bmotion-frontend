@@ -35,8 +35,8 @@ define([
 
         bmsSession.prototype.getTemplateFolder = function(manifestFilePath) {
           //TODO check if manifestFilePath is undefined
-          var filename = manifestFilePath.replace(/^.*[\\\/]/, '');
-          var folder = manifestFilePath.replace('/' + filename, '');
+          //var filename = manifestFilePath.replace(/^.*[\\\/]/, '');
+          return manifestFilePath.replace('bmotion.json', '');
           return folder;
         };
 
