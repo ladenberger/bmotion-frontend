@@ -2,13 +2,14 @@ define([
   'angular',
   'jquery',
   'bms.func',
+  'tv4',
   'bms.modal',
   'bms.session',
   'bms.visualization',
   'bms.observers',
   'bms.handlers',
   'bms.ws'
-], function(angular, $, bms) {
+], function(angular, $, bms, tv4) {
 
   angular.module('bms.api', [
       'bms.modal',
@@ -186,17 +187,38 @@ define([
           var view = session.getView(viewId);
 
           var nOptions = bms.normalize(options, ["callback"], view.container);
-          nOptions.traceId = view.toolOptions.traceId;
-          bmsWsService.executeEvent(sessionId, nOptions)
-            .then(
-              function success(result) {
-                if (nOptions.callback) nOptions.callback.call(this, result, view.container);
-                defer.resolve(result);
+
+          if (tv4.validate(nOptions, {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "predicate": {
+                  "type": "string"
+                }
               },
-              function error(err) {
-                bmsModalService.openErrorDialog(err);
-                defer.reject(err);
-              });
+              "required": ["name"]
+            })) {
+
+            bmsWsService.executeEvent(sessionId, nOptions)
+              .then(
+                function success(result) {
+                  if (nOptions.callback) nOptions.callback.call(this, result, view.container);
+                  defer.resolve(result);
+                },
+                function error(err) {
+                  bmsModalService.openErrorDialog(err);
+                  defer.reject(err);
+                });
+
+          } else {
+
+            var error = "Execute event handler has an invalid scheme: " + tv4.error.message;
+            bmsModalService.openErrorDialog(error);
+            defer.reject(error);
+
+          }
 
           return defer.promise;
 

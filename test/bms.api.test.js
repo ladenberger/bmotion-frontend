@@ -211,7 +211,8 @@ define([
         return defer.promise;
       });
 
-      var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {
+      var promise = bmsApiService.executeEvent(sessionId, viewId, {
+        name: 'someevent',
         callback: function(result, container) {
           // Callback should be called
           expect(result).toBe('someresults');
@@ -222,7 +223,8 @@ define([
         function(result) {
           // Function should be resolved
           expect(result).toBe('someresults');
-        }).finally(done);
+          done();
+        });
 
     });
 
@@ -237,7 +239,9 @@ define([
 
       var error;
 
-      var promise = bmsApiService.executeEvent(sessionId, viewId, 'someevent', {});
+      var promise = bmsApiService.executeEvent(sessionId, viewId, {
+        name: 'someevent'
+      });
       promise.then(
           function() {},
           function(err) {
@@ -251,7 +255,25 @@ define([
 
     });
 
-    it('(10) on function should register listener in viewInstance', function() {
+    it('(10) executeEvent function should reject if options scheme is incorrect', function(done) {
+
+      var error;
+
+      var promise = bmsApiService.executeEvent(sessionId, viewId, {});
+      promise.then(
+          function() {},
+          function(err) {
+            error = err;
+          })
+        .finally(function() {
+          expect(error).toBeDefined();
+          expect(promise.$$state.status).toBe(2); // Rejected
+          done();
+        });
+
+    });
+
+    it('(11) on function should register listener in viewInstance', function() {
       bmsApiService.on(sessionId, viewId, 'ModelInitialised', function() {});
       expect(window.viewInstance.getListeners('ModelInitialised').length).toBe(1);
     });
