@@ -8,7 +8,8 @@ define([
   'bms.visualization',
   'bms.observers',
   'bms.handlers',
-  'bms.ws'
+  'bms.ws',
+  'bms.common'
 ], function(angular, $, bms, tv4) {
 
   angular.module('bms.api', [
@@ -17,10 +18,11 @@ define([
       'bms.visualization',
       'bms.observers',
       'bms.handlers',
-      'bms.ws'
+      'bms.ws',
+      'bms.common'
     ])
-    .factory('bmsApiService', ['ws', '$injector', '$q', 'trigger', 'bmsSessionService', 'bmsObserverService', 'bmsHandlerService', 'bmsVisualizationService', 'bmsModalService', 'bmsWsService',
-      function(ws, $injector, $q, trigger, bmsSessionService, bmsObserverService, bmsHandlerService, bmsVisualizationService, bmsModalService, bmsWsService) {
+    .factory('bmsApiService', ['ws', '$injector', '$q', 'trigger', 'bmsSessionService', 'bmsObserverService', 'bmsHandlerService', 'bmsVisualizationService', 'bmsModalService', 'bmsWsService', 'bmsErrorService',
+      function(ws, $injector, $q, trigger, bmsSessionService, bmsObserverService, bmsHandlerService, bmsVisualizationService, bmsModalService, bmsWsService, bmsErrorService) {
 
         var addObserver = function(sessionId, viewId, type, data) {
 
@@ -38,12 +40,14 @@ define([
                         defer.resolve(observer);
                       },
                       function error(err) {
-                        bmsModalService.openErrorDialog(err);
+                        bmsErrorService.print(err);
+                        //bmsModalService.openErrorDialog(err);
                         defer.reject(err);
                       });
                 },
                 function error(err) {
-                  bmsModalService.openErrorDialog(err);
+                  bmsErrorService.print(err);
+                  //bmsModalService.openErrorDialog(err);
                   defer.reject(err);
                 });
           });
@@ -68,12 +72,14 @@ define([
                         defer.resolve(evt);
                       },
                       function error(err) {
-                        bmsModalService.openErrorDialog(err);
+                        bmsErrorService.print(err);
+                        //bmsModalService.openErrorDialog(err);
                         defer.reject(err);
                       });
                 },
                 function error(err) {
-                  bmsModalService.openErrorDialog(err);
+                  bmsErrorService.print(err);
+                  //bmsModalService.openErrorDialog(err);
                   defer.reject(err);
                 });
           });
@@ -170,7 +176,8 @@ define([
 
                 },
                 function error(err) {
-                  bmsModalService.openErrorDialog(err);
+                  bmsErrorService.print(err);
+                  //bmsModalService.openErrorDialog(err);
                   defer.reject(err);
                 });
           });
@@ -208,14 +215,16 @@ define([
                   defer.resolve(result);
                 },
                 function error(err) {
-                  bmsModalService.openErrorDialog(err);
+                  bmsErrorService.print(err);
+                  //bmsModalService.openErrorDialog(err);
                   defer.reject(err);
                 });
 
           } else {
 
             var error = "Execute event handler has an invalid scheme: " + tv4.error.message;
-            bmsModalService.openErrorDialog(error);
+            bmsErrorService.print(err);
+            //bmsModalService.openErrorDialog(error);
             defer.reject(error);
 
           }

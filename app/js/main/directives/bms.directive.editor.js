@@ -9,12 +9,13 @@ define([
   'bms.session',
   'bms.standalone.nodejs',
   'bms.visualization',
-  'bms.standalone.electron'
+  'bms.standalone.electron',
+  'bms.common',
 ], function(angular, $) {
 
-  return angular.module('bms.directive.editor', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.standalone.nodejs', 'bms.standalone.electron'])
-    .directive('bmsVisualizationEditor', ['bmsModalService', 'bmsSessionService', 'bmsVisualizationService', '$q', '$timeout', '$http', '$rootScope', 'fs', 'electron',
-      function(bmsModalService, bmsSessionService, bmsVisualizationService, $q, $timeout, $http, $rootScope, fs, electron) {
+  return angular.module('bms.directive.editor', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.standalone.nodejs', 'bms.standalone.electron', 'bms.common'])
+    .directive('bmsVisualizationEditor', ['bmsModalService', 'bmsSessionService', 'bmsVisualizationService', '$q', '$timeout', '$http', '$rootScope', 'fs', 'electron', 'bmsErrorService',
+      function(bmsModalService, bmsSessionService, bmsVisualizationService, $q, $timeout, $http, $rootScope, fs, electron, bmsErrorService) {
         return {
           replace: false,
           scope: {
@@ -27,7 +28,8 @@ define([
           controller: ['$scope', '$rootScope', function($scope, $rootScope) {
 
             if (!$scope.sessionId) {
-              bmsModalService.openErrorDialog("Session id must not be undefined.");
+              bmsErrorService.print("Session id must not be undefined.");
+              //bmsModalService.openErrorDialog("Session id must not be undefined.");
             }
             // TODO check if session really exists!?
             $scope.session = bmsSessionService.getSession($scope.sessionId);
@@ -170,7 +172,8 @@ define([
                   bmsModalService.openDialog("Visualization has been saved successfully.");
                   $rootScope.$broadcast('visualizationSaved', $scope.id, $scope.svg);
                 }, function(error) {
-                  bmsModalService.openErrorDialog(error);
+                  bmsErrorService.print(error);
+                  //bmsModalService.openErrorDialog(error);
                 });
 
             };

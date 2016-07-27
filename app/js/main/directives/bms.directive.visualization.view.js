@@ -9,12 +9,13 @@ define([
   'bms.modal',
   'bms.session',
   'bms.visualization',
-  'bms.manifest'
+  'bms.manifest',
+  'bms.common'
 ], function(angular, $, bms) {
 
-  return angular.module('bms.directive.visualization.view', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.manifest'])
-    .directive('bmsVisualizationView', ['$rootScope', 'bmsManifestService', 'bmsSessionService', 'bmsVisualizationService', 'ws', 'bmsModalService', 'trigger', '$compile', '$http', '$q',
-      function($rootScope, bmsManifestService, bmsSessionService, bmsVisualizationService, ws, bmsModalService, trigger, $compile, $http, $q) {
+  return angular.module('bms.directive.visualization.view', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.manifest', 'bms.common'])
+    .directive('bmsVisualizationView', ['$rootScope', 'bmsManifestService', 'bmsSessionService', 'bmsVisualizationService', 'ws', 'bmsModalService', 'trigger', '$compile', '$http', '$q', 'bmsErrorService',
+      function($rootScope, bmsManifestService, bmsSessionService, bmsVisualizationService, ws, bmsModalService, trigger, $compile, $http, $q, bmsErrorService) {
         'use strict';
         return {
           replace: false,
@@ -27,7 +28,8 @@ define([
           controller: ['$scope', function($scope) {
 
             if (!$scope.sessionId) {
-              bmsModalService.openErrorDialog("Session id must not be undefined.");
+              bmsErrorService.print("Session id must not be undefined.");
+              //bmsModalService.openErrorDialog();
             }
 
             if (!$scope.id) {
@@ -39,7 +41,7 @@ define([
             // Get view instance
             $scope.view = $scope.session.getView($scope.id);
             $scope.view.viewId = $scope.viewId;
-            
+
             // Create a new view instance in session
             $scope.values = $scope.view.getValues();
 
@@ -52,7 +54,8 @@ define([
               $scope.view.triggerListeners(cause);
               $scope.view.checkObservers()
                 .then(function() {}, function(err) {
-                  bmsModalService.openErrorDialog(err);
+                  bmsErrorService.print(err);
+                  //bmsModalService.openErrorDialog(err);
                 });
             });
 
@@ -327,6 +330,7 @@ define([
                           $scope.view.initialized.resolve();
                         },
                         function error(err) {
+                          //bmsErrorService.print('An error occurred while initializing view ' + $scope.id + err);
                           bmsModalService.openErrorDialog('<strong>An error occurred while initializing view ' + $scope.id + '</strong><br/>' + err);
                         });
                   });

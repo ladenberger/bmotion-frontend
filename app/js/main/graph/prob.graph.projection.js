@@ -6,12 +6,14 @@ define([
   'angular',
   'jquery',
   'bms.session',
-  'prob.graph.rendering'
+  'prob.graph.rendering',
+  'bms.common'
 ], function(angular, $) {
 
   return angular.module('prob.graph.projection', [
       'prob.graph.rendering',
-      'bms.session'
+      'bms.session',
+      'bms.common'
     ])
     .factory('bmsDiagramElementProjectionGraph', ['$q', function($q) {
 
@@ -102,8 +104,8 @@ define([
       };
 
     }])
-    .directive('bmsDiagramElementProjectionView', ['bmsModalService', 'bmsRenderingService', 'bmsDiagramElementProjectionGraph', 'bmsSessionService',
-      function(bmsModalService, bmsRenderingService, bmsDiagramElementProjectionGraph, bmsSessionService) {
+    .directive('bmsDiagramElementProjectionView', ['bmsModalService', 'bmsRenderingService', 'bmsDiagramElementProjectionGraph', 'bmsSessionService', 'bmsErrorService',
+      function(bmsModalService, bmsRenderingService, bmsDiagramElementProjectionGraph, bmsSessionService, bmsErrorService) {
 
         return {
           replace: false,
@@ -136,7 +138,8 @@ define([
           controller: ['$scope', function($scope) {
 
             if (!$scope.sessionId) {
-              bmsModalService.openErrorDialog("Session id must not be undefined.");
+              bmsErrorService.print("Session id must not be undefined.");
+              //bmsModalService.openErrorDialog("Session id must not be undefined.");
             }
             // TODO check if session really exists!?
             $scope.session = bmsSessionService.getSession($scope.sessionId);
@@ -203,7 +206,8 @@ define([
                       }
                     },
                     function error(error) {
-                      bmsModalService.openErrorDialog(error);
+                      bmsErrorService.print(error);
+                      //bmsModalService.openErrorDialog(error);
                     });
               }
 

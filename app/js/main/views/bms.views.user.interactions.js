@@ -9,22 +9,24 @@ define([
   'ui-bootstrap',
   'prob.ws',
   'bms.modal',
-  'bms.session'
+  'bms.session',
+  'bms.common'
 ], function(angular, $) {
 
   var module = angular.module('bms.views.user.interactions', [
       'prob.ws',
       'bms.modal',
       'bms.session',
-      'ui.bootstrap'
+      'ui.bootstrap',
+      'bms.common'
     ])
     .filter('reverse', function() {
       return function(items) {
         if (items) return items.slice().reverse();
       };
     })
-    .directive('bmsUserInteraction', ['probWsService', 'bmsModalService', 'bmsSessionService',
-      function(probWsService, bmsModalService, bmsSessionService) {
+    .directive('bmsUserInteraction', ['probWsService', 'bmsModalService', 'bmsSessionService', 'bmsErrorService',
+      function(probWsService, bmsModalService, bmsSessionService, bmsErrorService) {
         'use strict';
 
         return {
@@ -48,7 +50,8 @@ define([
                   function(transitions) {
                     $scope.transitions = transitions;
                   }).then(function() {}, function(err) {
-                  bmsModalService.openErrorDialog(err);
+                  bmsErrorService.print(err);
+                  //bmsModalService.openErrorDialog(err);
                 });
               });
 

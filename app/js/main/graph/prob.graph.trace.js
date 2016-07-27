@@ -6,12 +6,14 @@ define([
   'angular',
   'jquery',
   'bms.session',
-  'prob.graph.rendering'
+  'prob.graph.rendering',
+  'bms.common'
 ], function(angular, $) {
 
   return angular.module('prob.graph.trace', [
       'bms.session',
-      'prob.graph.rendering'
+      'prob.graph.rendering',
+      'bms.common'
     ])
     .factory('bmsDiagramTraceGraph', ['$q', function($q) {
 
@@ -95,8 +97,8 @@ define([
       };
 
     }])
-    .directive('bmsDiagramTraceView', ['bmsModalService', 'bmsRenderingService', 'bmsDiagramTraceGraph', 'bmsSessionService',
-      function(bmsModalService, bmsRenderingService, bmsDiagramTraceGraph, bmsSessionService) {
+    .directive('bmsDiagramTraceView', ['bmsModalService', 'bmsRenderingService', 'bmsDiagramTraceGraph', 'bmsSessionService', 'bmsErrorService',
+      function(bmsModalService, bmsRenderingService, bmsDiagramTraceGraph, bmsSessionService, bmsErrorService) {
         return {
           replace: false,
           scope: {
@@ -128,7 +130,8 @@ define([
           controller: ['$scope', function($scope) {
 
             if (!$scope.sessionId) {
-              bmsModalService.openErrorDialog("Session id must not be undefined.");
+              bmsErrorService.print("Session id must not be undefined.");
+              //bmsModalService.openErrorDialog("Session id must not be undefined.");
             }
 
             // TODO check if session really exists!?
@@ -195,7 +198,8 @@ define([
                       }
                     },
                     function error(error) {
-                      bmsModalService.openErrorDialog(error);
+                      bmsErrorService.print(error);
+                      //bmsModalService.openErrorDialog(error);
                     });
               };
             }

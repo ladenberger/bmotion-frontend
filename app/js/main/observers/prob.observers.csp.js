@@ -82,9 +82,8 @@ define([
                     errors.push(value['error']);
                   }
                 });
-
                 if (errors.length > 0) {
-                  defer.reject(ferrors);
+                  defer.reject(errors);
                 } else {
                   expressionCache = res;
                   defer.resolve(res);
@@ -197,6 +196,8 @@ define([
           this.apply()
             .then(function(values) {
               defer.resolve(values);
+            },function(errors) {
+              defer.reject(errors);
             });
 
           return defer.promise;
