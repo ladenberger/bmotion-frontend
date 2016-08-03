@@ -13,7 +13,7 @@ define([
 
         return {
 
-          initSession: function(sessionId, manifestFilePath, modelPath, options) {
+          initSession: function(sessionId, manifestFilePath, modelPath, groovyPath, options) {
 
             var defer = $q.defer();
 
@@ -33,6 +33,7 @@ define([
               sessionId: sessionId,
               manifestFilePath: manifestFilePath,
               modelPath: modelPath,
+              groovyPath: groovyPath,
               options: options
             }).then(function(data) {
               defer.resolve(data);
@@ -110,6 +111,27 @@ define([
             ws.emit("executeEvent", {
               sessionId: sessionId,
               options: options
+            }).then(function(result) {
+              defer.resolve(result);
+            }, function(err) {
+              defer.reject(err);
+            });
+
+            return defer.promise;
+
+          },
+          callMethod: function(sessionId, name, args) {
+
+            var defer = $q.defer();
+
+            if (!sessionId) {
+              defer.reject("Session id must not be undefined.");
+            }
+
+            ws.emit("callMethod", {
+              sessionId: sessionId,
+              name: name,
+              arguments: args
             }).then(function(result) {
               defer.resolve(result);
             }, function(err) {

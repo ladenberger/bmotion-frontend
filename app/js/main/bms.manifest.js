@@ -28,6 +28,10 @@ define([
           "type": "string",
           "description": "The relative path to the formal specification file that should be animated (e.g. model/mymodel.mch)"
         },
+        "groovy": {
+          "type": "string",
+          "description": "The relative path to the groovy script file"
+        },
         "modelOptions": {
           "type": "object",
           "description": "A key/value map defining the options for loading the model - The available options are dependent on the animator and formalism"

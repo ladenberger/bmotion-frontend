@@ -69,8 +69,9 @@ define([
 
                 var templateFolder = self.getTemplateFolder(manifestFilePath);
                 var modelPath = templateFolder + '/' + manifestData.model;
+                var groovyPath = templateFolder + '/' + manifestData.groovy;
 
-                bmsWsService.initSession(self.id, manifestFilePath, modelPath, manifestData.modelOptions)
+                bmsWsService.initSession(self.id, manifestFilePath, modelPath, groovyPath, manifestData.modelOptions)
                   .then(function(sessionData) {
 
                     self.tool = sessionData[0].tool;
