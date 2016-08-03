@@ -31,7 +31,7 @@ define([
             convert: function(element) {
               return "#" + element;
             },
-            trigger: function(origin, set) {}
+            actions: []
           }, options);
         };
 
@@ -101,14 +101,16 @@ define([
               element.each(function() {
                 var ele = $(this);
                 var setElements = ele.find(setSelector);
-                var returnValue = bms.callElementFunction(self.options.trigger, ele, 'set', setElements);
-                if (returnValue) {
-                  var bmsid = self.view.getBmsIdForElement(ele);
-                  fvalues[bmsid] = returnValue;
-                }
+                angular.forEach(self.options.actions, function(action) {
+                  var bmsid = self.view.getBmsIdForElement(setElements);
+                  if (fvalues[bmsid] === undefined) {
+                    fvalues[bmsid] = {};
+                  }
+                  fvalues[bmsid][action.attr] = action.value;
+                });
               });
-            }
 
+            }
             defer.resolve(fvalues);
 
           } else {

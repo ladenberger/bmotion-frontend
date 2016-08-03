@@ -233,12 +233,35 @@ define([
 
         };
 
+        var callMethod = function(sessionId, viewId, name, args, callback) {
+
+          var defer = $q.defer();
+
+          var session = bmsSessionService.getSession(sessionId);
+          var view = session.getView(viewId);
+
+          bmsWsService.callMethod(sessionId, name, args)
+            .then(
+              function success(result) {
+                if (callback) callback.call(this, result);
+                defer.resolve(result);
+              },
+              function error(err) {
+                bmsErrorService.print(err);
+                defer.reject(err);
+              });
+
+          return defer.promise;
+
+        };
+
         return {
           eval: eval,
           evalExtern: evalExtern,
           addObserver: addObserver,
           addEvent: addEvent,
           executeEvent: executeEvent,
+          callMethod: callMethod,
           getModelData: getModelData,
           on: on
         }

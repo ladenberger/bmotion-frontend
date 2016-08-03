@@ -56,7 +56,6 @@ define([
 
         observer.prototype.getDiagramData = function(node) {
           var self = this;
-          console.log(node);
           if (node.results) {
             return self.getFormulas().map(function(fobj) {
               return node.results[self.getId()][fobj.formula]['result'];

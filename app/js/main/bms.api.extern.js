@@ -67,6 +67,14 @@ define([
         },
         init: function(callback) {
           this.on("ModelInitialised", callback);
+        },
+        callMethod: function(name, args, callback) {
+          setTimeout(function() {
+            var elem = angular.element(document.body);
+            var injector = elem.injector();
+            var service = injector.get('bmsApiService');
+            service.callMethod(sessionId, viewId, name, args, callback);
+          }, 0);
         }
       }
 
