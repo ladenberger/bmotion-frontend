@@ -40,9 +40,6 @@ define([
           var self = this;
           var session = self.view.session;
           if (session.isBVisualization()) {
-            if (typeof session.toolData.initialized === 'boolean' && session.toolData.initialized === false) {
-              return false;
-            }
             if (session.toolData.model !== undefined) {
               var refinements = session.toolData.model.refinements;
               if (refinements) {
