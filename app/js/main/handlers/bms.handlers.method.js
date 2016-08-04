@@ -9,12 +9,13 @@ define([
   'bms.modal',
   'bms.ws',
   'bms.session',
-  'bms.visualization'
+  'bms.visualization',
+  'bms.common'
 ], function(angular, $, bms) {
 
-  return angular.module('bms.handlers.method', ['bms.modal', 'bms.ws', 'bms.session', 'bms.visualization'])
-    .factory('methodEvent', ['ws', '$q', 'bmsModalService', 'bmsVisualizationService', 'bmsWsService',
-      function(ws, $q, bmsModalService, bmsVisualizationService, bmsWsService) {
+  return angular.module('bms.handlers.method', ['bms.modal', 'bms.ws', 'bms.session', 'bms.visualization', 'bms.common'])
+    .factory('methodEvent', ['ws', '$q', 'bmsModalService', 'bmsVisualizationService', 'bmsWsService', 'bmsErrorService',
+      function(ws, $q, bmsModalService, bmsVisualizationService, bmsWsService, bmsErrorService) {
         'use strict';
 
         var event = function(view, options) {
@@ -78,9 +79,8 @@ define([
                 bmsWsService.callMethod(self.view.session.id, normalized.name, normalized.args)
                   .then(function(res) {
                     normalized.callback.call(this, ele, res);
-                    defer.resolve();
                   }, function(err) {
-                    d.reject(err);
+                    bmsErrorService.print(err);
                   });
 
               });
