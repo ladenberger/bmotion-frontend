@@ -1,4 +1,7 @@
-define(['jquery', 'bms.directive.visualization.view'], function($) {
+define([
+  'jquery',
+  'bms.directive.visualization.view'
+], function($) {
 
   "use strict";
 

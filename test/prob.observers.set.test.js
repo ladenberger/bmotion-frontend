@@ -24,7 +24,11 @@ define([
             set: 'request',
             convert: function(element) {
               return "#label_floor_" + element;
-            }
+            },
+            actions: [{
+              attr: 'fill',
+              value: 'green'
+            }]
           });
         });
 
@@ -85,22 +89,24 @@ define([
 
     it('(6) check function should call trigger function (with origin and set elements)', function(done) {
 
-      setObserverInstance.options.trigger = function(origin, set) {
-        // Origin should be passed to trigger function
-        expect(origin).toBeInDOM();
-        // Set should be passed to trigger function
-        expect(set).toBeInDOM();
-        done();
-      };
-
       var promise = setObserverInstance.check({
         'request': {
           formula: 'request',
           result: [-1, 0, 1]
         }
       });
-      promise.then(function() {}).finally(function() {
+      promise.then(function(attributeValues) {
+
+        var requestId = $('#label_floor_-1,#label_floor_1,#label_floor_0').attr("data-bms-id");
+        var expectObject = {};
+        expectObject[requestId] = {
+          'fill': 'green'
+        };
+        expect(attributeValues).toEqual(expectObject);
+
+      }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
+        done();
       });
 
     });
@@ -109,13 +115,6 @@ define([
 
       var requestElement = $("#request");
       setObserverInstance.options.element = requestElement;
-      setObserverInstance.options.trigger = function(origin, set) {
-        // Origin should be passed to trigger function
-        expect(origin).toEqual(requestElement);
-        // Set should be passed to trigger function
-        expect(set).toBeInDOM();
-        done();
-      };
 
       var promise = setObserverInstance.check({
         'request': {
@@ -123,8 +122,18 @@ define([
           result: [-1, 0, 1]
         }
       });
-      promise.then(function() {}).finally(function() {
+      promise.then(function(attributeValues) {
+
+        var requestId = $('#label_floor_-1,#label_floor_1,#label_floor_0').attr("data-bms-id");
+        var expectObject = {};
+        expectObject[requestId] = {
+          'fill': 'green'
+        };
+        expect(attributeValues).toEqual(expectObject);
+
+      }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
+        done();
       });
 
     });

@@ -142,24 +142,23 @@ define([
 
     });
 
-    it('(5) addObserver function should reject if no selector was set', function(done) {
+    it('(5) addObserver function should resolve if no selector was set', function(done) {
 
       spyOn(bmsWsService, "evaluateFormulas").and.callFake(function(evt, args) {
         var defer = $q.defer();
-        defer.resolve({});
+        var results = {};
+        for (var id in args) {
+          results[id] = {}
+        }
+        defer.resolve(results);
         return defer.promise;
       });
 
-      var error;
       var promise = bmsApiService.addObserver(sessionId, viewId, 'formula', {});
       promise.then(
-          function() {},
-          function(err) {
-            error = err;
-          })
+          function() {})
         .finally(function() {
-          expect(error).toBeDefined();
-          expect(promise.$$state.status).toBe(2); // Rejected
+          expect(promise.$$state.status).toBe(1); // Resolved
           done();
         });
 
@@ -233,7 +232,7 @@ define([
       // Simulate resolving executeEvent server call
       spyOn(bmsWsService, "executeEvent").and.callFake(function(evt, args) {
         var defer = $q.defer();
-        defer.reject('somerror');
+        defer.reject('Some error occurred while executing event.');
         return defer.promise;
       });
 

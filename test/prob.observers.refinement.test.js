@@ -10,7 +10,7 @@ define([
 
     var refinementObserver;
     var refinementObserverInstance;
-    
+
     beforeEach(module('prob.observers.refinement'));
 
     beforeEach(function(done) {
@@ -37,17 +37,12 @@ define([
       expect(refinementObserverInstance.getDefaultOptions).toBeDefined();
     }));
 
-    it('(3) apply function should reject if no selector is given', function(done) {
+    it('(3) apply function should resolve if no selector is given', function(done) {
 
       refinementObserverInstance.options.selector = undefined;
       var promise = refinementObserverInstance.apply(true);
-      var error;
-
-      promise.then(function() {}, function(err) {
-        error = err;
-      }).finally(function() {
-        expect(error).toBeDefined();
-        expect(promise.$$state.status).toBe(2); // Rejected
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolve
         done();
       });
 

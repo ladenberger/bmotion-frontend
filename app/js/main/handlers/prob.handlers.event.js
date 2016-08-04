@@ -190,7 +190,7 @@ define([
           var self = this;
 
           if (!self.options.selector && !self.options.element) {
-            defer.reject("Please specify a selector or an element.");
+            defer.reject("Please specify a selector or an element for execute event handler.");
           } else {
 
             var traceId = self.view.toolOptions.traceId;

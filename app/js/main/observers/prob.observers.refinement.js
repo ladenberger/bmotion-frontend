@@ -29,36 +29,46 @@ define([
           }, options);
         };
 
-        observer.prototype.apply = function(isRefinement) {
+        observer.prototype.apply = function(isRefinement, _container_) {
 
           var defer = $q.defer();
-
-          var obj = {};
-
           var self = this;
-          var selector = self.options.selector;
+          var element;
 
-          if (!selector && !self.options.element) {
-            defer.reject("Please specify a selector or an element.");
-          } else {
+          // Determine graphical element of observer
+          if (self.options.element !== undefined) {
+            element = self.options.element;
+          } else if (self.options.selector !== undefined) {
+            var container = _container_ ? _container_ : self.view.container.contents();
+            element = container.find(self.options.selector);
+          }
+
+          if (element instanceof $) {
+            var fvalues = {};
             var el = self.view.container.find(self.options.selector);
             var jcontainer = $(self.view.container);
             el.each(function(i, v) {
               var rr;
               var e = $(v);
               if (isRefinement) {
-                rr = bms.callOrReturn(self.options.enable, e);
+                rr = bms.callElementFunction(self.options.enable, e);
               } else {
-                rr = bms.callOrReturn(self.options.disable, e);
+                rr = bms.callElementFunction(self.options.disable, e);
               }
               if (rr) {
                 var bmsid = self.view.getBmsIdForElement(e);
-                obj[bmsid] = rr;
+                fvalues[bmsid] = rr;
               }
             });
+            defer.resolve(fvalues);
+          } else {
+            if (isRefinement) {
+              bms.callFunction(self.options.enable);
+            } else {
+              bms.callFunction(self.options.disable);
+            }
+            defer.resolve({});
           }
-
-          defer.resolve(obj);
 
           return defer.promise;
 

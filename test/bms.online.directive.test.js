@@ -12,7 +12,7 @@ define([
     var viewData;
     var viewDataWithoutJsonElements;
     var manifestData;
-    var templateFolder = "someTemplateFolder";
+    var templateFolder = "";
     var manifestPath = templateFolder + "/bmotion.json";
     var viewId = 'lift';
     var bmsSessionInstance;
@@ -29,7 +29,7 @@ define([
 
     describe('compile tests', function() {
 
-      beforeEach(function() {
+      beforeEach(function(done) {
 
         inject(function(bmsSessionService, bmsManifestService, bmsWsService, _bmsViewService_, $compile, ws, _$rootScope_, $q, _$httpBackend_) {
 
@@ -41,27 +41,29 @@ define([
           $rootScope = _$rootScope_;
           bmsViewService = _bmsViewService_;
 
-          manifestData = {
-            "model": "model/m3.bcm",
+          viewData = {
             "id": viewId,
             "name": "Lift environment",
             "template": "lift.html",
             "observers": "observers.json",
+            "events": "events.json"
+          };
+
+          viewDataWithoutJsonElements = {
+            "id": viewId,
+            "name": "Lift environment",
+            "template": "lift.html"
+          };
+
+          manifestData = {
+            "model": "model/m3.bcm",
+            "name": "Lift visualization",
+            "modelOptions": {},
+            "id": "rootId",
+            "template": "template.html",
+            "observers": "observers.json",
             "events": "events.json",
-            "views": [{
-              "id": "secondView",
-              "name": "Lift controller",
-              "template": "controller.html",
-              "observers": "observers.json",
-              "events": "events.json"
-            }, {
-              "id": "thirdView",
-              "name": "Lift controller",
-              "template": "controller.html",
-              "observers": "observers.json",
-              "events": "events.json"
-            }],
-            "modelOptions": {}
+            "views": [viewData]
           };
 
           jsonObservers = {
@@ -118,41 +120,49 @@ define([
           $httpBackend.when('GET', templateFolder + '/observers.json').respond(jsonObservers);
           $httpBackend.when('GET', templateFolder + '/events.json').respond(jsonEvents);
 
-          // Simulate compilation of bmsVisualizationView directive
-          var element = angular.element('<div data-bms-online-visualization="' + manifestPath + '"></div>');
-          directiveElem = $compile(element)($rootScope.$new());
-          $scope = directiveElem.isolateScope();
+          bmsSessionInstance = bmsSessionService.getSession(sessionId);
+          var viewInstance = bmsSessionInstance.getView(viewId);
+          var promise = bmsSessionInstance.init(manifestPath);
+          promise.then(function() {
 
-          // Set manually container of view
-          loadFixtures('examples/lift.html');
-          $scope.view.container = $('body');
+            // Simulate compilation of bmsVisualizationView directive
+            var element = angular.element('<div data-bms-online-visualization="' + manifestPath + '"></div>');
+            directiveElem = $compile(element)($rootScope.$new());
+            $scope = directiveElem.isolateScope();
 
-          // Simulate checkObservers and setupEvents methods
-          spyOn($scope.view, "checkObservers").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-          });
+            // Set manually container of view
+            loadFixtures('examples/lift.html');
+            $scope.view.container = $('body');
 
-          spyOn($scope.view, "setupEvents").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-          });
+            // Simulate checkObservers and setupEvents methods
+            spyOn($scope.view, "checkObservers").and.callFake(function(evt, args) {
+              var deferred = $q.defer();
+              deferred.resolve();
+              return deferred.promise;
+            });
+            spyOn($scope.view, "setupEvents").and.callFake(function(evt, args) {
+              var deferred = $q.defer();
+              deferred.resolve();
+              return deferred.promise;
+            });
 
-          spyOn($scope.view, "loadTemplate").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-          });
+            spyOn($scope.session, "isInitialized").and.callFake(function(evt, args) {
+              var deferred = $q.defer();
+              deferred.resolve(sessionId);
+              return deferred.promise;
+            });
 
-          spyOn($scope.session, "isInitialized").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve(sessionId);
-            return deferred.promise;
-          });
+            spyOn($scope.view, "loadTemplate").and.callFake(function(evt, args) {
+              var deferred = $q.defer();
+              deferred.resolve();
+              return deferred.promise;
+            });
+
+          }).finally(done);
 
           $httpBackend.flush();
+
+          $rootScope.$digest();
 
         });
 
@@ -165,7 +175,6 @@ define([
 
       it('session is set', function() {
         expect($scope.session).toBeDefined();
-        expect($scope.session.manifestData).toEqual(manifestData);
       });
 
       it('view instance and container is set', function() {
@@ -178,11 +187,11 @@ define([
         var promise = $scope.view.isInitialized();
         promise.then(function() {
           expect($scope.view.viewData).toEqual({
-            "id": viewId,
-            "name": "Lift environment",
-            "template": "lift.html",
-            "observers": "observers.json",
-            "events": "events.json"
+            id: 'rootId',
+            template: 'template.html',
+            name: 'Lift visualization',
+            observers: 'observers.json',
+            events: 'events.json'
           });
           expect($scope.view.getEvents().length).toBe(1);
           expect($scope.view.getObservers().length).toBe(2);
@@ -191,21 +200,17 @@ define([
           done();
         });
 
-        $rootScope.$digest();
-
       });
 
       it('additional views should be added', function(done) {
 
         var promise = $scope.view.isInitialized();
         promise.then(function() {
-          expect(bmsViewService.getViews().length).toBe(2);
+          expect(bmsViewService.getViews().length).toBe(1);
         }).finally(function() {
           expect(promise.$$state.status).toBe(1); // Resolved
           done();
         });
-
-        $rootScope.$digest();
 
       });
 

@@ -225,6 +225,17 @@ define([
       expect(predicateObserverInstance.shouldBeChecked()).toBe(false);
     });
 
+    it('(15) apply function should resolve if no selector is given', function(done) {
+
+      predicateObserverInstance.options.selector = undefined;
+      var promise = predicateObserverInstance.apply(true);
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolve
+        done();
+      });
+
+    });
+
   });
 
 });

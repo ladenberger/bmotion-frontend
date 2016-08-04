@@ -76,7 +76,7 @@ define([
           var self = this;
           var element;
 
-          if(Object.prototype.toString.call(result) === '[object Array]') {
+          if (Object.prototype.toString.call(result) === '[object Array]') {
             result = result[0];
           }
 
@@ -106,7 +106,11 @@ define([
             });
             defer.resolve(fvalues);
           } else {
-            bms.callFunction(self.options.trigger, 'values', result);
+            if (result === "TRUE") {
+              bms.callFunction(self.options.true);
+            } else if (result === "FALSE") {
+              bms.callFunction(self.options.false);
+            }
             defer.resolve({});
           }
 
@@ -120,7 +124,7 @@ define([
           var self = this;
 
           if (!results) {
-            defer.reject("Results must be passed to predicate observer check function");
+            defer.reject("Results must be passed to predicate predicate observer check function.");
           } else {
             if (results[self.options.predicate]) {
 

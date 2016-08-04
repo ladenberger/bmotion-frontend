@@ -36,8 +36,8 @@ define([
         bmsSession.prototype.getTemplateFolder = function(manifestFilePath) {
           //TODO check if manifestFilePath is undefined
           //var filename = manifestFilePath.replace(/^.*[\\\/]/, '');
-          return manifestFilePath.replace('bmotion.json', '');
-          return folder;
+          return manifestFilePath.replace('/bmotion.json', '');
+          //return folder;
         };
 
         bmsSession.prototype.getSvgData = function() {

@@ -128,7 +128,7 @@ define([
           var self = this;
 
           if (!results) {
-            defer.reject("Results must be passed to set observer check function");
+            defer.reject("Results must be passed to set observer check function.");
           } else {
 
             if (results[self.options.set]) {

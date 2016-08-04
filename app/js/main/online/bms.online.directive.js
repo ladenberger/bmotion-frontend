@@ -20,8 +20,8 @@ define([
         'bms.view',
         'ngRoute'
       ])
-      .directive('bmsOnlineVisualization', ['$compile', '$rootScope', '$location', '$route', 'bmsModalService', 'bmsSessionService', 'bmsViewService',
-        function($compile, $rootScope, $location, $route, bmsModalService, bmsSessionService, bmsViewService) {
+      .directive('bmsOnlineVisualization', ['$rootScope', '$location', '$route', 'bmsModalService', 'bmsSessionService', 'bmsViewService',
+        function($rootScope, $location, $route, bmsModalService, bmsSessionService, bmsViewService) {
           return {
             template: '<div class="fullWidthHeight">' +
               '<div data-bms-visualization-view="{{viewId}}" data-bms-visualization-id="{{id}}" data-bms-session-id="{{sessionId}}" data-bms-root-view class="fullWidthHeight"></div>' +

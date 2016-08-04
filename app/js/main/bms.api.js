@@ -223,7 +223,7 @@ define([
           } else {
 
             var error = "Execute event handler has an invalid scheme: " + tv4.error.message;
-            bmsErrorService.print(err);
+            bmsErrorService.print(error);
             //bmsModalService.openErrorDialog(error);
             defer.reject(error);
 
