@@ -128,8 +128,8 @@ define([
         }
       });
 
-      var doorBmsId = doorElement.attr('data-bms-id');
       promise.then(function(attributeValues) {
+        var doorBmsId = doorElement.attr('data-bms-id');
         var expectedObj = {};
         expectedObj[doorBmsId] = {
           'stroke-width': 1

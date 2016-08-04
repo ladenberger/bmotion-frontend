@@ -9,7 +9,8 @@ define([
   'prob.observers.predicate',
   'prob.observers.csp',
   'prob.observers.data',
-  'prob.observers.set'
+  'prob.observers.set',
+  'bms.observers.method'
 ], function(angular) {
 
   return angular.module('bms.observers', [
@@ -18,7 +19,8 @@ define([
       'prob.observers.predicate',
       'prob.observers.csp',
       'prob.observers.data',
-      'prob.observers.set'
+      'prob.observers.set',
+      'bms.observers.method'
     ])
     .service('bmsObserverService',
       function() {

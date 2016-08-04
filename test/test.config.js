@@ -36,6 +36,7 @@ requirejs.config({
     "prob.observers.csp": "js/main/observers/prob.observers.csp",
     "prob.observers.data": "js/main/observers/prob.observers.data",
     "prob.observers.set": "js/main/observers/prob.observers.set",
+    "bms.observers.method": "js/main/observers/bms.observers.method",
 
     // Graph modules
     "prob.graph": "js/main/graph/prob.graph",
