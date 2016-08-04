@@ -4,10 +4,14 @@
  */
 define([
   'angular',
-  'prob.handlers.event'
+  'prob.handlers.event',
+  'bms.handlers.method'
 ], function(angular) {
 
-  return angular.module('bms.handlers', ['prob.handlers.event'])
+  return angular.module('bms.handlers', [
+      'prob.handlers.event',
+      'bms.handlers.method'
+    ])
     .service('bmsHandlerService',
       function() {
         'use strict';

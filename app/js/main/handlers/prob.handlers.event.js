@@ -11,7 +11,7 @@ define([
   'prob.ws',
   'bms.session',
   'bms.visualization',
-  'qtip',
+  'qtip'
 ], function(angular, $, bms) {
 
   return angular.module('prob.handlers.event', ['bms.modal', 'bms.ws', 'prob.ws', 'bms.session', 'bms.visualization'])

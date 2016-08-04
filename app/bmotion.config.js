@@ -19,6 +19,7 @@ requirejs.config({
     // Handler modules
     "bms.handlers": "js/main/handlers/bms.handlers",
     "prob.handlers.event": "js/main/handlers/prob.handlers.event",
+    "bms.handlers.method": "js/main/handlers/bms.handlers.method",
 
     // Observer modules
     "bms.observers": "js/main/observers/bms.observers",

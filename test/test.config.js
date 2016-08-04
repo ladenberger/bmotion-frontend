@@ -23,6 +23,7 @@ requirejs.config({
 
     "prob.directive.execute.event": "js/main/directives/prob.directive.execute.event",
     "prob.directive.view": "js/main/directives/prob.directive.view",
+    "bms.handlers.method": "js/main/handlers/bms.handlers.method",
 
     // Handler modules
     "bms.handlers": "js/main/handlers/bms.handlers",

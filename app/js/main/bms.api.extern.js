@@ -39,7 +39,7 @@ define([
             service.addObserver(sessionId, viewId, what, options);
           }, 0);
         },
-        registerEvent: function(type, options) {
+        handler: function(type, options) {
           setTimeout(function() {
             var elem = angular.element(document.body);
             var injector = elem.injector();
@@ -49,7 +49,7 @@ define([
         },
         executeEvent: function(options) {
           if (options.selector || options.element) {
-            this.registerEvent('executeEvent', options);
+            this.handler('executeEvent', options);
           } else {
             var elem = angular.element(document.body);
             var injector = elem.injector();
