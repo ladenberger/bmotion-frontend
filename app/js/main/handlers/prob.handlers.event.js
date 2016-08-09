@@ -205,7 +205,7 @@ define([
 
               var tooltip = self.initTooltip(self.view.session.id, jele, jcontainer, traceId);
               var api = tooltip.qtip('api');
-              var callbackFunc = bms.convertFunction('data,origin,container', self.options.callback);
+              var callbackFunc = bms.convertFunction('origin,data,container', self.options.callback);
 
               jele.click(function(event) {
 
@@ -241,7 +241,7 @@ define([
                         data.name = name;
                         data.predicate = predicate;
                         // Call callback function with data
-                        callbackFunc(data, jele, jcontainer);
+                        callbackFunc(jele, data, jcontainer);
                       }, function(err) {
                         // If an error occurred while executing the event,
                         // open error dialog with error message
