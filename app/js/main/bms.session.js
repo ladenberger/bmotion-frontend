@@ -67,26 +67,21 @@ define([
             bmsManifestService.getManifest(manifestFilePath)
               .then(function(manifestData) {
 
-                var templateFolder = self.getTemplateFolder(manifestFilePath);
-                var modelPath = templateFolder + '/' + manifestData.model;
-                var groovyPath;
+                self.manifestFilePath = manifestFilePath;
+                self.manifestData = manifestData;
+                self.templateFolder = self.getTemplateFolder(manifestFilePath);
+                self.modelPath = self.templateFolder + '/' + manifestData.model;
 
-                if(manifestData.groovy) {
-                   groovyPath = templateFolder + '/' + manifestData.groovy;
+                if (manifestData.groovy) {
+                  self.groovyPath = self.templateFolder + '/' + manifestData.groovy;
                 }
 
-                bmsWsService.initSession(self.id, manifestFilePath, modelPath, groovyPath, manifestData.modelOptions)
+                bmsWsService.initSession(self.id, self.manifestFilePath, self.modelPath, self.groovyPath, manifestData.modelOptions)
                   .then(function(sessionData) {
-
                     self.tool = sessionData[0].tool;
                     self.toolData = sessionData[1];
-                    self.manifestFilePath = manifestFilePath;
-                    self.manifestData = manifestData;
-                    self.templateFolder = templateFolder;
-                    self.modelPath = modelPath;
                     defer.resolve(self);
                     self.initialized.resolve(self);
-
                   }, function(err) {
                     defer.reject(err);
                   });
@@ -116,7 +111,10 @@ define([
               bmsManifestService.getManifest(self.manifestFilePath)
                 .then(function(manifestData) {
                   self.manifestData = manifestData;
-                  self.modelPath = self.templateFolder + '/' + self.manifestData.model;
+                  self.modelPath = self.templateFolder + '/' + manifestData.model;
+                  if (manifestData.groovy) {
+                    self.groovyPath = self.templateFolder + '/' + manifestData.groovy;
+                  }
                   defer.resolve(self);
                   self.initialized.resolve(self);
                 });
