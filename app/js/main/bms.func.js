@@ -95,32 +95,34 @@ define([
         }
       }
     },
-    // Calls function or returns object (used for observer properties)
+    // Calls function or returns object (used for
+    // observer and interactive handler properties)
     callOrReturn: function(subject, element, isJsString, container) {
-      //if (typeof subject === "boolean") {
-      //  return subject;
-      //} else
+
+      var arguments = [];
+      var argStrings = [];
+      if (element) {
+        arguments.push(element);
+        argStrings.push('origin');
+      }
+      if (container) {
+        arguments.push(container);
+        argStrings.push('container');
+      }
+
       if (api.isFunction(subject)) {
-        if (container) {
-          return subject.call(this, element, container);
-        } else {
-          return subject.call(this, element);
-        }
+        return subject.apply(this, arguments);
       } else if (isJsString) {
         try {
-          if (container) {
-            var func = new Function('origin,container', subject);
-            return func(element, container);
-          } else {
-            var func = new Function('origin', subject);
-            return func(element);
-          }
+          var func = new Function(argStrings.join(","), subject);
+          return func.apply(this, arguments);
         } catch (err) {
           return subject;
         }
       } else {
         return subject;
       }
+
     },
     // Converts or returns the given function
     convertFunction: function(parameters, func) {

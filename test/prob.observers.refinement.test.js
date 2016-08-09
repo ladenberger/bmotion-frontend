@@ -39,8 +39,14 @@ define([
 
     it('(3) apply function should resolve if no selector is given', function(done) {
 
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
+
       refinementObserverInstance.options.selector = undefined;
-      var promise = refinementObserverInstance.apply(true);
+      var promise = refinementObserverInstance.apply();
       promise.then(function() {}).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolve
         done();
