@@ -85,7 +85,7 @@ define([
             .then(function(events) {
 
               // Build tooltip content
-              var tt_container = $('<div class="qtiplinks" style="max-width:250px;"></div>');
+              var tt_container = $('<div class="qtiplinks" style="max-width:400px;"></div>');
               var tt_ul = $('<ul style="display:table-cell;"></ul>');
               angular.forEach(events, function(evt) {
 
