@@ -509,11 +509,8 @@ app.on('ready', function() {
   // Start BMotionWeb server
   var path = require('path');
   var appPath = path.dirname(__dirname);
-  //var appPath = '/home/lukas/git/bmotion-frontend/dev/standalone/electron-v0.36.2/resources';
-  //var exec = require('child_process').exec;
   var isWin = /^win/.test(process.platform);
   var separator = isWin ? ';' : ':';
-  server = cp.exec('java -Xmx1024m -cp ' + appPath + '/libs/*' + separator + appPath + '/libs/bmotion-prob-0.3.0.jar de.bmotion.prob.Standalone -local');
   server = cp.spawn('java', ['-Xmx1024m', '-cp', appPath + '/libs/*' + separator + appPath + '/libs/bmotion-prob-0.3.1-SNAPSHOT.jar', 'de.bmotion.prob.Standalone', '-local'], {
     detached: true
   });
