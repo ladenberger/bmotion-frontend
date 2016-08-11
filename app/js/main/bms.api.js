@@ -89,18 +89,12 @@ define([
         };
 
         var on = function(sessionId, viewId, what, callback) {
-
           var session = bmsSessionService.getSession(sessionId);
           var view = session.getView(viewId);
           var listener = view.addListener(what, callback);
-
-          // If page is reloaded and the model is initialized, trigger init listener once
-          if (listener && what === "ModelInitialised" && session.toolData.initialized) {
-            // Init listener should be called only once
-            listener.callback(view);
-            listener.executed = true;
+          if (what === "ModelInitialised" && session.toolData.initialized) {
+            view.triggerListeners("ModelInitialised");
           }
-
         };
 
         var getModelData = function(sessionId, viewId, what, options) {

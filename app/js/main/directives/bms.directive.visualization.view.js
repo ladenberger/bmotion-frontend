@@ -129,10 +129,9 @@ define([
                 // Get defer of saved svg file
                 svgItem.deferSave = $q.defer();
 
-                // Clear all observers, events and listeners
+                // Clear all observers and events
                 $scope.view.clearObservers();
                 $scope.view.clearEvents();
-                $scope.view.clearListeners();
 
                 // Read observer and events coming from json
                 $scope.addJsonData({
@@ -149,6 +148,7 @@ define([
                     // Finally check and setup events
                     $scope.view.checkObservers();
                     $scope.view.setupEvents();
+                    $scope.view.triggerListeners("svg_" + svg);
                   });
               }
 
@@ -324,10 +324,23 @@ define([
                   .then(function() {
                     $scope.initView(newValue)
                       .then(function success() {
-                          // if no errors occurred in the chain mark visualization
-                          // as initialized and propagate "visualizationLoaded" event
-                          $rootScope.$broadcast('visualizationLoaded', $scope.view);
-                          $scope.view.initialized.resolve();
+
+                          var svgPromises = [];
+                          for (svg in $scope.view.svg) {
+                            var svgItem = $scope.view.svg[svg];
+                            svgPromises.push(svgItem.defer);
+                          }
+                          $q.all(svgPromises).then(function(data) {
+                            // Trigger registeres svg listeners
+                            for (svg in $scope.view.svg) {
+                              $scope.view.triggerListeners("svg_" + svg);
+                            }
+                            // if no errors occurred in the chain mark visualization
+                            // as initialized and propagate "visualizationLoaded" event
+                            $rootScope.$broadcast('visualizationLoaded', $scope.view);
+                            $scope.view.initialized.resolve();
+                          });
+
                         },
                         function error(err) {
                           //bmsErrorService.print('An error occurred while initializing view ' + $scope.id + err);

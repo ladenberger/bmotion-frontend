@@ -65,6 +65,14 @@ define([
             service.on(sessionId, viewId, what, callback);
           }, 0);
         },
+        onLoadSvg: function(svgId, callback) {
+          setTimeout(function() {
+            var elem = angular.element(document.body);
+            var injector = elem.injector();
+            var service = injector.get('bmsApiService');
+            service.on(sessionId, viewId, "svg_" + svgId + ".svg", callback);
+          }, 0);
+        },
         init: function(callback) {
           this.on("ModelInitialised", callback);
         },

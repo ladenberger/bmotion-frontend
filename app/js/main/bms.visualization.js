@@ -283,11 +283,19 @@ define([
         };
 
         bmsVisualization.prototype.triggerListeners = function(cause) {
+          var self = this;
+          console.log(cause)
           angular.forEach(this.listener[cause], function(l) {
             if (!l.executed) {
-              l.callback();
               // Init listener should be called only once
-              if (cause === "ModelInitialised") l.executed = true;
+              if (cause === "ModelInitialised") {
+                l.executed = true;
+                self.isInitialized().then(function() {
+                  l.callback();
+                });
+              } else {
+                l.callback();
+              }
             }
           });
         };

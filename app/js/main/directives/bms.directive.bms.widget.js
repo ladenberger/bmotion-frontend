@@ -117,7 +117,7 @@ define([
                 var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
                 var viewInstance = bmsSessionInstance.getView($scope.id);
                 viewInstance.container.contents().find("body").append(newInput);
-                newInput.qtip({
+                /*newInput.qtip({
                   content: {
                     text: ''
                   },
@@ -158,7 +158,7 @@ define([
                       input.qtip('option', 'content.text', "Please enter a valid <strong>" + btype + "</strong>").qtip('show');
                     }
                   });
-                });
+                });*/
                 break;
             }
 
