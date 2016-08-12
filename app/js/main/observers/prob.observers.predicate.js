@@ -41,11 +41,8 @@ define([
           },
           getDiagramData: function(node, observer, view, element) {
             if (node.results) {
-              return getFormulas(observer, view, element).map(function(fobj) {
-                return node.results[getId()][fobj.formula]['result'];
-              });
-            } else {
-              return [];
+              var fobj = observerService.getFormulas(observer, view, element);
+              return node.results[observer.id][fobj[0].formula]['result'];
             }
           },
           getFormulas: function(observer, view, element) {
@@ -64,10 +61,6 @@ define([
             var defer = $q.defer();
 
             container = container ? container : view.container.contents();
-
-            if (Object.prototype.toString.call(result) === '[object Array]') {
-              result = result[0];
-            }
 
             if (element instanceof $) {
               var fvalues = {};

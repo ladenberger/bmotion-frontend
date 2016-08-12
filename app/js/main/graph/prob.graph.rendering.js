@@ -303,11 +303,6 @@ define([
             });
           }
 
-          /*var service = $injector.get(o.type + "Observer", "");
-          if (typeof service.getDiagramData === 'function' && typeof service.apply === 'function') {
-            promises.push(service.apply(o, view, clonedElement, clonedContainer, service.getDiagramData(node, o, view, obj.element)));
-          }*/
-
         });
 
         // Apply observers

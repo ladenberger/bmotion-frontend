@@ -45,15 +45,12 @@ define([
           },
           getDiagramData: function(node, observer, view, element) {
             if (node.results) {
-              return observerService.getFormulas(observer, view, element).map(function(fobj) {
-                return node.results[observer.id][fobj.formula]['result'];
-              });
-            } else {
-              return [];
+              var fobj = observerService.getFormulas(observer, view, element);
+              return node.results[observer.id][fobj[0].formula]['result'];
             }
           },
           getFormulas: function(observer, view, element) {
-            var normalized = bms.normalize(observer.options, ["true", "false"], element, view.container);
+            var normalized = bms.normalize(observer.options, ["convert", "trigger"], element, view.container);
             return [{
               formula: normalized.set,
               options: {
@@ -72,11 +69,11 @@ define([
             if (element instanceof $) {
 
               var fvalues = {};
-
               if (Object.prototype.toString.call(result) === '[object Array]' && result.length > 0) {
-                var convertedResult = result.map(function(element) {
-                  return normalized.convert(element);
-                });
+                var convertedResult = result
+                  .map(function(element) {
+                    return normalized.convert(element);
+                  });
                 var setSelector = convertedResult.join(",");
                 var setElements = element.find(setSelector);
                 setElements.each(function(i, e) {
