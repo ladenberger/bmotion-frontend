@@ -13,8 +13,8 @@ define([
 ], function(angular, $, bms) {
 
   return angular.module('bms.visualization', ['bms.observers', 'bms.handlers', 'bms.session', 'bms.ws'])
-    .factory('bmsVisualization', ['$q', 'ws', '$injector', 'bmsWsService',
-      function($q, ws, $injector, bmsWsService) {
+    .factory('bmsVisualization', ['$q', 'ws', '$injector', '$compile', 'bmsWsService',
+      function($q, ws, $injector, $compile, bmsWsService) {
 
         var bmsVisualization = function(id, session) {
           this.id = id;
@@ -40,9 +40,13 @@ define([
           var self = this;
 
           try {
-            // Create an add new observer instance
-            var instance = $injector.get(type + "Observer", "");
-            var observerInstance = new instance(self, data);
+            var service = $injector.get(type + "Observer", "");
+            var defaultOptions = service.getDefaultOptions(data);
+            var observerInstance = {
+              id: bms.uuid(),
+              type: type,
+              options: defaultOptions
+            };
             this.observers.push(observerInstance);
             defer.resolve(observerInstance);
           } catch (err) {
@@ -53,14 +57,6 @@ define([
 
         };
 
-        /*bmsVisualization.prototype.addJsObserver = function(type, data) {
-          return this.addObserver(type, data, 'js');
-        };
-
-        bmsVisualization.prototype.addJsonObserver = function(type, data) {
-          return this.addObserver(type, data, 'json');
-        };*/
-
         bmsVisualization.prototype.addEvent = function(type, data) {
 
           var defer = $q.defer();
@@ -68,8 +64,13 @@ define([
           var self = this;
 
           try {
-            var instance = $injector.get(type + "Event", "");
-            var eventInstance = new instance(self, data);
+            var service = $injector.get(type + "Event", "");
+            var defaultOptions = service.getDefaultOptions(data);
+            var eventInstance = {
+              id: bms.uuid(),
+              type: type,
+              options: defaultOptions
+            };
             this.events.push(eventInstance);
             defer.resolve(eventInstance);
           } catch (err) {
@@ -80,93 +81,21 @@ define([
 
         };
 
-        /*bmsVisualization.prototype.addJsEvent = function(type, data) {
-          return this.addEvent(type, data, 'js');
-        };
-
-        bmsVisualization.prototype.addJsonEvent = function(type, data) {
-          return this.addEvent(type, data, 'json');
-        };*/
-
         bmsVisualization.prototype.getObservers = function() {
           return this.observers;
-          /*var observers = [];
-          if (!list) {
-            // If no list was passed, return all observers (json and js observers)
-            observers = this.jsObservers.concat(this.jsonObservers);
-          } else {
-            if (list === 'js') {
-              observers = this.jsObservers;
-            }
-            if (list === 'json') {
-              observers = this.jsonObservers;
-            }
-          }
-          return observers;*/
         };
 
         bmsVisualization.prototype.clearObservers = function() {
           this.observers = [];
-          /*if (list) {
-            if (list === 'js') {
-              this.jsObservers = [];
-            }
-            if (list === 'json') {
-              this.jsonObservers = [];
-            }
-          } else {
-            this.jsObservers = [];
-            this.jsonObservers = [];
-          }*/
         };
 
         bmsVisualization.prototype.clearEvents = function() {
           this.events = [];
-          /*if (list) {
-            if (list === 'js') {
-              this.jsEvents = [];
-            }
-            if (list === 'json') {
-              this.jsonEvents = [];
-            }
-          } else {
-            this.jsEvents = [];
-            this.jsonEvents = [];
-          }*/
         };
 
         bmsVisualization.prototype.getEvents = function() {
           return this.events;
-          /*var events = [];
-          if (!list) {
-            // If no list was passed, return all observers (json and js observers)
-            events = this.jsEvents.concat(this.jsonEvents);
-          } else {
-            if (list === 'js') {
-              events = this.jsEvents;
-            }
-            if (list === 'json') {
-              events = this.jsonEvents;
-            }
-          }
-          return events;*/
         };
-
-        /*bmsVisualization.prototype.getJsonObservers = function() {
-          return visualizationService.getObservers('json');
-        };
-
-        bmsVisualization.prototype.getJsObservers = function() {
-          return visualizationService.getObservers('js');
-        };
-
-        bmsVisualization.prototype.getJsonEvents = function() {
-          return visualizationService.getEvents('json');
-        };
-
-        bmsVisualization.prototype.getJsEvents = function() {
-          return visualizationService.getEvents('js');
-        };*/
 
         bmsVisualization.prototype.addSvg = function(svg) {
           if (!this.svg[svg]) this.svg[svg] = {};
@@ -192,7 +121,11 @@ define([
         };
 
         bmsVisualization.prototype.clearListeners = function() {
-          this.listener = [];
+          this.listener = {};
+        };
+
+        bmsVisualization.prototype.getListeners = function(what) {
+          return this.listener[what];
         };
 
         bmsVisualization.prototype.getBmsIdForElement = function(element) {
@@ -208,13 +141,15 @@ define([
           var self = this;
           if (self.bmsids[selector] === undefined) {
             var container = _container_ ? _container_ : self.container.contents();
-            var bmsids = container.find(selector).map(function() {
-              var cbmsid = $(this).attr("data-bms-id");
+            var bmsids = [];
+            container.find(selector).each(function(i, e) {
+              var ele = $(e);
+              var cbmsid = ele.attr("data-bms-id");
               if (!cbmsid) {
                 cbmsid = bms.uuid();
-                $(this).attr("data-bms-id", cbmsid);
+                ele.attr("data-bms-id", cbmsid);
               }
-              return cbmsid;
+              bmsids.push(cbmsid);
             });
             self.bmsids[selector] = bmsids;
           }
@@ -232,14 +167,28 @@ define([
           observers = observers ? observers : self.getObservers();
 
           var formulas = {};
-          angular.forEach(self.getObservers(), function(observer) {
+
+          angular.forEach(observers, function(observer) {
+
+            var service = $injector.get(observer.type + "Observer", "");
             // Only handle observers which implement the getFormulas function
-            if (typeof observer.getFormulas === 'function' && typeof observer.getId === 'function') {
-              formulas[observer.getId()] = {
-                formulas: observer.getFormulas()
-              };
+            if (typeof service.getFormulas === 'function' && service.shouldBeChecked(observer, self)) {
+
+              var element = self.determineElement(observer);
+
+              if (element instanceof $) {
+                element.each(function() {
+                  var ele = $(this);
+                  self.addFormulas(formulas, service.getFormulas(observer, self, ele), observer.id);
+                });
+              } else {
+                self.addFormulas(formulas, service.getFormulas(observer, self), observer.id);
+              }
+
             }
+
           });
+
           return formulas;
 
         };
@@ -269,18 +218,36 @@ define([
             self.evaluateFormulas(observers)
               .then(function(results) {
 
-                var checks = observers.map(function(observer) {
+                var checks = [];
+                angular.forEach(observers, function(observer) {
+
+                  var service = $injector.get(observer.type + "Observer", "");
                   var check = true;
-                  if (typeof observer.shouldBeChecked === 'function') {
-                    check = observer.shouldBeChecked();
+                  if (typeof service.shouldBeChecked === 'function') {
+                    check = service.shouldBeChecked(observer, self);
                   }
                   if (check) {
-                    if (typeof observer.getId === 'function') {
-                      return observer.check(results[observer.getId()]);
+
+                    var element = self.determineElement(observer);
+                    if (element instanceof $) {
+                      element.each(function() {
+                        var ele = $(this);
+                        if (typeof service.getFormulas === 'function') {
+                          checks.push(service.check(observer, self, ele, results[observer.id]));
+                        } else {
+                          checks.push(service.check(observer, self, ele));
+                        }
+                      });
                     } else {
-                      return observer.check();
+                      if (typeof service.getFormulas === 'function') {
+                        checks.push(service.check(observer, self, undefined, results[observer.id]));
+                      } else {
+                        checks.push(service.check(observer, self));
+                      }
                     }
+
                   }
+
                 });
 
                 $q.all(checks)
@@ -326,12 +293,31 @@ define([
           }
           $q.all(promises)
             .then(function() {
+
               events = events ? events : self.getEvents();
 
-              var setups = events.map(function(evt) {
-                if (evt.shouldBeChecked()) {
-                  return evt.setup(self);
+              var setups = [];
+              angular.forEach(events, function(evt) {
+
+                var service = $injector.get(evt.type + "Event", "");
+                var check = true;
+                if (typeof service.shouldBeChecked === 'function') {
+                  check = service.shouldBeChecked(evt, self);
                 }
+                if (check) {
+
+                  var element = self.determineElement(evt);
+                  if (element instanceof $) {
+                    element.each(function() {
+                      var ele = $(this);
+                      setups.push(service.setup(evt, self, ele));
+                    });
+                  } else {
+                    defer.reject("Please specify a selector or an element for the interactive handler.")
+                  }
+
+                }
+
               });
 
               $q.all(setups)
@@ -347,14 +333,82 @@ define([
 
         };
 
+        bmsVisualization.prototype.loadTemplate = function(template, $scope) {
+          var defer = $q.defer();
+          var self = this;
+          var path = self.session.templateFolder.length > 0 ? self.session.templateFolder + '/' + template : template;
+          self.container.attr('src', path);
+          self.container.load(function() {
+            $compile(self.container.contents())($scope);
+            defer.resolve();
+          });
+          return defer.promise;
+        };
+
         bmsVisualization.prototype.triggerListeners = function(cause) {
+          var self = this;
           angular.forEach(this.listener[cause], function(l) {
             if (!l.executed) {
-              l.callback(vis);
               // Init listener should be called only once
-              if (cause === "ModelInitialised") l.executed = true;
+              if (cause === "ModelInitialised") {
+                l.executed = true;
+                self.isInitialized().then(function() {
+                  l.callback();
+                });
+              } else {
+                l.callback();
+              }
             }
           });
+        };
+
+        bmsVisualization.prototype.removeDuplicates = function(arr, prop) {
+
+          var new_arr = [];
+          var lookup = {};
+
+          for (var i in arr) {
+            lookup[arr[i][prop]] = arr[i];
+          }
+
+          for (i in lookup) {
+            new_arr.push(lookup[i]);
+          }
+
+          return new_arr;
+
+        };
+
+
+        bmsVisualization.prototype.addFormulas = function(finalFormulas, observerFormulas, observerId) {
+
+          if (finalFormulas[observerId] === undefined) {
+            finalFormulas[observerId] = {
+              formulas: []
+            };
+          }
+
+          // Concat formulas
+          finalFormulas[observerId]['formulas'] = finalFormulas[observerId]['formulas'].concat(observerFormulas);
+          // Remove duplicate formulas
+          finalFormulas[observerId]['formulas'] = this.removeDuplicates(finalFormulas[observerId]['formulas'], "formula");
+
+        };
+
+        bmsVisualization.prototype.determineElement = function(observer) {
+          var self = this;
+          var ele;
+          if (observer.options.selector !== undefined && observer.options.selector.length > 0) {
+            ele = self.container.contents().find(observer.options.selector);
+          }
+          if (observer.options.element !== undefined && observer.options.element.length > 0) {
+            ele = observer.options.element;
+          }
+          if (ele instanceof $) {
+            return ele;
+          } else {
+            return undefined;
+          }
         };
 
         bmsVisualization.prototype.setValues = function(values) {

@@ -12,8 +12,37 @@ define([
       "title": "BMotionWeb Manifest",
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique id of the interactive formal prototype"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the interactive formal prototype"
+        },
+        "template": {
+          "type": "string",
+          "description": "The relative path to the HTML template file (e.g. template.html)"
+        },
+        "model": {
+          "type": "string",
+          "description": "The relative path to the formal specification file that should be animated (e.g. model/mymodel.mch)"
+        },
+        "groovy": {
+          "type": "string",
+          "description": "The relative path to the groovy script file"
+        },
+        "modelOptions": {
+          "type": "object",
+          "description": "A key/value map defining the options for loading the model - The available options are dependent on the animator and formalism"
+        },
+        "autoOpen": {
+          "type": "array",
+          "description": "The user can specify the ProB views which should be opened automatically when running the interactive formal prototype - The following views are available for ProB animations: CurrentTrace, Events, StateInspector and ModelCheckingUI"
+        },
         "views": {
           "type": "array",
+          "description": "List of additional views",
           "items": {
             "type": "object",
             "properties": {
@@ -38,20 +67,9 @@ define([
             },
             "required": ["id", "template"]
           }
-        },
-        "model": {
-          "type": "string",
-          "description": "Path to model (e.g. Event-B machine or CSP model)"
-        },
-        "modelOptions": {
-          "type": "object"
-        },
-        "tool": {
-          "type": "string",
-          "description": "Visualization provider"
         }
       },
-      "required": ["views"]
+      "required": ["id", "template", "model"]
     })
     .factory('bmsManifestService', ['$q', '$http', 'manifestScheme', function($q, $http, manifestScheme) {
 
@@ -75,7 +93,10 @@ define([
 
                     service.validate(manifestData)
                       .then(function(validatedManifestData) {
-                        defer.resolve(validatedManifestData);
+                        defer.resolve(angular.merge({
+                          modelOptions: {}
+                        }, validatedManifestData));
+
                       }, function(error) {
                         defer.reject(error);
                       })
@@ -98,8 +119,8 @@ define([
           var defer = $q.defer();
 
           $http.get(manifestFilePath)
-            .success(function(configData) {
-              defer.resolve(configData);
+            .success(function(data) {
+              defer.resolve(data);
             })
             .error(function(data, status, headers, config) {
               if (status === 404) {
@@ -108,7 +129,6 @@ define([
                 defer.reject("Some error occurred while requesting BMotionWeb manifest file (bmotion.json).");
               }
             });
-
 
           return defer.promise;
 
@@ -121,7 +141,7 @@ define([
           if (tv4.validate(manifestData, manifestScheme)) {
             defer.resolve(manifestData);
           } else {
-            defer.reject("BMotionWeb manifest file invalid: " + tv4.error.message + " (" + tv4.error.dataPath + ")");
+            defer.reject("BMotionWeb manifest file invalid: " + tv4.error.message);
           }
 
           return defer.promise;

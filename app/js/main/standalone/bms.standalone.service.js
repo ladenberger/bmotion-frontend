@@ -1,10 +1,12 @@
 define([
   'angular',
+  'bms.func',
   'bms.session',
-  'bms.standalone.electron'
-], function(angular) {
+  'bms.standalone.electron',
+  'ng-electron'
+], function(angular, bms) {
 
-  return angular.module('bms.standalone.service', ['bms.session', 'bms.standalone.electron'])
+  return angular.module('bms.standalone.service', ['bms.session', 'bms.standalone.electron', 'ngElectron'])
     .factory('createVisualizationService', ['$uibModal', '$q', 'electronDialog', 'fs', 'path', 'ncp', 'initVisualizationService',
       function($uibModal, $q, electronDialog, fs, path, ncp, initVisualizationService) {
 
@@ -68,22 +70,26 @@ define([
                         bmsModalService.openErrorDialog(err);
                       } else {
 
-                        view.template = 'index.html';
-                        view.observers = view.id + '.observers.json';
-                        view.events = view.id + '.events.json';
                         var manifestFile = 'bmotion.json';
+                        var observersFile = view.id + '.observers.json';
+                        var eventsFile = view.id + '.events.json';
 
-                        createJsonFile(folder, view.observers, {
+                        createJsonFile(folder, observersFile, {
                             observers: []
                           })
                           .then(function() {
-                            return createJsonFile(folder, view.events, {
+                            return createJsonFile(folder, eventsFile, {
                               events: []
                             });
                           })
                           .then(function() {
                             return createJsonFile(folder, manifestFile, {
-                              views: [view]
+                              id: view.id,
+                              template: 'index.html',
+                              model: view.model,
+                              observers: observersFile,
+                              events: eventsFile,
+                              autoOpen: view.autoOpen
                             });
                           })
                           .then(function() {
@@ -199,8 +205,8 @@ define([
 
       }
     ])
-    .factory('initVisualizationService', ['$location', 'bmsSessionService', 'bmsModalService', 'electronWindow', 'electronWindowService',
-      function($location, bmsSessionService, bmsModalService, electronWindow, electronWindowService) {
+    .factory('initVisualizationService', ['$location', 'bmsSessionService', 'bmsModalService', 'electronWindow', 'electronWindowService', 'electron',
+      function($location, bmsSessionService, bmsModalService, electronWindow, electronWindowService, electron) {
 
         /*var getModel = function(modelPath) {
           var defer = $q.defer();
@@ -216,10 +222,18 @@ define([
 
           bmsModalService.loading("Initializing visualization ...");
 
-          //var bmsSession = bmsSessionService.getSession();
-          bmsSessionService.initSession(manifestFilePath)
-            .then(function(bmsSession) {
-              $location.path('/vis/' + bmsSession.id);
+          var sessionId = bms.uuid(); // Session id
+          var session = bmsSessionService.getSession(sessionId); // Get fresh session instance
+
+          session.init(manifestFilePath)
+            .then(function() {
+              electron.send({
+                type: "openVisualizationWindow",
+                sessionId: sessionId,
+                tool: session.tool,
+                name: session.manifestData.name,
+                addMenu: false
+              });
               bmsModalService.endLoading();
             }, function(err) {
               bmsModalService.openErrorDialog(err);

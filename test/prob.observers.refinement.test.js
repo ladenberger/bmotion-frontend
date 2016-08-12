@@ -1,110 +1,89 @@
-define(['prob.observers.refinement'], function() {
+define([
+  'sharedTest',
+  'jquery',
+  'bms.func',
+  'prob.observers.refinement'
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('prob.observers.refinement', function() {
 
-    var bmsVisualizationService;
-    var refinementObserver;
-    var refinementObserverInstance;
-    var bmsSessionInstance;
-    var $rootScope;
-    var viewId = 'lift';
-    var sessionId = 'someSessionId';
-    var viewInstance;
-    var ws;
-    var $q;
+    var observerService;
+    var observerInstance;
+    var view;
 
     beforeEach(module('prob.observers.refinement'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _refinementObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(_refinementObserver_) {
 
-        refinementObserver = _refinementObserver_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
-        $q = _$q_;
-
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "views": [{
-            "id": viewId,
-            "name": "Lift environment",
-            "template": "lift.html"
-          }]
+        observerService = _refinementObserver_;
+        observerInstance = {
+          type: "refinement",
+          id: bms.uuid(),
+          options: {
+            selector: '#door',
+            refinement: 'ref1'
+          }
         };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
-
-        var promise = bmsSessionService.initSession(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(function(_bmsSessionInstance_) {
-          bmsSessionInstance = _bmsSessionInstance_;
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
-          refinementObserverInstance = new refinementObserver(viewInstance, {
-            selector: '#someselector',
-            refinement: 'ref1',
-            enable: function() {
-              return {
-                'opacity': 1
-              }
-            },
-            disable: function() {
-              return {
-                'opacity': 0
-              }
-            }
-          });
-
-          // Simulate apply function of formula observer
-          spyOn(refinementObserverInstance, "apply").and.callFake(function(data) {
-            var defer = $q.defer();
-            defer.resolve({
-              'somebmsid': {
-                'opacity': data ? 1 : 0
-              }
-            });
-            return defer.promise;
-          });
-
-        }).finally(done);
-
-        $rootScope.$digest();
 
       });
 
     });
 
-    it('should exist', inject(function() {
-      expect(refinementObserver).toBeDefined();
+    it('(1) should exist', inject(function() {
+      expect(observerService).toBeDefined();
     }));
 
-    it('should implement functions: getFormulas and getDefaultOptions', inject(function() {
-
-      expect(refinementObserverInstance.getDefaultOptions).toBeDefined();
-
+    it('(2) should implement functions: getFormulas and getDefaultOptions', inject(function() {
+      expect(observerService.getDefaultOptions).toBeDefined();
     }));
 
-    it('check function should return enable attribute values of observer if refinement is in animation', function(done) {
+    it('(3) check function should resolve if no selector is given', function(done) {
 
-      bmsSessionInstance.toolData['model'] = {};
-      bmsSessionInstance.toolData['model']['refinements'] = ['ref1'];
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
 
-      var promise = refinementObserverInstance.check();
+      observerInstance.options.selector = undefined;
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolve
+        done();
+      });
+
+    });
+
+    it('(4) check function should return enable attribute values of observer if refinement is in animation', function(done) {
+
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['ref1']
+        }
+      };
+      observerInstance.options.enable = function(origin) {
+        expect(origin).toBeInDOM();
+        return {
+          'opacity': 1
+        }
+      };
+
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
+      var doorBmsId = $('#door').attr('data-bms-id');
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'opacity': 1
-          }
-        });
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'opacity': 1
+        };
+        expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
@@ -112,18 +91,30 @@ define(['prob.observers.refinement'], function() {
 
     });
 
-    it('check function should return disable attribute values of observer if refinement is not in animation', function(done) {
+    it('(5) check function should return disable attribute values of observer if refinement is not in animation', function(done) {
 
-      bmsSessionInstance.toolData['model'] = {};
-      bmsSessionInstance.toolData['model']['refinements'] = [];
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
 
-      var promise = refinementObserverInstance.check(viewInstance);
+      observerInstance.options.disable = function(origin) {
+        expect(origin).toBeInDOM();
+        return {
+          'opacity': 0
+        }
+      };
+
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
+      var doorBmsId = $('#door').attr('data-bms-id');
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'opacity': 0
-          }
-        });
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'opacity': 0
+        };
+        expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();

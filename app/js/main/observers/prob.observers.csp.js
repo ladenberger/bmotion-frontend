@@ -19,179 +19,170 @@ define([
 
         var expressionCache;
 
-        var observer = function(view, options) {
-          this.id = bms.uuid();
-          this.view = view;
-          this.options = this.getDefaultOptions(options);
-        };
+        var observerService = {
 
-        observer.prototype.getDefaultOptions = function(options) {
-          return angular.merge({
-            cause: "AnimationChanged",
-            observers: []
-          }, options);
-        };
+          getDefaultOptions: function(options) {
+            return angular.merge({
+              cause: "AnimationChanged",
+              observers: []
+            }, options);
+          },
+          shouldBeChecked: function(observer, view) {
+            return true;
+          },
+          replaceParameter: function(str, parameters) {
+            var fstr = str;
+            angular.forEach(parameters, function(p, i) {
+              var find = '{{a' + (i + 1) + '}}';
+              var re = new RegExp(find, 'g');
+              fstr = fstr.replace(re, p);
+            });
+            return fstr;
+          },
+          evaluateExpressions: function(sessionId, observer) {
 
-        observer.prototype.getId = function() {
-          return this.id;
-        };
+            var defer = $q.defer();
 
-        observer.prototype.shouldBeChecked = function() {
-          return true;
-        };
+            if (!expressionCache) {
 
-        observer.prototype.replaceParameter = function(str, parameters) {
-          var fstr = str;
-          angular.forEach(parameters, function(p, i) {
-            var find = '{{a' + (i + 1) + '}}';
-            var re = new RegExp(find, 'g');
-            fstr = fstr.replace(re, p);
-          });
-          return fstr;
-        };
+              // Collect formula to be evaluated
+              var formulas = {};
+              formulas[observer.id] = {
+                formulas: bms.toList(observer.options.observers).map(function(observer) {
+                  return {
+                    formula: observer.exp
+                  }
+                })
+              };
 
-        observer.prototype.evaluateExpressions = function(sessionId) {
+              // Evaluate formulas
+              bmsWsService.evaluateFormulas(sessionId, formulas)
+                .then(function(results) {
 
-          var defer = $q.defer();
+                  var res = {};
+                  var errors = [];
+                  angular.forEach(results[observer.id], function(value, key) {
+                    if (value['result'] !== undefined) {
+                      res[key] = value.result.replace("{", "").replace("}", "").split(",");
+                    }
+                    if (value['error'] !== undefined) {
+                      errors.push(value['error']);
+                    }
+                  });
+                  if (errors.length > 0) {
+                    defer.reject(errors);
+                  } else {
+                    expressionCache = res;
+                    defer.resolve(res);
+                  }
 
-          var self = this;
-
-          if (!expressionCache) {
-
-            var formulas = {};
-            formulas[self.getId()] = {
-              formulas: bms.toList(self.options.observers).map(function(observer) {
-                return {
-                  formula: observer.exp
-                }
-              })
-            };
-
-            bmsWsService.evaluateFormulas(sessionId, formulas)
-              .then(function(results) {
-                var res = {};
-                angular.forEach(results[self.getId()], function(value, key) {
-                  res[key] = value.replace("{", "").replace("}", "").split(",");
                 });
-                expressionCache = res;
-                defer.resolve(res);
-              });
 
-          } else {
-            defer.resolve(expressionCache);
-          }
+            } else {
+              defer.resolve(expressionCache);
+            }
 
-          return defer.promise;
+            return defer.promise;
 
-        };
+          },
+          getDiagramData: function(node, observer, view, element) {
+            return node.data.index;
+          },
+          apply: function(observer, view, element, container, index) {
 
-        observer.prototype.getDiagramData = function(node) {
-          return node.data.index;
-        };
+            var defer = $q.defer();
 
-        observer.prototype.apply = function(index, _container_) {
+            container = container ? container : view.container.contents();
 
-          var defer = $q.defer();
+            probWsService.observeHistory(view.session.id)
+              .then(function(transitions) {
 
-          var self = this;
+                observerService.evaluateExpressions(view.session.id, observer)
+                  .then(function(expressions) {
 
-          var container;
+                    var fmap = {};
 
-          if (_container_) {
-            container = _container_;
-          } else if (self.view.container) {
-            container = self.view.container.contents();
-          }
+                    var keepGoing = true;
 
-          probWsService.observeHistory(self.view.session.id)
-            .then(function(transitions) {
+                    angular.forEach(transitions, function(transition) {
 
-              self.evaluateExpressions(self.view.session.id)
-                .then(function(expressions) {
+                      if (keepGoing) {
 
-                  var fmap = {};
+                        angular.forEach(observer.options.observers, function(observer) {
 
-                  var keepGoing = true;
-
-                  angular.forEach(transitions, function(transition) {
-
-                    if (keepGoing) {
-
-                      angular.forEach(self.options.observers, function(observer) {
-
-                        var events = [];
-                        // Collects events from expression
-                        if (observer.exp) {
-                          var eventsFromExp = expressions[observer.exp];
-                          if (eventsFromExp) {
-                            events = events.concat(eventsFromExp);
+                          var events = [];
+                          // Collects events from expression
+                          if (observer.exp) {
+                            var eventsFromExp = expressions[observer.exp];
+                            if (eventsFromExp) {
+                              events = events.concat(eventsFromExp);
+                            }
                           }
-                        }
-                        // Collect static events
-                        if (observer.events) {
-                          events = events.concat(observer.events);
-                        }
-
-                        if (bms.inArray(transition['opString'], events)) {
-                          if (observer.trigger) {
-                            observer.trigger.call(this, transition);
+                          // Collect static events
+                          if (observer.events) {
+                            events = events.concat(observer.events);
                           }
-                          angular.forEach(observer.actions, function(action) {
-                            //var selector;
-                            //if (bms.isFunction(action.selector)) {
-                            //  selector = action.selector.call(this, transition);
-                            //} else {
-                            var selector = self.replaceParameter(action.selector, transition['parameters']);
-                            //}
-                            var attr = self.replaceParameter(action.attr, transition['parameters']);
-                            var value = self.replaceParameter(action.value, transition['parameters']);
-                            var bmsids = self.view.getBmsIds(selector, container);
-                            angular.forEach(bmsids, function(id) {
-                              if (fmap[id] === undefined) {
-                                fmap[id] = {};
-                              }
-                              fmap[id][attr] = value;
+
+                          if (bms.inArray(transition['opString'], events)) {
+                            if (observer.trigger) {
+                              observer.trigger.call(this, transition);
+                            }
+                            angular.forEach(observer.actions, function(action) {
+                              var selector = observerService.replaceParameter(action.selector, transition['parameters']);
+                              var attr = observerService.replaceParameter(action.attr, transition['parameters']);
+                              var value = observerService.replaceParameter(action.value, transition['parameters']);
+                              var bmsids = view.getBmsIds(selector, container);
+                              angular.forEach(bmsids, function(id) {
+                                if (fmap[id] === undefined) {
+                                  fmap[id] = {};
+                                }
+                                fmap[id][attr] = value;
+                              });
+
                             });
+                          }
 
-                          });
-                        }
+                        });
 
-                      });
+                      }
 
-                    }
+                      if (index) {
+                        keepGoing = transition['index'] < index;
+                      } else {
+                        keepGoing = transition['group'] === 'past';
+                      }
 
-                    if (index) {
-                      keepGoing = transition['index'] < index;
-                    } else {
-                      keepGoing = transition['group'] === 'past';
-                    }
+                    });
 
+                    defer.resolve(fmap);
+
+                  }, function(error) {
+                    defer.reject(error);
                   });
 
-                  defer.resolve(fmap);
+              });
 
-                });
+            return defer.promise;
 
-            });
+          },
+          check: function(observer, view, element, results) {
 
-          return defer.promise;
+            var defer = $q.defer();
+
+            observerService.apply(observer, view, element, results)
+              .then(function(values) {
+                defer.resolve(values);
+              }, function(errors) {
+                defer.reject(errors);
+              });
+
+            return defer.promise;
+
+          }
 
         };
 
-        observer.prototype.check = function() {
-
-          var defer = $q.defer();
-
-          this.apply()
-            .then(function(values) {
-              defer.resolve(values);
-            });
-
-          return defer.promise;
-
-        };
-
-        return observer;
+        return observerService;
 
       }
     ]);

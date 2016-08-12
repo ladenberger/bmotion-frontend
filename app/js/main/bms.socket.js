@@ -6,12 +6,13 @@ define([
   'angular',
   'socket.io',
   'bms.config',
-  'bms.modal'
+  'bms.modal',
+  'bms.common'
 ], function(angular, io) {
 
-  return angular.module('bms.socket', ['bms.config', 'bms.modal'])
-    .factory('bmsSocketService', ['bmsConfigService', '$q', 'bmsModalService',
-      function(bmsConfigService, $q, bmsModalService) {
+  return angular.module('bms.socket', ['bms.config', 'bms.modal', 'bms.common'])
+    .factory('bmsSocketService', ['bmsConfigService', '$q', 'bmsModalService', 'bmsErrorService',
+      function(bmsConfigService, $q, bmsModalService, bmsErrorService) {
         'use strict';
         var socket = null;
         return {
@@ -40,14 +41,13 @@ define([
       function($rootScope, bmsSocketService, bmsModalService, $q) {
         'use strict';
         return {
-          emiton: function(event, data, callback) {
-            this.removeAllListeners(event);
-            this.emit(event, data, callback);
-            this.on(event, callback);
-          },
-          emit: function(event, data) {
+          emit: function(event, data, observable) {
 
             var defer = $q.defer();
+
+            var self = this;
+
+            if (observable) self.removeAllListeners(event);
 
             bmsSocketService.socket()
               .then(function(socket) {
@@ -58,10 +58,13 @@ define([
                       if (args[0].error) {
                         defer.reject(args[0].error);
                       } else {
+                        if (observable) self.on(event, observable);
                         if (args.length > 1) {
                           defer.resolve(args);
+                          if (observable) observable(args);
                         } else {
                           defer.resolve(args[0]);
+                          if (observable) observable(args[0]);
                         }
                       }
                     } else {
@@ -76,17 +79,18 @@ define([
             return defer.promise;
 
           },
-          on: function(event, callback) {
+          on: function(event, observable) {
             bmsSocketService.socket()
               .then(function(socket) {
                 socket.on(event, function() {
                   var args = arguments;
                   $rootScope.$apply(function() {
-                    callback.apply(null, args);
+                    observable.apply(null, args);
                   });
                 });
               }, function(error) {
-                bmsModalService.openErrorDialog(error);
+                bmsErrorService.print(error);
+                //bmsModalService.openErrorDialog(error);
               });
           },
           removeAllListeners: function(event) {
@@ -94,7 +98,8 @@ define([
               .then(function(socket) {
                 socket.removeAllListeners(event);
               }, function(error) {
-                bmsModalService.openErrorDialog(error);
+                bmsErrorService.print(error);
+                //bmsModalService.openErrorDialog(error);
               });
           }
         };

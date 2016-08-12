@@ -17,115 +17,124 @@ define([
       function(ws, $q, bmsModalService, bmsVisualizationService) {
         'use strict';
 
-        var observer = function(view, options) {
-          this.id = bms.uuid();
-          this.type = 'formulaObserver';
-          this.view = view;
-          this.options = this.getDefaultOptions(options);
-        };
+        var observerService = {
 
-        observer.prototype.getDefaultOptions = function(options) {
-          return angular.merge({
-            formulas: [],
-            cause: "AnimationChanged",
-            translate: false,
-            trigger: function() {}
-          }, options);
-        };
-
-        observer.prototype.shouldBeChecked = function() {
-
-          var self = this;
-
-          var session = self.view.session;
-          if (session.isBVisualization()) {
-            var refinements = session.toolData.model.refinements;
-            var isRefinement = self.options.refinement !== undefined ? bms.inArray(self.options.refinement, refinements) : true;
-            var isInitialized = session.toolData.initialized ? session.toolData.initialized : false;
-            return isRefinement && isInitialized;
-          }
-
-          return true;
-
-        };
-
-        observer.prototype.getId = function() {
-          return this.id;
-        };
-
-        observer.prototype.getDiagramData = function(node) {
-          var self = this;
-          if(node.results) {
-            return self.getFormulas().map(function(fobj) {
-              return node.results[self.getId()][fobj.formula];
-            });
-          } else {
-              return [];
-          }
-        };
-
-        observer.prototype.getFormulas = function() {
-
-          var self = this;
-
-          return bms.toList(this.options.formulas).map(function(f) {
-
-            return {
-              formula: f,
-              options: {
-                translate: self.options.translate
+          getDefaultOptions: function(options) {
+            return angular.merge({
+              formulas: [],
+              cause: "AnimationChanged",
+              translate: false,
+              trigger: function() {}
+            }, options);
+          },
+          shouldBeChecked: function(observer, view) {
+            var session = view.session;
+            if (session.isBVisualization()) {
+              if (typeof session.toolData.initialized === 'boolean' && session.toolData.initialized === false) {
+                return false;
+              }
+              if (session.toolData.model !== undefined) {
+                var refinements = session.toolData.model.refinements;
+                if (refinements) {
+                  return observer.options.refinement ? bms.inArray(observer.options.refinement, refinements) : true;
+                }
               }
             }
-          });
+            return true;
+          },
+          getDiagramData: function(node, observer, view, element) {
+            if (node.results) {
+              return observerService.getFormulas(observer, view, element)
+                .map(function(fobj) {
+                  return node.results[observer.id][fobj.formula]['result'];
+                });
+            } else {
+              return [];
+            }
+          },
+          getFormulas: function(observer, view, element) {
 
-        };
+            var normalized = bms.normalize(observer.options, ["trigger"], element, view.container);
 
-        observer.prototype.apply = function(result, _container_) {
+            return bms.toList(normalized.formulas)
+              .map(function(f) {
+                return {
+                  formula: f,
+                  options: {
+                    translate: normalized.translate
+                  }
+                }
+              });
 
-          var defer = $q.defer();
+          },
+          apply: function(observer, view, element, container, result) {
 
-          var self = this;
-          var selector = self.options.selector;
-          if (selector) {
-            var fvalues = {};
-            var container = _container_ ? _container_ : self.view.container.contents();
-            var element = container.find(selector);
-            element.each(function() {
-              var ele = $(this);
-              var returnValue = bms.callElementFunction(self.options.trigger, ele, 'values', result);
+            var defer = $q.defer();
+
+            if (element instanceof $) {
+              var fvalues = {};
+              var returnValue = bms.callElementFunction(observer.options.trigger, element, 'values', result);
               if (returnValue) {
-                var bmsid = self.view.getBmsIdForElement(ele);
+                var bmsid = view.getBmsIdForElement(element);
                 fvalues[bmsid] = returnValue;
               }
-            });
-            defer.resolve(fvalues);
-          } else {
-            bms.callFunction(this.options.trigger, 'values', result);
-            defer.resolve();
+              defer.resolve(fvalues);
+            } else {
+              bms.callFunction(observer.options.trigger, 'values', result);
+              defer.resolve({});
+            }
+
+            return defer.promise;
+
+          },
+          check: function(observer, view, element, results) {
+
+            var defer = $q.defer();
+
+            if (!results) {
+              defer.reject("Results must be passed to formula observer check function.");
+            } else {
+
+              var normalized = bms.normalize(observer.options, ["trigger"], element, view.container);
+
+              var fresults = [];
+              var ferrors = [];
+              // Iterate formulas and get result or error
+              angular.forEach(normalized.formulas, function(formula) {
+                if (results[formula]) {
+                  if (results[formula]['result'] !== undefined) {
+                    fresults.push(results[formula]['result']);
+                  }
+                  if (results[formula]['error'] !== undefined) {
+                    ferrors.push(results[formula]['error']);
+                  }
+                }
+              });
+
+              if (ferrors.length > 0) {
+                defer.reject(ferrors);
+              } else if (normalized.formulas.length !== fresults.length) {
+                defer.reject("Some error occurred in formula check function.");
+              } else {
+                observerService.apply(observer, view, element, view.container, fresults)
+                  .then(
+                    function(values) {
+                      defer.resolve(values);
+                    },
+                    function(error) {
+                      defer.reject(error);
+                    });
+              }
+
+            }
+
+            return defer.promise;
+
           }
 
-          return defer.promise;
+        }
 
-        };
-
-        observer.prototype.check = function(results) {
-
-          var defer = $q.defer();
-
-          var fresults = [];
-          angular.forEach(this.options.formulas, function(formula) {
-            fresults.push(results[formula]);
-          });
-
-          this.apply(fresults).then(function(values) {
-            defer.resolve(values);
-          });
-
-          return defer.promise;
-
-        };
-
-        return observer;
+        return observerService;
 
       }
     ]);

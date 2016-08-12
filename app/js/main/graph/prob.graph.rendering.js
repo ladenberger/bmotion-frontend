@@ -375,7 +375,7 @@ define([
           var observers = view.getObservers();
           angular.forEach(observers, function(o) {
 
-            if (o.shouldBeChecked() && o.options.selector) {
+            if ((typeof o.shouldBeChecked === 'function') && o.shouldBeChecked() && o.options.selector) {
               var oe = container.find(o.options.selector);
               if (oe.length) { // If element(s) exist(s)
                 oe.each(function() {
@@ -445,6 +445,12 @@ define([
                 var nodes = data[0];
                 var edges = data[1];
 
+                if(diagramType === 'createProjectionDiagram') {
+                  edges = edges.filter(function(val) {
+                    return val.data.source !== val.data.target;
+                  });
+                }
+
                 var promises = [];
                 // Get HTML data
                 angular.forEach(nodes, function(node) {
@@ -490,13 +496,11 @@ define([
           var container = view.container;
 
           angular.forEach(observers, function(o) {
-
-            if (o.shouldBeChecked() && isValidSelector(container.contents(), o.options.selector) === undefined) {
+            if ((typeof o.shouldBeChecked === 'function') && o.shouldBeChecked() && isValidSelector(container.contents(), o.options.selector) === undefined) {
               elementIds.push({
                 selector: o.options.selector
               });
             }
-
           });
 
           return elementIds;

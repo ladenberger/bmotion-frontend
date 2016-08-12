@@ -9,12 +9,13 @@ define([
   'bms.modal',
   'bms.session',
   'bms.visualization',
-  'bms.manifest'
+  'bms.manifest',
+  'bms.common'
 ], function(angular, $, bms) {
 
-  return angular.module('bms.directive.visualisation.view', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.manifest'])
-    .directive('bmsVisualizationView', ['$rootScope', 'bmsManifestService', 'bmsSessionService', 'bmsVisualizationService', 'ws', 'bmsModalService', 'trigger', '$compile', '$http', '$q',
-      function($rootScope, bmsManifestService, bmsSessionService, bmsVisualizationService, ws, bmsModalService, trigger, $compile, $http, $q) {
+  return angular.module('bms.directive.visualization.view', ['bms.modal', 'bms.session', 'bms.visualization', 'bms.manifest', 'bms.common'])
+    .directive('bmsVisualizationView', ['$rootScope', 'bmsManifestService', 'bmsSessionService', 'bmsVisualizationService', 'ws', 'bmsModalService', 'trigger', '$compile', '$http', '$q', 'bmsErrorService',
+      function($rootScope, bmsManifestService, bmsSessionService, bmsVisualizationService, ws, bmsModalService, trigger, $compile, $http, $q, bmsErrorService) {
         'use strict';
         return {
           replace: false,
@@ -27,16 +28,19 @@ define([
           controller: ['$scope', function($scope) {
 
             if (!$scope.sessionId) {
-              bmsModalService.openErrorDialog("Session id must not be undefined.");
+              bmsErrorService.print("Session id must not be undefined.");
+              //bmsModalService.openErrorDialog();
             }
-            // TODO check if session really exists!?
-            $scope.session = bmsSessionService.getSession($scope.sessionId);
 
-            // If an id was already set (e.g. in a parent controller) take it,
-            // else generate a new randon id
-            $scope.id = $scope.id ? $scope.id : bms.uuid();
+            if (!$scope.id) {
+              $scope.id = bms.uuid();
+            }
+
+            // Get session instance
+            $scope.session = bmsSessionService.getSession($scope.sessionId);
             // Get view instance
             $scope.view = $scope.session.getView($scope.id);
+            $scope.view.viewId = $scope.viewId;
 
             // Create a new view instance in session
             $scope.values = $scope.view.getValues();
@@ -47,11 +51,12 @@ define([
             ws.on('checkObserver', function(cause, toolData) {
               $scope.session.toolData = angular.merge($scope.session.toolData, toolData);
               $scope.view.clearValues();
+              $scope.view.triggerListeners(cause);
               $scope.view.checkObservers()
                 .then(function() {}, function(err) {
-                  bmsModalService.openErrorDialog(err);
+                  bmsErrorService.print(err);
+                  //bmsModalService.openErrorDialog(err);
                 });
-              $scope.view.triggerListeners(cause);
             });
 
             // Remove all checkObserver event listeners if session is destroyed
@@ -64,9 +69,11 @@ define([
 
             // Set container of visualization instance
             var iframe = $($element.contents());
-            iframe.attr("id", $scope.id);
+            iframe.attr("viewId", $scope.id);
+            iframe.attr("sessionId", $scope.sessionId);
             var iframeContents;
             $scope.view.container = iframe;
+            $scope.rootView = 'bmsRootView' in attrs;
 
             // Watch for changes in attribute values
             $scope.$watch(function() {
@@ -113,60 +120,64 @@ define([
 
             // Listen to visualizationSaved event
             // (typically called from editor after saving)
-            $scope.$on('visualizationSaved', function(evt, svg) {
+            $scope.$on('visualizationSaved', function(evt, id, svg) {
 
-              var svgItem = $scope.view.getSvg(svg);
+              if ($scope.id === id) {
 
-              // Get defer of saved svg file
-              svgItem.deferSave = $q.defer();
+                var svgItem = $scope.view.getSvg(svg);
 
-              // Clear all observers, events and listeners
-              $scope.view.clearObservers();
-              $scope.view.clearEvents();
-              $scope.view.clearListeners();
+                // Get defer of saved svg file
+                svgItem.deferSave = $q.defer();
 
-              // Readd observer and events coming from json
-              $scope.addJsonData({
-                observers: $scope.view.jsonObservers,
-                events: $scope.view.jsonEvents
-              });
+                // Clear all observers and events
+                $scope.view.clearObservers();
+                $scope.view.clearEvents();
 
-              // Reload template in order to readd observers
-              // and events coming from js
-              iframe.attr('src', iframe.attr('src'));
-              // Wait until svg content is successfully loaded
-              svgItem.deferSave.promise
-                .then(function() {
-                  // Finally check and setup events
-                  $scope.view.checkObservers();
-                  $scope.view.setupEvents();
+                // Read observer and events coming from json
+                $scope.addJsonData({
+                  observers: $scope.view.jsonObservers,
+                  events: $scope.view.jsonEvents
                 });
+
+                // Reload template in order to readd observers
+                // and events coming from js
+                iframe.attr('src', iframe.attr('src'));
+                // Wait until svg content is successfully loaded
+                svgItem.deferSave.promise
+                  .then(function() {
+                    // Finally check and setup events
+                    $scope.view.checkObservers();
+                    $scope.view.setupEvents();
+                    $scope.view.triggerListeners("svg_" + svg);
+                  });
+              }
 
             });
 
             $scope.loadViewData = function(viewId, manifestData) {
               var defer = $q.defer();
-              var views = manifestData['views'];
-              if (views) {
-                angular.forEach(manifestData['views'], function(v) {
-                  if (v['id'] === viewId) {
-                    defer.resolve(v);
-                  }
+
+              if ($scope.rootView) {
+                defer.resolve({
+                  id: manifestData['id'],
+                  template: manifestData['template'],
+                  name: manifestData['name'],
+                  observers: manifestData['observers'],
+                  events: manifestData['events']
                 });
               } else {
-                defer.reject("View with id " + viewId + " not found.");
+                var views = manifestData['views'];
+                if (views) {
+                  angular.forEach(manifestData['views'], function(v) {
+                    if (v['id'] === viewId) {
+                      defer.resolve(v);
+                    }
+                  });
+                } else {
+                  defer.reject("View with id " + viewId + " not found.");
+                }
               }
-              return defer.promise;
-            };
 
-            $scope.loadTemplate = function(templateFolder, template) {
-              var defer = $q.defer();
-              $scope.view.container.attr('src', templateFolder + '/' + template).attr('id', $scope.id);
-              $scope.view.container.load(function() {
-                var iframeContents = $($scope.view.container.contents());
-                $compile(iframeContents)($scope);
-                defer.resolve();
-              });
               return defer.promise;
             };
 
@@ -211,13 +222,20 @@ define([
 
               var defer = $q.defer();
 
-              var observerPromises = data.observers.map(function(e) {
-                return $scope.view.addObserver(e.type, e.data);
-              });
+              var observerPromises = [];
+              var eventsPromises = [];
 
-              var eventsPromises = data.events.map(function(e) {
-                return $scope.view.addEvent(e.type, e.data);
-              });
+              if (data.observers) {
+                observerPromises = data.observers.map(function(e) {
+                  return $scope.view.addObserver(e.type, e.data);
+                });
+              }
+
+              if (data.events) {
+                eventsPromises = data.events.map(function(e) {
+                  return $scope.view.addEvent(e.type, e.data);
+                });
+              }
 
               // Check all observers
               $q.all(observerPromises)
@@ -266,7 +284,7 @@ define([
                     // Set view data in visualization instance
                     $scope.view.viewData = viewData;
                     // load view template
-                    $scope.loadTemplate($scope.session.templateFolder, viewData.template)
+                    $scope.view.loadTemplate(viewData.template, $scope)
                       .then(
                         function success() {
                           // get json observer and events
@@ -306,13 +324,27 @@ define([
                   .then(function() {
                     $scope.initView(newValue)
                       .then(function success() {
-                          // if no errors occurred in the chain mark visualization
-                          // as initialized and propagate "visualizationLoaded" event
-                          $rootScope.$broadcast('visualizationLoaded', $scope.view);
-                          $scope.view.initialized.resolve();
+
+                          var svgPromises = [];
+                          for (svg in $scope.view.svg) {
+                            var svgItem = $scope.view.svg[svg];
+                            svgPromises.push(svgItem.defer);
+                          }
+                          $q.all(svgPromises).then(function(data) {
+                            // Trigger registeres svg listeners
+                            for (svg in $scope.view.svg) {
+                              $scope.view.triggerListeners("svg_" + svg);
+                            }
+                            // if no errors occurred in the chain mark visualization
+                            // as initialized and propagate "visualizationLoaded" event
+                            $rootScope.$broadcast('visualizationLoaded', $scope.view);
+                            $scope.view.initialized.resolve();
+                          });
+
                         },
                         function error(err) {
-                          bmsModalService.openErrorDialog('An error occurred while initializing view ' + $scope.id + ':' + err);
+                          //bmsErrorService.print('An error occurred while initializing view ' + $scope.id + err);
+                          bmsModalService.openErrorDialog('<strong>An error occurred while initializing view ' + $scope.id + '</strong><br/>' + err);
                         });
                   });
               }

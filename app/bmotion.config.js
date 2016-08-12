@@ -1,21 +1,25 @@
 requirejs.config({
-  baseUrl: "./",
+
   paths: {
+
+    "bmotion.online": "js/bmotion.online",
+    "bmotion.integrated": "js/bmotion.integrated",
 
     // Directive modules
     "bms.directive": "js/main/directives/bms.directive",
-    "bms.directive.execute.event": "js/main/directives/bms.directive.execute.event",
     "bms.directive.bms.widget": "js/main/directives/bms.directive.bms.widget",
-    "bms.directive.visualisation.view": "js/main/directives/bms.directive.visualisation.view",
+    "bms.directive.visualization.view": "js/main/directives/bms.directive.visualization.view",
     "bms.directive.editor": "js/main/directives/bms.directive.editor",
     "bms.directive.dialog": "js/main/directives/bms.directive.dialog",
     "bms.directive.svg": "js/main/directives/bms.directive.svg",
 
+    "prob.directive.execute.event": "js/main/directives/prob.directive.execute.event",
     "prob.directive.view": "js/main/directives/prob.directive.view",
 
     // Handler modules
     "bms.handlers": "js/main/handlers/bms.handlers",
     "prob.handlers.event": "js/main/handlers/prob.handlers.event",
+    "bms.handlers.method": "js/main/handlers/bms.handlers.method",
 
     // Observer modules
     "bms.observers": "js/main/observers/bms.observers",
@@ -23,7 +27,8 @@ requirejs.config({
     "prob.observers.predicate": "js/main/observers/prob.observers.predicate",
     "prob.observers.refinement": "js/main/observers/prob.observers.refinement",
     "prob.observers.csp": "js/main/observers/prob.observers.csp",
-    "prob.observers.data": "js/main/observers/prob.observers.data",
+    "prob.observers.set": "js/main/observers/prob.observers.set",
+    "bms.observers.method": "js/main/observers/bms.observers.method",
 
     // Graph modules
     "prob.graph": "js/main/graph/prob.graph",
@@ -32,6 +37,7 @@ requirejs.config({
     "prob.graph.projection": "js/main/graph/prob.graph.projection",
 
     // View modules
+    "bms.views": "js/main/views/bms.views",
     "bms.views.user.interactions": "js/main/views/bms.views.user.interactions",
 
     // Main modules
@@ -48,21 +54,26 @@ requirejs.config({
     "bms.modal": "js/main/bms.modal",
     "bms.ws": "js/main/bms.ws",
 
-    "prob.ui": "js/main/prob.ui",
     "prob.ws": "js/main/prob.ws",
 
     // Root modules
     "bms.standalone.root": "js/main/standalone/bms.standalone.root",
     "bms.editor.root": "js/main/editor/bms.editor.root",
+    "bms.online.root": "js/main/online/bms.online.root",
+    "bms.integrated.root": "js/main/integrated/bms.integrated.root",
+
+    // Integrated modules
+    "bms.integrated.directive": "js/main/integrated/bms.integrated.directive",
+
+    // Online modules
+    "bms.online.directive": "js/main/online/bms.online.directive",
 
     // Standalone modules
     "bms.standalone.ctrl.session": "js/main/standalone/bms.standalone.ctrl.session",
-    "bms.standalone.ctrl.startServer": "js/main/standalone/bms.standalone.ctrl.startServer",
     "bms.standalone.ctrl.welcome": "js/main/standalone/bms.standalone.ctrl.welcome",
     "bms.standalone.directive": "js/main/standalone/bms.standalone.directive",
     "bms.standalone.electron": "js/main/standalone/bms.standalone.electron",
     "bms.standalone.nodejs": "js/main/standalone/bms.standalone.nodejs",
-    "bms.standalone.root": "js/main/standalone/bms.standalone.root",
     "bms.standalone.routing": "js/main/standalone/bms.standalone.routing",
     "bms.standalone.service": "js/main/standalone/bms.standalone.service",
     "bms.standalone.tabs": "js/main/standalone/bms.standalone.tabs",
@@ -81,7 +92,6 @@ requirejs.config({
     "tv4": "js/libs/bower/tv4/tv4",
     "cytoscape": "js/libs/bower/cytoscape/cytoscape",
     "cytoscape.navigator": "js/libs/ext/cytoscape.navigator/cytoscape.js-navigator",
-    "angular-sanitize": "js/libs/bower/angular-sanitize/angular-sanitize",
     "ui-bootstrap": "js/libs/bower/angular-bootstrap/ui-bootstrap",
     "ui-bootstrap-tpls": "js/libs/bower/angular-bootstrap/ui-bootstrap-tpls",
 

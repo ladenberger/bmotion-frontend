@@ -3,17 +3,26 @@ module.exports = function(grunt) {
   var path = require('path');
   var cssBowerLibs = 'css/libs/bower/';
   var jsBowerLibs = 'js/libs/bower/';
-  var appVersion = '0.2.7';
+  var appVersion = '0.3.1-SNAPSHOT';
   var electronVersion = '0.36.2';
   var targets = ["linux-ia32", "linux-x64", "darwin-x64", "win32-ia32", "win32-x64"];
   var editorDependencies = ["angular-ui-codemirror", "codemirror", "angular-xeditable", "eventEmitter", "eventie", "imagesloaded", "jquery.browser"];
 
   grunt.initConfig({
-    clean: ["build", "cache", "bower_components", "app/js/libs/bower", "app/css/libs/bower", "app/editor/js/libs/bower", "app/editor/css/libs/bower"],
+    clean: [
+      "build",
+      "cache",
+      "bower_components",
+      "coverage",
+      "app/js/libs/bower",
+      "app/css/libs/bower",
+      "app/editor/js/libs/bower",
+      "app/editor/css/libs/bower"
+    ],
     electron: {
       "linux-x64": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
@@ -25,7 +34,7 @@ module.exports = function(grunt) {
       },
       "linux-ia32": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
@@ -37,12 +46,12 @@ module.exports = function(grunt) {
       },
       "win32-ia32": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
           platform: 'win32',
-          icon: 'app/resources/icons/bmsicon.ico',
+          //icon: 'app/resources/icons/bmsicon.ico',
           arch: 'ia32',
           asar: true,
           "app-version": appVersion
@@ -50,12 +59,12 @@ module.exports = function(grunt) {
       },
       "win32-x64": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
+          //icon: 'app/resources/icons/bmsicon.ico',
           platform: 'win32',
-          icon: 'app/resources/icons/bmsicon.ico',
           arch: 'x64',
           asar: true,
           "app-version": appVersion
@@ -63,12 +72,12 @@ module.exports = function(grunt) {
       },
       "darwin-x64": {
         options: {
-          name: 'bmotion-prob',
+          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
-          platform: 'darwin',
           icon: 'app/resources/icons/bmsicon.icns',
+          platform: 'darwin',
           arch: 'x64',
           asar: true,
           "app-version": appVersion
@@ -115,38 +124,38 @@ module.exports = function(grunt) {
       }
     },
     requirejs: {
-      'js-online': {
+      'js-extern': {
         options: {
           mainConfigFile: "app/bmotion.config.js",
           baseUrl: "app",
           removeCombined: true,
           findNestedDependencies: true,
-          name: "bmotion.online",
-          out: "build/online/js/bmotion.online.js",
+          name: "bmotion.<%= mode %>",
+          out: "build/<%= mode %>/js/bmotion.<%= mode %>.js",
           optimize: 'none',
           skipDirOptimize: true,
           keepBuildDir: false,
           noBuildTxt: true
         }
       },
-      'css-online': {
+      'css-extern': {
         options: {
           keepBuildDir: true,
           //optimizeCss: "standard.keepLines.keepWhitespace",
           optimizeCss: "standard",
           cssPrefix: "",
           cssIn: "app/css/bms.main.css",
-          out: "build/online/css/bms.main.css"
+          out: "build/<%= mode %>/css/bms.main.css"
         }
       }
     },
     copy: {
-      online: {
+      extern: {
         files: [{
           expand: true,
           cwd: 'app/',
-          src: ['css/**', 'images/**', 'js/require.js', 'bmotion.json'],
-          dest: 'build/online/'
+          src: ['css/**', 'images/**', 'js/libs/bower/requirejs/require.js'],
+          dest: 'build/<%= mode %>/'
         }]
       },
       template: {
@@ -157,6 +166,15 @@ module.exports = function(grunt) {
           dest: 'build/template/'
         }]
       }
+    },
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js',
+        // run karma in the background
+        background: true,
+        // which browsers to run the tests on
+        browsers: ['PhantomJS']
+      }
     }
   });
 
@@ -165,24 +183,35 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-electron');
+  grunt.loadNpmTasks('grunt-karma');
 
   grunt.registerTask('default', ['build']);
+
+  grunt.registerTask('test', ['karma']);
 
   grunt.registerTask('prepare', ['bower:install']);
   grunt.registerTask('build', ['standalone_all']);
 
-  grunt.registerTask('online', ['prepare', 'requirejs:js-online', 'requirejs:css-online', 'copy:online']);
+  grunt.registerTask('integrated', '', function() {
+    grunt.config.set('mode', 'integrated');
+    grunt.task.run(['prepare', 'test', 'requirejs:js-extern', 'requirejs:css-extern', 'copy:extern']);
+  });
+
+  grunt.registerTask('online', '', function() {
+    grunt.config.set('mode', 'online');
+    grunt.task.run(['prepare', 'test', 'requirejs:js-extern', 'requirejs:css-extern', 'copy:extern']);
+  });
 
   targets.forEach(function(target) {
     grunt.registerTask('standalone_' + target, '', function() {
       grunt.config.set('mode', 'standalone');
-      grunt.task.run(['prepare', 'copy:template', 'electron:' + target]);
+      grunt.task.run(['prepare', 'test', 'copy:template', 'electron:' + target]);
     });
   });
 
   grunt.registerTask('standalone_all', '', function() {
     grunt.config.set('mode', 'standalone');
-    grunt.task.run(['prepare', 'copy:template', 'electron']);
+    grunt.task.run(['prepare', 'test', 'copy:template', 'electron']);
   });
 
 };

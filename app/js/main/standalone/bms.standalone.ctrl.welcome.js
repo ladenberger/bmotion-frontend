@@ -9,10 +9,6 @@ define([
     .controller('bmsWelcomeCtrl', ['$scope', 'electronDialog', 'initVisualizationService', 'electron',
       function($scope, electronDialog, initVisualizationService, electron) {
 
-        electron.send({
-          type: "buildWelcomeMenu"
-        });
-
         $scope.openFileDialog = function() {
           electronDialog.showOpenDialog({
               title: 'Open BMotionWeb Visualisation',

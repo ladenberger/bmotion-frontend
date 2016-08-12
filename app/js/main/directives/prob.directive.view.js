@@ -13,14 +13,17 @@ define([
   var module = angular.module('prob.directive.view', ['bms.session', 'bms.config', 'bms.socket'])
     .directive('probView', ['$q', 'bmsSessionService', 'bmsConfigService', 'ws',
       function($q, bmsSessionService, bmsConfigService, ws) {
+        'use strict';
         return {
           replace: true,
-          scope: {},
+          scope: {
+            sessionId: '@bmsSessionId'
+          },
           template: '<div class="fullWidthHeight"><iframe src="" frameBorder="0" class="fullWidthHeight"></iframe></div>',
           require: '^bmsDialog',
           controller: ['$scope', function($scope) {
 
-            var bmsSession = bmsSessionService.getSession($scope.$parent.sessionId);
+            var bmsSession = bmsSessionService.getSession($scope.sessionId);
             bmsSession.isInitialized()
               .then(function() {
                 $scope.traceId = bmsSession.toolData.traceId;

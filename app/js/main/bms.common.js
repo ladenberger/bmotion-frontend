@@ -26,6 +26,22 @@ define([
         }
       };
 
+    })
+    .factory('bmsErrorService', function() {
+
+      return {
+        print: function(error) {
+
+          if (Object.prototype.toString.call(error) === '[object Array]') {
+            angular.forEach(error, function(err) {
+              console.error(err);
+            });
+          } else {
+            console.error(error);
+          }
+        }
+      };
+
     });
 
 });

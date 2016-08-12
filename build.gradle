@@ -1,8 +1,8 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.tasks.Exec
 
-def bmotionVersion = '0.2.8'
-def appVersion = '0.2.8'
+def bmotionVersion = '0.3.1-SNAPSHOT'
+def appVersion = '0.3.1-SNAPSHOT'
 def targets = ["linux-ia32", "linux-x64", "darwin-x64", "win32-ia32", "win32-x64"]
 
 // ----------------------------------------
@@ -30,13 +30,13 @@ repositories {
     }
 }
 
-dependencies {
-    compile group: 'de.hhu.stups', name: 'bmotion-prob', version: bmotionVersion, changing: true
+configurations.all {
+    // check for updates every build
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-// Extend clean task ...
-clean {
-    delete("build")
+dependencies {
+    compile group: 'de.hhu.stups', name: 'bmotion-prob', version: bmotionVersion, changing: true
 }
 
 task getLibs(dependsOn: jar) << {
@@ -59,8 +59,12 @@ task npmProductionDeps(dependsOn: [copyPackageJson], type: Exec) {
     commandLine "npm", 'install', '--production', '--prefix', 'build'
 }
 
-task grunt_standalone_all(dependsOn: [npmDeps], type: GruntTask) {
-    gruntArgs = "standalone_all --force"
+task grunt_clean(dependsOn: [npmDeps], type: GruntTask) {
+    gruntArgs = "clean --force"
+}
+
+task prepare(dependsOn: [npmDeps], type: GruntTask) {
+    gruntArgs = "prepare --force"
 }
 
 targets.each() { target ->
@@ -73,17 +77,17 @@ targets.each() { target ->
             include 'template/**'
         }
         if (target == "darwin-x64") {
-            into 'build/client/bmotion-prob-' + target + '/bmotion-prob.app/Contents/Resources'
+            into 'build/client/bmotion-' + target + '/bmotion.app/Contents/Resources'
         } else {
-            into 'build/client/bmotion-prob-' + target + '/resources'
+            into 'build/client/bmotion-' + target + '/resources'
         }
     }
 
     task "zip_${target}"(dependsOn: ["copyResources_${target}"], type: Zip) {
         destinationDir = new File('build/dist/' + appVersion)
-        archiveName = 'bmotion-prob-' + appVersion + '-' + target + '.zip'
-        from('build/client/bmotion-prob-' + target) {
-            into "./bmotion-prob-" + appVersion
+        archiveName = 'bmotion-' + appVersion + '-' + target + '.zip'
+        from('build/client/bmotion-' + target) {
+            into "./bmotion-" + appVersion
         }
     }
 
@@ -97,6 +101,11 @@ targets.each() { target ->
 
 task standalone_all(dependsOn: [tasks.withType(Copy).matching { task -> task.name.startsWith('assemble_') },
                                 tasks.withType(Zip).matching { task -> task.name.startsWith('zip_') }]) << {
+}
+
+// Extend clean task ...
+clean {
+  dependsOn getTasksByName("grunt_clean", true)
 }
 
 class GruntTask extends Exec {

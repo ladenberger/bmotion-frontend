@@ -30,17 +30,49 @@ define([
         }
       }
     },
+    // Calls function or returns object (used for
+    // observer and interactive handler properties)
+    callOrReturn: function(subject, element, isJsString, container) {
+
+      var arguments = [];
+      var argStrings = [];
+      if (element) {
+        arguments.push(element);
+        argStrings.push('origin');
+      }
+      if (container) {
+        arguments.push(container);
+        argStrings.push('container');
+      }
+
+      if (api.isFunction(subject)) {
+        return subject.apply(this, arguments);
+      } else if (isJsString) {
+        try {
+          var func = new Function(argStrings.join(","), subject);
+          return func.apply(this, arguments);
+        } catch (err) {
+          return subject;
+        }
+      } else {
+        return subject;
+      }
+
+    },
     _normalize: function(obj, exclude, origin, container) {
       for (var property in obj) {
         if (obj.hasOwnProperty(property)) {
-          if (origin !== undefined) {
-            origin.data(property, obj[property]);
-          }
-          if (typeof obj[property] == "object") {
-            api._normalize(obj[property], exclude, origin, container);
-          } else {
-            if ($.inArray(property, exclude) === -1) {
-              obj[property] = api.callOrReturn(obj[property], origin, container, obj[property + "Js"]);
+          // Ignore element and selector properties
+          if (property !== "element" && property !== "selector") {
+            if (origin !== undefined) {
+              origin.data(property, obj[property]);
+            }
+            if (typeof obj[property] == "object") {
+              api._normalize(obj[property], exclude, origin, container);
+            } else {
+              if ($.inArray(property, exclude) === -1) {
+                obj[property] = api.callOrReturn(obj[property], origin, obj[property + "Js"], container);
+              }
             }
           }
         }
@@ -63,12 +95,13 @@ define([
       }
 
     },
+    // Calls function with origin and one optional additional parameter
     callElementFunction: function(functor, element, paraName, paraData) {
       if (typeof functor === 'function') {
         if (paraName && paraData) {
           return functor.call(self, element, paraData);
         } else {
-          return functor.call(self);
+          return functor.call(self, element);
         }
       } else {
         if (paraName && paraData) {
@@ -78,6 +111,7 @@ define([
         }
       }
     },
+    // Calls function with one optional parameter
     callFunction: function(functor, paraName, paraData) {
       if (typeof functor === 'function') {
         if (paraName && paraData) {
@@ -93,22 +127,7 @@ define([
         }
       }
     },
-    callOrReturn: function(subject, element, container, isJsString) {
-      if (typeof subject === "boolean") {
-        return subject;
-      } else if (api.isFunction(subject)) {
-        return subject.call(this, element, container);
-      } else if (isJsString) {
-        try {
-          var func = new Function('origin', 'container', subject);
-          return func(element, container);
-        } catch (err) {
-          return subject;
-        }
-      } else {
-        return subject;
-      }
-    },
+    // Converts or returns the given function
     convertFunction: function(parameters, func) {
       if (typeof func === 'function') {
         return func;

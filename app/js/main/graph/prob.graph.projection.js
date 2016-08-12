@@ -6,12 +6,14 @@ define([
   'angular',
   'jquery',
   'bms.session',
-  'prob.graph.rendering'
+  'prob.graph.rendering',
+  'bms.common'
 ], function(angular, $) {
 
   return angular.module('prob.graph.projection', [
       'prob.graph.rendering',
-      'bms.session'
+      'bms.session',
+      'bms.common'
     ])
     .factory('bmsDiagramElementProjectionGraph', ['$q', function($q) {
 
@@ -102,8 +104,8 @@ define([
       };
 
     }])
-    .directive('bmsDiagramElementProjectionView', ['bmsModalService', 'bmsRenderingService', 'bmsDiagramElementProjectionGraph', 'bmsSessionService',
-      function(bmsModalService, bmsRenderingService, bmsDiagramElementProjectionGraph, bmsSessionService) {
+    .directive('bmsDiagramElementProjectionView', ['bmsModalService', 'bmsRenderingService', 'bmsDiagramElementProjectionGraph', 'bmsSessionService', 'bmsErrorService',
+      function(bmsModalService, bmsRenderingService, bmsDiagramElementProjectionGraph, bmsSessionService, bmsErrorService) {
 
         return {
           replace: false,
@@ -112,7 +114,12 @@ define([
             sessionId: '@bmsSessionId'
           },
           template: '<div class="input-group input-group-sm diagram-form">' +
-            '<select class="form-control" ng-options="s as s.selector for s in selectors" ng-model="selected">' +
+            '<label>Select view and selector</label>' +
+            '<select class="form-control" ng-options="s as s.viewId for s in viewIds" ng-change="updateSelectors()" ng-model="selectedView">' +
+            '</select>' +
+            '</div>' +
+            '<div class="input-group input-group-sm diagram-form">' +
+            '<select class="form-control" ng-options="s as s.selector for s in selectors" ng-model="selectedSelector">' +
             '</select>' +
             '<span class="input-group-btn">' +
             '<button class="btn btn-default" type="button" ng-click="useSelector()">' +
@@ -131,13 +138,31 @@ define([
           controller: ['$scope', function($scope) {
 
             if (!$scope.sessionId) {
-              bmsModalService.openErrorDialog("Session id must not be undefined.");
+              bmsErrorService.print("Session id must not be undefined.");
+              //bmsModalService.openErrorDialog("Session id must not be undefined.");
             }
             // TODO check if session really exists!?
             $scope.session = bmsSessionService.getSession($scope.sessionId);
             $scope.view = $scope.session.getView($scope.id);
 
-            $scope.selectors = bmsRenderingService.getElementIds($scope.view);
+            //$scope.selectors = bmsRenderingService.getElementIds($scope.session);
+            $scope.selectors = [];
+            $scope.viewIds = [];
+
+            for (viewId in $scope.session.views) {
+              var view = $scope.session.views[viewId];
+              $scope.viewIds.push({
+                id: view.id,
+                viewId: view.viewData.id
+              });
+            }
+
+            $scope.updateSelectors = function() {
+              if ($scope.selectedView) {
+                var view = $scope.session.getView($scope.selectedView.id);
+                $scope.selectors = bmsRenderingService.getElementIds(view);
+              }
+            }
 
             $scope.$on('exportSvg', function() {
               if ($scope.cy) {
@@ -149,7 +174,7 @@ define([
             });
 
             $scope.useSelector = function() {
-              if ($scope.selected) $scope.selector = $scope.selected.selector;
+              if ($scope.selectedSelector) $scope.selector = $scope.selectedSelector.selector;
             };
 
           }],
@@ -159,26 +184,32 @@ define([
 
               bmsModalService.loading("Creating projection diagram for selector " + $scope.selector);
 
-              bmsRenderingService.getDiagramData($scope.view, $scope.selector, 'createProjectionDiagram', function(node) {
-                  return node.data.id !== '1' && node.data.labels[0] !== '<< undefined >>';
-                })
-                .then(
-                  function success(graphData) {
-                    if (!$scope.cy) {
-                      bmsDiagramElementProjectionGraph.build($element, graphData)
-                        .then(function(r) {
-                          $scope.cy = r.cy;
-                          $scope.navigator = r.navigator;
-                          bmsModalService.endLoading();
-                        });
-                    } else {
-                      $scope.cy.load(graphData, function() {}, function() {});
-                      bmsModalService.endLoading();
-                    }
-                  },
-                  function error(error) {
-                    bmsModalService.openErrorDialog(error);
-                  });
+              if (!$scope.selectedView || !$scope.selector) {
+                bmsModalService.openErrorDialog("Please select a view and selector.");
+              } else {
+                var view = $scope.session.getView($scope.selectedView.id);
+                bmsRenderingService.getDiagramData(view, $scope.selector, 'createProjectionDiagram', function(node) {
+                    return node.data.id !== '1' && node.data.labels[0] !== '<< undefined >>';
+                  })
+                  .then(
+                    function success(graphData) {
+                      if (!$scope.cy) {
+                        bmsDiagramElementProjectionGraph.build($element, graphData)
+                          .then(function(r) {
+                            $scope.cy = r.cy;
+                            $scope.navigator = r.navigator;
+                            bmsModalService.endLoading();
+                          });
+                      } else {
+                        $scope.cy.load(graphData, function() {}, function() {});
+                        bmsModalService.endLoading();
+                      }
+                    },
+                    function error(error) {
+                      bmsErrorService.print(error);
+                      //bmsModalService.openErrorDialog(error);
+                    });
+              }
 
             };
 

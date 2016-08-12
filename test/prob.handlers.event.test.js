@@ -1,76 +1,124 @@
-define(['prob.handlers.event'], function() {
+define([
+  'sharedTest',
+  'jquery',
+  'bms.func',
+  'prob.handlers.event'
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('prob.handlers.event', function() {
 
-    var bmsVisualizationService;
-    var viewInstance;
-    var executeEventEvent;
-    var executeEventEventInstance;
-    var $rootScope;
-    var viewId = 'lift';
-    var sessionId = 'someSessionId';
-    var viewInstance;
-    var ws;
-    var $q;
+    var handlerService;
+    var handlerInstance;
+    var view;
 
     beforeEach(module('prob.handlers.event'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _executeEventEvent_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(_executeEventEvent_) {
 
-        executeEventEvent = _executeEventEvent_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
-        $q = _$q_;
-
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "views": [{
-            "id": viewId,
-            "name": "Lift environment",
-            "template": "lift.html"
-          }]
+        handlerService = _executeEventEvent_;
+        handlerInstance = {
+          type: "executeEvent",
+          id: bms.uuid(),
+          options: {
+            events: [{
+              name: 'close_door'
+            }, {
+              name: 'open_door'
+            }]
+          }
         };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
-
-        var promise = bmsSessionService.initSession(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(function(bmsSessionInstance) {
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
-          executeEventEventInstance = new executeEventEvent(viewInstance, {
-            selector: '#someselector',
-            name: 'someevent',
-            predicate: 'somepredicate'
-          });
-        }).finally(done);
-
-        $rootScope.$digest();
 
       });
 
     });
 
-    it('should exist', inject(function() {
-      expect(executeEventEventInstance).toBeDefined();
+    it('(1) should exist', inject(function() {
+      expect(handlerService).toBeDefined();
     }));
 
-    it('should implement functions: getId and getDefaultOptions', inject(function() {
-
-      expect(executeEventEventInstance.getId).toBeDefined();
-      expect(executeEventEventInstance.getDefaultOptions).toBeDefined();
-
+    it('(2) should implement functions: getDefaultOptions', inject(function() {
+      expect(handlerService.getDefaultOptions).toBeDefined();
     }));
+
+    it('(3) setup should reject if no selector or element is given', function(done) {
+
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
+      var error;
+
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(4) setup should init tooltip on given selector', function(done) {
+
+      handlerInstance.options.selector = '#door';
+      handlerInstance.options.element = '';
+
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
+
+      promise.then(function() {
+        // Tooltip should be installed
+        expect($('#door')).toHaveAttr('data-hasqtip');
+      }).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('(5) setup should init tooltip on given element', function(done) {
+
+      var door = $('#door');
+
+      handlerInstance.options.selector = '';
+      handlerInstance.options.element = door;
+
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
+
+      promise.then(function() {
+        // Tooltip should be installed
+        expect(door).toHaveAttr('data-hasqtip');
+      }).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('(6) shouldBeChecked should return true if given refinement is in animation', function() {
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1', 'm2', 'm3']
+        }
+      };
+      handlerInstance.options.refinement = 'm3';
+      expect(handlerService.shouldBeChecked(handlerInstance, view)).toBeTruthy();
+    });
+
+    it('(7) shouldBeChecked should return false if given refinement is not in animation', function() {
+      bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
+      handlerInstance.options.refinement = 'm3';
+      expect(handlerService.shouldBeChecked(handlerInstance, view)).toBe(false);
+    });
 
   });
 

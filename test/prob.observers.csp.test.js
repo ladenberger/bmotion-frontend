@@ -1,38 +1,44 @@
-define(['prob.observers.csp'], function() {
+define([
+  'jquery',
+  'bms.func',
+  'prob.observers.csp'
+], function($, bms) {
 
   "use strict";
 
   describe('prob.observers.csp', function() {
 
     var bmsVisualizationService;
-    var cspEventObserver;
-    var cspEventObserverInstance;
+    var observerService;
+    var observerInstance;
     var probWsService;
+    var bmsWsService;
     var viewInstance;
     var $rootScope;
-    var viewId = 'lift';
+    var viewId = 'someViewId';
     var sessionId = 'someSessionId';
     var ws;
     var $q;
 
+    jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
+
     beforeEach(module('prob.observers.csp'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _probWsService_, _cspEventObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(bmsVisualization, _probWsService_, _cspEventObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, _bmsWsService_, bmsSessionService) {
 
-        cspEventObserver = _cspEventObserver_;
+        observerService = _cspEventObserver_;
         probWsService = _probWsService_;
+        bmsWsService = _bmsWsService_;
         $rootScope = _$rootScope_;
         ws = _ws_;
         $q = _$q_;
 
         var manifestData = {
-          "model": "model/m3.bcm",
-          "views": [{
-            "id": viewId,
-            "name": "Lift environment",
-            "template": "lift.html"
-          }]
+          "model": "model/crossing.csp",
+          "id": viewId,
+          "name": "Crossing",
+          "template": "crossing.html"
         };
         var manifestPath = 'somepath/bmotion.json';
         $httpBackend.when('GET', manifestPath)
@@ -48,66 +54,81 @@ define(['prob.observers.csp'], function() {
 
           var defer = $q.defer();
 
-          defer.resolve({
-            'someid': {
-              'exp1': '{evt1.1.1,evt2.1.2,evt3.1.3}',
-              'exp2': '{evt0}'
+          var result = {};
+
+          result[observerInstance.id] = {
+            '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': {
+              result: '{enter.1.Train1}'
+            },
+            '{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}': {
+              result: '{leave.0.Train1}'
             }
-          });
+          };
+
+          defer.resolve(result);
 
           return defer.promise;
 
         });
 
-        var promise = bmsSessionService.initSession(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(function(bmsSessionInstance) {
+        var bmsSessionInstance = bmsSessionService.getSession(sessionId);
+        viewInstance = bmsSessionInstance.getView(viewId);
 
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
-          cspEventObserverInstance = new cspEventObserver(viewInstance, {
-            selector: '#someselector',
-            observers: [{
-              exp: "exp1",
-              actions: [{
-                selector: "#selector{{a2}}",
-                attr: "fill",
-                value: "green"
+        observerInstance = {
+          id: bms.uuid(),
+          type: 'cspEvent',
+          options: {
+            "selector": "#crossing",
+            "observers": [{
+              "exp": "{gate.down,gate.up}",
+              "actions": [{
+                "selector": "g[id^=gate]",
+                "attr": "opacity",
+                "value": "0"
               }]
             }, {
-              exp: "exp2",
-              actions: [{
-                selector: "#someotherselector",
-                attr: "fill",
-                value: "red"
+              "exp": "{gate.down}",
+              "actions": [{
+                "selector": "#gate-go_down-2, #gate-go_down-1",
+                "attr": "opacity",
+                "value": "100"
               }]
             }, {
-              events: ["evt3.1.3"],
-              actions: [{
-                selector: "#selector1",
-                attr: "fill",
-                value: "yellow"
+              "exp": "{gate.up}",
+              "actions": [{
+                "selector": "#gate-go_up-2, #gate-go_up-1",
+                "attr": "opacity",
+                "value": "100"
+              }]
+            }, {
+              "exp": "{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}",
+              "actions": [{
+                "selector": "#train_{{a2}}",
+                "attr": "x",
+                "value": "{{a1}}00"
+              }, {
+                "selector": "#train_{{a2}}",
+                "attr": "transform",
+                "value": ""
+              }]
+            }, {
+              "exp": "{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}",
+              "actions": [{
+                "selector": "#train_{{a2}}",
+                "attr": "transform",
+                "value": "translate(50,0)"
               }]
             }]
-          });
+          }
+        };
 
-          spyOn(viewInstance, "getBmsIds").and.callFake(function(arg) {
-            if (arg === '#selector1') {
-              return ['bmsid1'];
-            } else if (arg === '#selector2') {
-              return ['bmsid2'];
-            } else if (arg === '#someotherselector') {
-              return ['bmsid3'];
-            } else if (arg === '#selector3') {
-              return ['bmsid4'];
-            }
-          });
-
-          spyOn(cspEventObserverInstance, "getId").and.callFake(function(evt, args) {
-            return 'someid';
-          });
-
-        }).finally(done);
+        // Set manually container of view
+        loadFixtures('examples/crossing.html');
+        viewInstance.container = $('body');
+        var promise = bmsSessionInstance.init(manifestPath);
+        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
+        $httpBackend.flush();
+        promise.then(done);
 
         $rootScope.$digest();
 
@@ -115,23 +136,23 @@ define(['prob.observers.csp'], function() {
 
     });
 
-    it('should exist', inject(function() {
-      expect(cspEventObserver).toBeDefined();
+    it('(1) should exist', inject(function() {
+      expect(observerService).toBeDefined();
     }));
 
-    it('should implement functions', inject(function() {
-      expect(cspEventObserverInstance.getDefaultOptions).toBeDefined();
-      expect(cspEventObserverInstance.shouldBeChecked).toBeDefined();
-      expect(cspEventObserverInstance.getDiagramData).toBeDefined();
+    it('(2) should implement functions', inject(function() {
+      expect(observerService.getDefaultOptions).toBeDefined();
+      expect(observerService.shouldBeChecked).toBeDefined();
+      expect(observerService.getDiagramData).toBeDefined();
     }));
 
-    it('evaluateExpressions should translate expression results', function(done) {
+    it('(3) evaluateExpressions should translate expression results', function(done) {
 
-      var promise = cspEventObserverInstance.evaluateExpressions();
+      var promise = observerService.evaluateExpressions(viewInstance.session.id, observerInstance);
       promise.then(function(results) {
         expect(results).toEqual({
-          'exp1': ['evt1.1.1', 'evt2.1.2', 'evt3.1.3'],
-          'exp2': ['evt0']
+          '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': ['enter.1.Train1'],
+          '{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}': ['leave.0.Train1']
         });
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
@@ -140,31 +161,30 @@ define(['prob.observers.csp'], function() {
 
     });
 
-    it('replaceParameter should replace parameters', function() {
-      var replaced = cspEventObserverInstance.replaceParameter('#some{{a1}}selector{{a2}}', ['1', '2']);
+    it('(4) replaceParameter should replace parameters', function() {
+      var replaced = observerService.replaceParameter('#some{{a1}}selector{{a2}}', ['1', '2']);
       expect(replaced).toBe('#some1selector2');
     });
 
-    it('future events should be ignored', function(done) {
+    it('(5) future events should be ignored', function(done) {
 
       spyOn(probWsService, "observeHistory").and.callFake(function(evt, args) {
 
         var deferred = $q.defer();
 
         deferred.resolve([{
-          name: 'evt1',
-          opString: 'evt1.1.1',
-          parameters: ['1', '1'],
+          name: 'start_cspm_MAIN',
+          opString: 'start_cspm_MAIN',
           group: 'past'
         }, {
-          name: 'evt2',
-          opString: 'evt2.1.2',
-          parameters: ['1', '2'],
+          name: 'enter',
+          opString: 'enter.1.Train1',
+          parameters: ['1', 'Train1'],
           group: 'current'
         }, {
-          name: 'evt3',
-          opString: 'evt3.1.3',
-          parameters: ['1', '3'],
+          name: 'leave',
+          opString: 'leave.0.Train1',
+          parameters: ['0', 'Train1'],
           group: 'future'
         }]);
 
@@ -172,16 +192,18 @@ define(['prob.observers.csp'], function() {
 
       });
 
-      var promise = cspEventObserverInstance.check();
+      var element = viewInstance.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, viewInstance, element);
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'bmsid1': {
-            'fill': 'green'
-          },
-          'bmsid2': {
-            'fill': 'green'
-          }
-        });
+
+        var trainId = $('#train_Train1').attr("data-bms-id");
+        var expectObject = {};
+        expectObject[trainId] = {
+          'x': '100',
+          'transform': ''
+        };
+        expect(attributeValues).toEqual(expectObject);
+
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
@@ -189,25 +211,25 @@ define(['prob.observers.csp'], function() {
 
     });
 
-    it('override attribute values', function(done) {
+    it('(6) override attribute values', function(done) {
 
       spyOn(probWsService, "observeHistory").and.callFake(function(evt, args) {
 
         var deferred = $q.defer();
 
         deferred.resolve([{
-          name: 'evt1',
-          opString: 'evt1.1.1',
-          parameters: ['1', '1'],
+          name: 'start_cspm_MAIN',
+          opString: 'start_cspm_MAIN',
           group: 'past'
         }, {
-          name: 'evt0',
-          opString: 'evt0',
+          name: 'enter',
+          opString: 'enter.1.Train1',
+          parameters: ['1', 'Train1'],
           group: 'past'
         }, {
-          name: 'evt3',
-          opString: 'evt3.1.3',
-          parameters: ['1', '3'],
+          name: 'leave',
+          opString: 'leave.0.Train1',
+          parameters: ['0', 'Train1'],
           group: 'current'
         }]);
 
@@ -215,19 +237,18 @@ define(['prob.observers.csp'], function() {
 
       });
 
-      var promise = cspEventObserverInstance.check();
+      var element = viewInstance.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, viewInstance, element);
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'bmsid1': {
-            'fill': 'yellow'
-          },
-          'bmsid3': {
-            'fill': 'red'
-          },
-          'bmsid4': {
-            'fill': 'green'
-          }
-        });
+
+        var trainId = $('#train_Train1').attr("data-bms-id");
+        var expectObject = {};
+        expectObject[trainId] = {
+          'x': '100',
+          'transform': 'translate(50,0)'
+        };
+        expect(attributeValues).toEqual(expectObject);
+
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();

@@ -15,66 +15,70 @@ define([
       function(ws, $q, bmsVisualizationService) {
         'use strict';
 
-        var observer = function(view, options) {
-          this.id = bms.uuid();
-          this.view = view;
-          this.options = this.getDefaultOptions(options);
-        };
+        var observerService = {
 
-        observer.prototype.getDefaultOptions = function(options) {
-          return angular.merge({
-            refinement: "",
-            enable: function() {},
-            disable: function() {}
-          }, options);
-        };
+          getDefaultOptions: function(options) {
+            return angular.merge({
+              refinement: "",
+              enable: function() {},
+              disable: function() {}
+            }, options);
+          },
+          apply: function(observer, view, element, container, isRefinement) {
 
-        observer.prototype.apply = function(isRefinement) {
+            var defer = $q.defer();
 
-          var defer = $q.defer();
+            container = container ? container : view.container.contents();
 
-          var obj = {};
+            if (element instanceof $) {
 
-          if (isRefinement) {
-            var self = this;
-            var jcontainer = $(container);
-            var el = container.find(this.options.selector);
-            el.each(function(i, v) {
+              var fvalues = {};
+
               var rr;
-              var e = $(v);
-              var ref = bms.callOrReturn(self.options.refinement, e, jcontainer);
-              // TODO: Maybe an intersection of both arrays (visRefinements and observerRefinements) would be more efficient.
-              if (bms.inArray(ref, visRefinements)) {
-                rr = bms.callOrReturn(self.options.enable, e, jcontainer);
+
+              if (isRefinement) {
+                rr = bms.callElementFunction(observer.options.enable, element);
               } else {
-                rr = bms.callOrReturn(self.options.disable, e, jcontainer);
+                rr = bms.callElementFunction(observer.options.disable, element);
               }
               if (rr) {
-                var bmsid = bmsVisualizationService.getBmsIdForElement(e);
-                obj[bmsid] = rr;
+                var bmsid = view.getBmsIdForElement(element);
+                fvalues[bmsid] = rr;
               }
-            });
+
+              defer.resolve(fvalues);
+
+            } else {
+
+              if (isRefinement) {
+                bms.callFunction(observer.options.enable);
+              } else {
+                bms.callFunction(observer.options.disable);
+              }
+
+              defer.resolve({});
+
+            }
+
+            return defer.promise;
+
+          },
+          check: function(observer, view, element) {
+
+            //TODO: Check refinement observer only once!
+            var self = this;
+            var defer = $q.defer();
+            var visRefinements = view.session.toolData['model']['refinements'];
+            var normalized = bms.normalize(observer.options, ['enable', 'disable'], element, view.container);
+            var isRefinement = bms.inArray(normalized.refinement, visRefinements);
+            defer.resolve(this.apply(observer, view, element, view.container, isRefinement));
+            return defer.promise;
 
           }
 
-          defer.resolve(obj);
-
-          return defer.promise;
-
         };
 
-        observer.prototype.check = function() {
-
-          //TODO: Check refinement observer only once!
-          var self = this;
-          var defer = $q.defer();
-          var visRefinements = self.view.session.toolData['model']['refinements'];
-          defer.resolve(this.apply(bms.inArray(this.options.refinement, visRefinements)));
-          return defer.promise;
-
-        };
-
-        return observer;
+        return observerService;
 
       }
     ]);

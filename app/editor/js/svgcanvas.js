@@ -3931,12 +3931,12 @@ $.SvgCanvas = function(container, config) {
         leaveContext();
       }
 
-      if ((parent.tagName !== 'g' && parent.tagName !== 'a') ||
+      /*if ((parent.tagName !== 'g' && parent.tagName !== 'a') ||
         parent === getCurrentDrawing().getCurrentLayer() ||
         mouse_target === selectorManager.selectorParentGroup) {
         // Escape from in-group edit
         return;
-      }
+      }*/
 
       setContext(mouse_target);
 
@@ -6467,8 +6467,8 @@ $.SvgCanvas = function(container, config) {
           var jimage = $(this);
           if (!jimage.attr("data-bms-widget")) {
             // adapt image path
-            var vis = methodDraw.getVisualization(val);
-            val = vis['templateFolder'] + '/' + val;
+            var session = methodDraw.getSession();
+            val = session.templateFolder + '/' + val;
             jimage.attr('xlink:href', val);
           }
         }

@@ -1,16 +1,50 @@
 <div>
 
-    <div class="row fixed-height">
-        <div class="col-xs-3">Selector:</div>
-        <div class="col-xs-9">
-            <span editable-text="observer.data.selector">{{ observer.data.selector || "selector" }}</span>
-        </div>
+  <div class="row fixed-height">
+    <div class="col-xs-3">Selector:</div>
+    <div class="col-xs-9">
+      <span editable-text="observer.data.selector">{{ observer.data.selector || "selector" }}</span>
     </div>
-    <div class="row fixed-height">
-        <div class="col-xs-3">Predicate:</div>
-        <div class="col-xs-9">
-            <span editable-text="observer.data.predicate">{{ observer.data.predicate || "predicate" }}</span>
-        </div>
+  </div>
+  <div class="row fixed-height">
+    <div class="col-xs-3">Predicate:</div>
+    <div class="col-xs-9">
+      <span editable-text="observer.data.predicate">{{ observer.data.predicate || "predicate" }}</span>
     </div>
+  </div>
+  <div class="row fixed-height">
+    <div class="col-xs-3">True:</div>
+    <div class="col-xs-9">
+      <span class="editable-click" ng-click="openJsEditor('true', observer.data)">
+        <i class="fa fa-file-text-o"></i>
+        Func</span>
+    </div>
+  </div>
+  <div class="row fixed-height">
+    <div class="col-xs-3">False:</div>
+    <div class="col-xs-9">
+      <span class="editable-click" ng-click="openJsEditor('false', observer.data)">
+        <i class="fa fa-file-text-o"></i>
+        Func</span>
+    </div>
+  </div>
+  <div class="row fixed-height">
+    <div class="col-xs-3">Refinement:</div>
+    <div class="col-xs-9">
+      <div class="js-edit-field">
+        <div ng-show="observer.data.refinementJs">
+          <span class="editable-click" ng-click="openJsEditor('refinement', observer.data)">
+            <i class="fa fa-file-text-o"></i>
+            Func</span>
+        </div>
+        <div ng-show="!observer.data.refinementJs">
+          <span ng-class="{'editable-click': !refinementForm.$visible, '': refinementForm.$visible}" ng-show="!refinementForm.$visible" ng-click="refinementForm.$show()" editable-text="observer.data.refinement" e-name="refinement" e-form="refinementForm">{{ (observer.data.refinement | cut:true:22:' ...') || "-" }}</span>
+        </div>
+      </div>
+      <div class="bt-switch-js" ng-hide="refinementForm.$visible">
+        <i class="fa fa-code" ng-click="switchToJs('refinement', observer.data)"></i>
+      </div>
+    </div>
+  </div>
 
 </div>

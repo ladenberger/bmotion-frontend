@@ -11,30 +11,39 @@ define([
     .controller('bmsSessionCtrl', ['$scope', '$rootScope', '$routeParams', '$location', 'electron', 'bmsViewService', 'bmsSessionService', 'bmsTabsService', 'bmsVisualizationService', 'bmsModalService',
       function($scope, $rootScope, $routeParams, $location, electron, bmsViewService, bmsSessionService, bmsTabsService, bmsVisualizationService, bmsModalService) {
 
-        $scope.sessionId = $routeParams.sessionId;
-
         // Load session by id
         bmsModalService.loading("Initializing visualization ...");
-        var bmsSession = bmsSessionService.getSession($scope.sessionId);
-        $scope.id = bms.uuid();
-        $scope.view = bmsSession.getView($scope.id);
 
-        bmsSession.load()
+        $scope.sessionId = $routeParams.sessionId;
+        $scope.session = bmsSessionService.getSession($scope.sessionId); // Get fresh session instance
+        $scope.id = bms.uuid(); // Visualization
+        $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
+
+        bmsViewService.clearViews();
+        $scope.views = bmsViewService.getViews();
+        $scope.svgs = $scope.session.getSvgData();
+
+        $scope.$watch(function() {
+          return bmsViewService.getViews();
+        }, function(newValue) {
+          $scope.views = newValue;
+        }, true);
+
+        $scope.$watch(function() {
+          return $scope.session.getSvgData();
+        }, function(newValue) {
+          $scope.svgs = newValue;
+        }, true);
+
+        $scope.session.load()
           .then(function() {
 
-            $scope.viewId = bmsSession.manifestData.views[0].id;
+            $scope.viewId = $scope.session.manifestData.id;
+            $scope.view.viewId = $scope.viewId;
 
             // Open additional views
-            angular.forEach(bmsSession.manifestData.views, function(view, i) {
-              if (i > 0) { // Ignore root view with id 1
-                bmsViewService.addView(view);
-              }
-            });
-
-            electron.send({
-              type: "buildVisualizationMenu",
-              tool: bmsSession.tool,
-              addMenu: true
+            angular.forEach($scope.session.manifestData.views, function(view, i) {
+              bmsViewService.addView(view);
             });
 
             bmsModalService.endLoading();

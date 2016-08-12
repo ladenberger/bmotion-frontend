@@ -1,115 +1,293 @@
-define(['bms.observers.formula'], function() {
+define([
+  'sharedTest',
+  'jquery',
+  'bms.func',
+  'bms.observers.formula'
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('bms.observers.formula', function() {
 
-    var bmsVisualizationService;
-    var formulaObserver;
-    var formulaObserverInstance;
-    var $rootScope;
-    var viewId = 'lift';
-    var sessionId = 'someSessionId';
-    var viewInstance;
-    var ws;
-    var $q;
+    var observerService;
+    var observerInstance;
+    var view;
 
     beforeEach(module('bms.observers.formula'));
 
     beforeEach(function(done) {
-      inject(function(bmsVisualization, _formulaObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, bmsWsService, bmsSessionService) {
+      inject(function(_formulaObserver_) {
 
-        formulaObserver = _formulaObserver_;
-        $rootScope = _$rootScope_;
-        ws = _ws_;
-        $q = _$q_;
-
-        var manifestData = {
-          "model": "model/m3.bcm",
-          "views": [{
-            "id": viewId,
-            "name": "Lift environment",
-            "template": "lift.html"
-          }]
+        observerService = _formulaObserver_;
+        observerInstance = {
+          type: "formula",
+          id: bms.uuid(),
+          options: {
+            selector: '#door',
+            formulas: ['door', 'floor']
+          }
         };
-        var manifestPath = 'somepath/bmotion.json';
-        $httpBackend.when('GET', manifestPath)
-          .respond(manifestData);
-
-        spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
-
-        var promise = bmsSessionService.initSession(manifestPath);
-        $httpBackend.expectGET(manifestPath).respond(200, manifestData);
-        $httpBackend.flush();
-        promise.then(function(bmsSessionInstance) {
-          viewInstance = new bmsVisualization(viewId, bmsSessionInstance);
-          formulaObserverInstance = new formulaObserver(viewInstance, {
-            selector: '#someselector',
-            formulas: ['formula1', 'formula2'],
-            trigger: function() {
-              return {
-                'stroke-width': 1
-              };
-            }
-          });
-
-          // Simulate apply function of formula observer
-          spyOn(formulaObserverInstance, "apply").and.callFake(function(evt, args) {
-            var deferred = $q.defer();
-            deferred.resolve({
-              'somebmsid': {
-                'stroke-width': 1
-              }
-            });
-            return deferred.promise;
-          });
-
-        }).finally(done);
-
-        $rootScope.$digest();
 
       });
 
     });
 
-    it('should exist', inject(function() {
-      expect(formulaObserver).toBeDefined();
+    it('(1) should exist', inject(function() {
+      expect(observerService).toBeDefined();
     }));
 
-    it('should implement functions: getId, getFormulas and getDefaultOptions', inject(function() {
-
-      expect(formulaObserverInstance.getId).toBeDefined();
-      expect(formulaObserverInstance.getFormulas).toBeDefined();
-      expect(formulaObserverInstance.getDefaultOptions).toBeDefined();
-      expect(formulaObserverInstance.getDiagramData).toBeDefined();
-
+    it('(2) should implement functions: getFormulas, getDefaultOptions and getDiagramData', inject(function() {
+      expect(observerService.getFormulas).toBeDefined();
+      expect(observerService.getDefaultOptions).toBeDefined();
+      expect(observerService.getDiagramData).toBeDefined();
     }));
 
-    it('getFormulas function should return two formula objects', inject(function() {
-      expect(formulaObserverInstance.getFormulas().length).toBe(2);
+    it('(3) getFormulas function should return two formula objects', inject(function() {
+      var element = view.determineElement(observerInstance);
+      expect(observerService.getFormulas(observerInstance, view, element).length).toBe(2);
     }));
 
-    it('check function should return attribute values of observer', function(done) {
+    it('(4) check function should reject if formulas contain errors', function(done) {
 
-      var promise = formulaObserverInstance.check(viewInstance, {
-        'formula1': 'res1',
-        'formula2': 'res2'
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
+        'door': {
+          formula: 'door',
+          result: 'closed',
+          error: 'some error'
+        },
+        'floor': {
+          formula: 'floor',
+          result: '1'
+        }
       });
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(5) check function should reject if no results were passed', function(done) {
+
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(6) check function should reject if not all results were passed', function(done) {
+
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
+        'door': {
+          formula: 'door',
+          result: 'closed'
+        }
+      });
+
+      var error;
+      promise.then(function() {}, function(err) {
+        error = err;
+      }).finally(function() {
+        expect(error).toBeDefined();
+        expect(promise.$$state.status).toBe(2); // Rejected
+        done();
+      });
+
+    });
+
+    it('(7) check function should call trigger function and return attribute values (element passed)', function(done) {
+
+      var doorElement = $('#door');
+      observerInstance.options.element = doorElement;
+      observerInstance.options.trigger = function(origin, results) {
+        // Origin should be passed to trigger function
+        expect(origin).toEqual(doorElement);
+        // Results should be passed to trigger function
+        expect(['closed', '1']).toEqual(results);
+        return {
+          'stroke-width': 1
+        };
+      };
+
+      var promise = observerService.check(observerInstance, view, doorElement, {
+        'door': {
+          formula: 'door',
+          result: 'closed'
+        },
+        'floor': {
+          formula: 'floor',
+          result: '1'
+        }
+      });
+
       promise.then(function(attributeValues) {
-        expect(attributeValues).toEqual({
-          'somebmsid': {
-            'stroke-width': 1
-          }
-        });
+        var doorBmsId = doorElement.attr('data-bms-id');
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'stroke-width': 1
+        };
+        expect(attributeValues).toEqual(expectedObj);
       }).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolved
         done();
       });
 
+    });
+
+    it('(8) check function should call trigger function and return attribute values (selector passed)', function(done) {
+
+      observerInstance.options.trigger = function(origin, results) {
+        // Origin should be passed to trigger function
+        expect(origin).toBeInDOM();
+        // Results should be passed to trigger function
+        expect(['closed', '1']).toEqual(results);
+        return {
+          'stroke-width': 1
+        };
+      };
+
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
+        'door': {
+          formula: 'door',
+          result: 'closed'
+        },
+        'floor': {
+          formula: 'floor',
+          result: '1'
+        }
+      });
+
+      var doorBmsId = $('#door').attr('data-bms-id');
+      promise.then(function(attributeValues) {
+        var expectedObj = {};
+        expectedObj[doorBmsId] = {
+          'stroke-width': 1
+        };
+        expect(attributeValues).toEqual(expectedObj);
+      }).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('(9) check function should call trigger function if no selector or element was passed', function(done) {
+
+      observerInstance.options.selector = undefined;
+      observerInstance.options.trigger = function(results) {
+        // Results should be passed to trigger function
+        expect(['closed', '1']).toEqual(results);
+      };
+
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
+        'door': {
+          formula: 'door',
+          result: 'closed'
+        },
+        'floor': {
+          formula: 'floor',
+          result: '1'
+        }
+      });
+
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('(10) check function should call trigger function if formula result is boolean value', function(done) {
+
+      observerInstance.options.trigger = function(origin, results) {
+        // Origin should be passed to trigger function
+        expect(origin).toBeInDOM();
+        // Results should be passed to trigger function
+        expect([false, true]).toEqual(results);
+      };
+
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
+        'door': {
+          formula: 'door',
+          result: false
+        },
+        'floor': {
+          formula: 'floor',
+          result: true
+        }
+      });
+
+      promise.then(function() {}).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('(11) shouldBeChecked should return true if given refinement is in animation', function() {
+      window.bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1', 'm2', 'm3']
+        }
+      };
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBeTruthy();
+    });
+
+    it('(12) shouldBeChecked should return false if given refinement is NOT in animation', function() {
+      window.bmsSessionInstance.toolData = {
+        'model': {
+          'refinements': ['m1']
+        }
+      };
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
+    });
+
+    it('(13) shouldBeChecked should return false if model is not initialized', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': false
+      };
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
+    });
+
+    it('(14) shouldBeChecked should return true if model is initialized', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': true
+      };
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(true);
+    });
+
+    it('(15) shouldBeChecked should return false if model is initialized and given refinement is not in animation', function() {
+      window.bmsSessionInstance.toolData = {
+        'initialized': true,
+        'model': {
+          'refinements': ['m1']
+        }
+      };
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
   });

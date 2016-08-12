@@ -33,6 +33,67 @@ define([
           return this.modelPath;
         };
 
+        bmsSession.prototype.getTemplateFolder = function(manifestFilePath) {
+          //TODO check if manifestFilePath is undefined
+          //var filename = manifestFilePath.replace(/^.*[\\\/]/, '');
+          return manifestFilePath.replace('/bmotion.json', '');
+          //return folder;
+        };
+
+        bmsSession.prototype.getSvgData = function() {
+          var self = this;
+          var svgData = [];
+          angular.forEach(this.views, function(view) {
+            for (svg in view.svg) {
+              svgData.push({
+                file: svg,
+                viewId: view.viewData.id,
+                id: view.id
+              });
+            }
+          });
+          return svgData;
+        };
+
+        bmsSession.prototype.init = function(manifestFilePath) {
+
+          var defer = $q.defer();
+
+          var self = this;
+
+          if (!manifestFilePath) {
+            defer.reject("Manifest file path must not be undefined.");
+          } else {
+            bmsManifestService.getManifest(manifestFilePath)
+              .then(function(manifestData) {
+
+                self.manifestFilePath = manifestFilePath;
+                self.manifestData = manifestData;
+                self.templateFolder = self.getTemplateFolder(manifestFilePath);
+                self.modelPath = self.templateFolder + '/' + manifestData.model;
+
+                if (manifestData.groovy) {
+                  self.groovyPath = self.templateFolder + '/' + manifestData.groovy;
+                }
+
+                bmsWsService.initSession(self.id, self.manifestFilePath, self.modelPath, self.groovyPath, manifestData.modelOptions)
+                  .then(function(sessionData) {
+                    self.tool = sessionData[0].tool;
+                    self.toolData = sessionData[1];
+                    defer.resolve(self);
+                    self.initialized.resolve(self);
+                  }, function(err) {
+                    defer.reject(err);
+                  });
+              }, function(err) {
+                defer.reject(err);
+              });
+          }
+
+          return defer.promise;
+
+        };
+
         bmsSession.prototype.load = function() {
 
           var defer = $q.defer();
@@ -41,18 +102,23 @@ define([
 
           bmsWsService.loadSession(self.id)
             .then(function(sessionData) {
-              self.manifestFilePath = sessionData[0].manifestFilePath;
+
               self.tool = sessionData[0].tool;
               self.toolData = sessionData[1];
-              var filename = self.manifestFilePath.replace(/^.*[\\\/]/, '');
-              self.templateFolder = self.manifestFilePath.replace('/' + filename, '');
+              self.manifestFilePath = sessionData[0].manifestFilePath;
+              self.templateFolder = self.getTemplateFolder(self.manifestFilePath);
+
               bmsManifestService.getManifest(self.manifestFilePath)
-                .then(function(_manifestData_) {
-                  self.manifestData = _manifestData_;
-                  self.modelPath = self.templateFolder + '/' + self.manifestData.model;
+                .then(function(manifestData) {
+                  self.manifestData = manifestData;
+                  self.modelPath = self.templateFolder + '/' + manifestData.model;
+                  if (manifestData.groovy) {
+                    self.groovyPath = self.templateFolder + '/' + manifestData.groovy;
+                  }
                   defer.resolve(self);
                   self.initialized.resolve(self);
                 });
+
             }, function(err) {
               defer.reject(err);
             });
@@ -120,56 +186,14 @@ define([
         var sessions = {};
 
         return {
-          getTemplateFolder: function(manifestFilePath) {
-            //TODO check if manifestFilePath is undefined
-            var filename = manifestFilePath.replace(/^.*[\\\/]/, '');
-            var folder = manifestFilePath.replace('/' + filename, '');
-            return folder;
-          },
-          initSession: function(manifestFilePath) {
-
-            var defer = $q.defer();
-
-            var self = this;
-
-            if (!manifestFilePath) {
-              defer.reject("Manifest file path must not be undefined.");
-            } else {
-              bmsManifestService.getManifest(manifestFilePath)
-                .then(function(_manifestData_) {
-
-                  var manifestData = _manifestData_;
-                  var templateFolder = self.getTemplateFolder(manifestFilePath);
-                  var modelPath = templateFolder + '/' + manifestData.model;
-
-                  bmsWsService.initSession(bms.uuid(), manifestFilePath, modelPath, manifestData.modelOptions)
-                    .then(function(_sessionId_) {
-                      var newBmsSession = new bmsSession(_sessionId_);
-                      newBmsSession.manifestFilePath = manifestFilePath;
-                      newBmsSession.manifestData = manifestData;
-                      newBmsSession.templateFolder = templateFolder;
-                      newBmsSession.modelPath = modelPath;
-                      sessions[_sessionId_] = newBmsSession;
-                      defer.resolve(newBmsSession);
-                    }, function(err) {
-                      defer.reject(err);
-                    });
-                }, function(err) {
-                  defer.reject(err);
-                });
-            }
-
-            return defer.promise;
-
-          },
-          getSession: function(sessionId) {
-            sessionId = sessionId ? sessionId : bms.uuid();
+          getSession: function(_sessionId_) {
+            sessionId = _sessionId_ ? _sessionId_ : bms.uuid();
             if (sessions[sessionId] === undefined) {
               sessions[sessionId] = new bmsSession(sessionId);
             }
             return sessions[sessionId];
           }
-        }
+        };
 
       }
     ]);

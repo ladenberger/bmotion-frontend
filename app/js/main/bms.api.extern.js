@@ -6,26 +6,26 @@ define([
 
   var apis = {};
 
-  bmsapi = function(visId) {
+  bmsapi = function(sessionId, viewId) {
 
-    var api = apis[visId];
+    var api = apis[viewId];
     if (!api) {
 
-      apis[visId] = {
+      apis[viewId] = {
         eval: function(options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
-            service.evalExtern(visId, options);
+            service.evalExtern(sessionId, viewId, options);
           }, 0);
         },
         getModelData: function(what, options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
-            return service.getModelData(visId, what, options);
+            return service.getModelData(sessionId, viewId, what, options);
           }, 0);
         },
         getModelEvents: function(options) {
@@ -33,46 +33,62 @@ define([
         },
         observe: function(what, options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
-            service.addObserver(visId, what, options, 'js');
+            service.addObserver(sessionId, viewId, what, options);
           }, 0);
         },
-        registerEvent: function(type, options) {
+        handler: function(type, options) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
-            service.addEvent(visId, type, options, 'js');
+            service.addEvent(sessionId, viewId, type, options);
           }, 0);
         },
         executeEvent: function(options) {
           if (options.selector || options.element) {
-            this.registerEvent('executeEvent', options);
+            this.handler('executeEvent', options);
           } else {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
-            return service.executeEvent(visId, options);
+            return service.executeEvent(sessionId, viewId, options);
           }
         },
         on: function(what, callback) {
           setTimeout(function() {
-            var elem = angular.element(document.querySelector('[ng-show]'));
+            var elem = angular.element(document.body);
             var injector = elem.injector();
             var service = injector.get('bmsApiService');
-            service.on(visId, what, callback);
+            service.on(sessionId, viewId, what, callback);
+          }, 0);
+        },
+        onLoadSvg: function(svgId, callback) {
+          setTimeout(function() {
+            var elem = angular.element(document.body);
+            var injector = elem.injector();
+            var service = injector.get('bmsApiService');
+            service.on(sessionId, viewId, "svg_" + svgId + ".svg", callback);
           }, 0);
         },
         init: function(callback) {
           this.on("ModelInitialised", callback);
+        },
+        callMethod: function(name, args, callback) {
+          setTimeout(function() {
+            var elem = angular.element(document.body);
+            var injector = elem.injector();
+            var service = injector.get('bmsApiService');
+            service.callMethod(sessionId, viewId, name, args, callback);
+          }, 0);
         }
       }
 
     }
 
-    return apis[visId];
+    return apis[viewId];
 
   };
 

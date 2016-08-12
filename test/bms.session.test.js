@@ -25,28 +25,29 @@ define(['bms.session'], function() {
         $rootScope = _$rootScope_;
         manifestData = {
           "model": "model/m3.bcm",
-          "views": [{
-            "id": "lift",
-            "name": "Lift environment",
-            "template": "lift.html"
-          }]
+          "id": "viewId",
+          "name": "Lift environment",
+          "template": "lift.html",
+          "modelOptions": {}
         };
         manifestPath = 'somepath/bmotion.json';
         $httpBackend.when('GET', manifestPath)
           .respond(manifestData);
 
         spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var deferred = $q.defer();
-          deferred.resolve(sessionId);
-          return deferred.promise;
+          var defer = $q.defer();
+          defer.resolve([{
+            tool: 'BVisualization'
+          }, {}]);
+          return defer.promise;
         });
 
-        var promise = bmsSessionService.initSession(manifestPath);
+        bmsSessionInstance = bmsSessionService.getSession(sessionId);
+
+        var promise = bmsSessionInstance.init(manifestPath);
         $httpBackend.expectGET(manifestPath).respond(200, manifestData);
         $httpBackend.flush();
-        promise.then(function(_bmsSessionInstance_) {
-          bmsSessionInstance = _bmsSessionInstance_;
-        }).finally(done);
+        promise.then(done);
 
         $rootScope.$digest();
 
@@ -79,9 +80,20 @@ define(['bms.session'], function() {
 
     });
 
-    it('initSession function should return error if no manifest file path was passed', function(done) {
+    it('session should be initialized', function(done) {
 
-      var promise = bmsSessionService.initSession();
+      var promise = bmsSessionInstance.isInitialized();
+      promise.then(function(data) {})
+        .finally(function() {
+          expect(promise.$$state.status).toBe(1); // Resolved
+          done();
+        });
+
+    });
+
+    it('init function should return error if no manifest file path was passed', function(done) {
+
+      var promise = bmsSessionInstance.init();
       var error;
       promise.then(function(data) {}, function(err) {
           error = err;
