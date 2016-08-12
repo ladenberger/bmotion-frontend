@@ -8,7 +8,6 @@ define([
   'prob.observers.refinement',
   'prob.observers.predicate',
   'prob.observers.csp',
-  'prob.observers.data',
   'prob.observers.set',
   'bms.observers.method'
 ], function(angular) {
@@ -18,7 +17,6 @@ define([
       'prob.observers.refinement',
       'prob.observers.predicate',
       'prob.observers.csp',
-      'prob.observers.data',
       'prob.observers.set',
       'bms.observers.method'
     ])

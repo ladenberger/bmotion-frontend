@@ -15,6 +15,7 @@ define([
     var vis;
     var ws;
     var $q;
+    var formulaObserver;
 
     jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
@@ -22,12 +23,13 @@ define([
 
     beforeEach(function(done) {
 
-      inject(function(bmsSessionService, bmsWsService, bmsVisualization, _bmsVisualizationService_, _ws_, _$q_, _$rootScope_, $httpBackend) {
+      inject(function(bmsSessionService, bmsWsService, bmsVisualization, _bmsVisualizationService_, _ws_, _$q_, _$rootScope_, $httpBackend, _formulaObserver_) {
 
         bmsVisualizationService = _bmsVisualizationService_;
         $rootScope = _$rootScope_;
         ws = _ws_;
         $q = _$q_;
+        formulaObserver = _formulaObserver_;
 
         var manifestData = {
           "model": "model/m3.bcm",
@@ -109,14 +111,11 @@ define([
           observer2 = data[1];
 
           // Simulate shouldBeChecked function
-          spyOn(observer1, 'shouldBeChecked').and.callFake(function(evt, args) {
-            return true;
-          });
-          spyOn(observer2, 'shouldBeChecked').and.callFake(function(evt, args) {
+          spyOn(formulaObserver, 'shouldBeChecked').and.callFake(function(evt, args) {
             return true;
           });
 
-          result[observer1.getId()] = {
+          result[observer1.id] = {
             'formula1': {
               formula: 'fromula1',
               result: 'result1'
@@ -127,7 +126,7 @@ define([
             }
           };
 
-          result[observer2.getId()] = {
+          result[observer2.id] = {
             'formula1': {
               formula: 'formula1',
               result: 'result1'
@@ -175,8 +174,8 @@ define([
 
       it('collectFormulas function should return three formula objects', inject(function() {
         var formulas = viewInstance.collectFormulas();
-        var formulas1 = formulas[observer1.getId()];
-        var formulas2 = formulas[observer2.getId()];
+        var formulas1 = formulas[observer1.id];
+        var formulas2 = formulas[observer2.id];
         expect(formulas1.formulas.length).toBe(2);
         expect(formulas2.formulas.length).toBe(1);
       }));

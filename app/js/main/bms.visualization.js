@@ -40,9 +40,13 @@ define([
           var self = this;
 
           try {
-            // Create an add new observer instance
-            var instance = $injector.get(type + "Observer", "");
-            var observerInstance = new instance(self, data);
+            var service = $injector.get(type + "Observer", "");
+            var defaultOptions = service.getDefaultOptions(data);
+            var observerInstance = {
+              id: bms.uuid(),
+              type: type,
+              options: defaultOptions
+            };
             this.observers.push(observerInstance);
             defer.resolve(observerInstance);
           } catch (err) {
@@ -60,9 +64,14 @@ define([
           var self = this;
 
           try {
-            var instance = $injector.get(type + "Event", "");
-            var eventInstance = new instance(self, data);
-            self.events.push(eventInstance);
+            var service = $injector.get(type + "Event", "");
+            var defaultOptions = service.getDefaultOptions(data);
+            var eventInstance = {
+              id: bms.uuid(),
+              type: type,
+              options: defaultOptions
+            };
+            this.events.push(eventInstance);
             defer.resolve(eventInstance);
           } catch (err) {
             defer.reject("An error occurred while adding event '" + type + "': " + err);
@@ -132,13 +141,15 @@ define([
           var self = this;
           if (self.bmsids[selector] === undefined) {
             var container = _container_ ? _container_ : self.container.contents();
-            var bmsids = container.find(selector).map(function() {
-              var cbmsid = $(this).attr("data-bms-id");
+            var bmsids = [];
+            container.find(selector).each(function(i, e) {
+              var ele = $(e);
+              var cbmsid = ele.attr("data-bms-id");
               if (!cbmsid) {
                 cbmsid = bms.uuid();
-                $(this).attr("data-bms-id", cbmsid);
+                ele.attr("data-bms-id", cbmsid);
               }
-              return cbmsid;
+              bmsids.push(cbmsid);
             });
             self.bmsids[selector] = bmsids;
           }
@@ -156,14 +167,28 @@ define([
           observers = observers ? observers : self.getObservers();
 
           var formulas = {};
-          angular.forEach(self.getObservers(), function(observer) {
+
+          angular.forEach(observers, function(observer) {
+
+            var service = $injector.get(observer.type + "Observer", "");
             // Only handle observers which implement the getFormulas function
-            if (typeof observer.getFormulas === 'function' && typeof observer.getId === 'function' && observer.shouldBeChecked()) {
-              formulas[observer.getId()] = {
-                formulas: observer.getFormulas()
-              };
+            if (typeof service.getFormulas === 'function' && service.shouldBeChecked(observer, self)) {
+
+              var element = self.determineElement(observer);
+
+              if (element instanceof $) {
+                element.each(function() {
+                  var ele = $(this);
+                  self.addFormulas(formulas, service.getFormulas(observer, self, ele), observer.id);
+                });
+              } else {
+                self.addFormulas(formulas, service.getFormulas(observer, self), observer.id);
+              }
+
             }
+
           });
+
           return formulas;
 
         };
@@ -192,18 +217,37 @@ define([
 
             self.evaluateFormulas(observers)
               .then(function(results) {
-                var checks = observers.map(function(observer) {
+
+                var checks = [];
+                angular.forEach(observers, function(observer) {
+
+                  var service = $injector.get(observer.type + "Observer", "");
                   var check = true;
-                  if (typeof observer.shouldBeChecked === 'function') {
-                    check = observer.shouldBeChecked();
+                  if (typeof service.shouldBeChecked === 'function') {
+                    check = service.shouldBeChecked(observer, self);
                   }
                   if (check) {
-                    if (typeof observer.getId === 'function') {
-                      return observer.check(results[observer.getId()]);
+
+                    var element = self.determineElement(observer);
+                    if (element instanceof $) {
+                      element.each(function() {
+                        var ele = $(this);
+                        if (typeof service.getFormulas === 'function') {
+                          checks.push(service.check(observer, self, ele, results[observer.id]));
+                        } else {
+                          checks.push(service.check(observer, self, ele));
+                        }
+                      });
                     } else {
-                      return observer.check();
+                      if (typeof service.getFormulas === 'function') {
+                        checks.push(service.check(observer, self, undefined, results[observer.id]));
+                      } else {
+                        checks.push(service.check(observer, self));
+                      }
                     }
+
                   }
+
                 });
 
                 $q.all(checks)
@@ -249,12 +293,31 @@ define([
           }
           $q.all(promises)
             .then(function() {
+
               events = events ? events : self.getEvents();
 
-              var setups = events.map(function(evt) {
-                if (evt.shouldBeChecked()) {
-                  return evt.setup(self);
+              var setups = [];
+              angular.forEach(events, function(evt) {
+
+                var service = $injector.get(evt.type + "Event", "");
+                var check = true;
+                if (typeof service.shouldBeChecked === 'function') {
+                  check = service.shouldBeChecked(evt, self);
                 }
+                if (check) {
+
+                  var element = self.determineElement(evt);
+                  if (element instanceof $) {
+                    element.each(function() {
+                      var ele = $(this);
+                      setups.push(service.setup(evt, self, ele));
+                    });
+                  } else {
+                    defer.reject("Please specify a selector or an element for the interactive handler.")
+                  }
+
+                }
+
               });
 
               $q.all(setups)
@@ -284,7 +347,6 @@ define([
 
         bmsVisualization.prototype.triggerListeners = function(cause) {
           var self = this;
-          console.log(cause)
           angular.forEach(this.listener[cause], function(l) {
             if (!l.executed) {
               // Init listener should be called only once
@@ -298,6 +360,55 @@ define([
               }
             }
           });
+        };
+
+        bmsVisualization.prototype.removeDuplicates = function(arr, prop) {
+
+          var new_arr = [];
+          var lookup = {};
+
+          for (var i in arr) {
+            lookup[arr[i][prop]] = arr[i];
+          }
+
+          for (i in lookup) {
+            new_arr.push(lookup[i]);
+          }
+
+          return new_arr;
+
+        };
+
+
+        bmsVisualization.prototype.addFormulas = function(finalFormulas, observerFormulas, observerId) {
+
+          if (finalFormulas[observerId] === undefined) {
+            finalFormulas[observerId] = {
+              formulas: []
+            };
+          }
+
+          // Concat formulas
+          finalFormulas[observerId]['formulas'] = finalFormulas[observerId]['formulas'].concat(observerFormulas);
+          // Remove duplicate formulas
+          finalFormulas[observerId]['formulas'] = this.removeDuplicates(finalFormulas[observerId]['formulas'], "formula");
+
+        };
+
+        bmsVisualization.prototype.determineElement = function(observer) {
+          var self = this;
+          var ele;
+          if (observer.options.selector !== undefined && observer.options.selector.length > 0) {
+            ele = self.container.contents().find(observer.options.selector);
+          }
+          if (observer.options.element !== undefined && observer.options.element.length > 0) {
+            ele = observer.options.element;
+          }
+          if (ele instanceof $) {
+            return ele;
+          } else {
+            return undefined;
+          }
         };
 
         bmsVisualization.prototype.setValues = function(values) {

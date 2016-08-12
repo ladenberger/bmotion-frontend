@@ -1,15 +1,17 @@
 define([
   'sharedTest',
   'jquery',
+  'bms.func',
   'bms.handlers.method'
-], function(sharedTest, $) {
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('bms.handlers.method', function() {
 
-    var methodEvent;
-    var methodEventInstance;
+    var handlerService;
+    var handlerInstance;
+    var view;
     var bmsWsService;
 
     beforeEach(module('bms.handlers.method'));
@@ -17,15 +19,19 @@ define([
     beforeEach(function(done) {
       inject(function(_methodEvent_, _bmsWsService_) {
 
-        methodEvent = _methodEvent_;
         bmsWsService = _bmsWsService_;
-
-        sharedTest.setup(done, function() {
-          methodEventInstance = new methodEvent(viewInstance, {
+        handlerService = _methodEvent_;
+        handlerInstance = {
+          type: "method",
+          id: bms.uuid(),
+          options: {
             selector: '#door',
             method: 'testMethod',
             args: ['arg1', 'arg2']
-          });
+          }
+        };
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
 
       });
@@ -33,18 +39,20 @@ define([
     });
 
     it('(1) should exist', inject(function() {
-      expect(methodEventInstance).toBeDefined();
+      expect(handlerService).toBeDefined();
     }));
 
-    it('(2) should implement functions: getId and getDefaultOptions', inject(function() {
-      expect(methodEventInstance.getId).toBeDefined();
-      expect(methodEventInstance.getDefaultOptions).toBeDefined();
+    it('(2) should implement functions: getDefaultOptions', inject(function() {
+      expect(handlerService.getDefaultOptions).toBeDefined();
     }));
 
     it('(3) setup should reject if no selector or element is given', function(done) {
 
-      methodEventInstance.options.selector = undefined;
-      var promise = methodEventInstance.setup();
+      handlerInstance.options.selector = '';
+      handlerInstance.options.element = '';
+
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
       var error;
 
       promise.then(function() {}, function(err) {
@@ -65,7 +73,8 @@ define([
         return deferred.promise;
       });
 
-      var promise = methodEventInstance.setup();
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
 
       promise.then(function() {
         // TODO Check if click handler is registered and call manually
@@ -82,8 +91,8 @@ define([
           'refinements': ['m1', 'm2', 'm3']
         }
       };
-      methodEventInstance.options.refinement = 'm3';
-      expect(methodEventInstance.shouldBeChecked()).toBeTruthy();
+      handlerInstance.options.refinement = 'm3';
+      expect(handlerService.shouldBeChecked(handlerInstance, view)).toBeTruthy();
     });
 
     it('(6) shouldBeChecked should return false if given refinement is not in animation', function() {
@@ -92,8 +101,8 @@ define([
           'refinements': ['m1']
         }
       };
-      methodEventInstance.options.refinement = 'm3';
-      expect(methodEventInstance.shouldBeChecked()).toBe(false);
+      handlerInstance.options.refinement = 'm3';
+      expect(handlerService.shouldBeChecked(handlerInstance, view)).toBe(false);
     });
 
   });

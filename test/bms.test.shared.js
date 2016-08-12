@@ -59,7 +59,7 @@ define([
 
         promise.then(function() {
           if (callFunc) {
-            callFunc();
+            callFunc(viewInstance);
           }
         }).finally(done);
 

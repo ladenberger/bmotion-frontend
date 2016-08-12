@@ -1,28 +1,34 @@
 define([
   'sharedTest',
   'jquery',
+  'bms.func',
   'prob.observers.refinement'
-], function(sharedTest, $) {
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('prob.observers.refinement', function() {
 
-    var refinementObserver;
-    var refinementObserverInstance;
+    var observerService;
+    var observerInstance;
+    var view;
 
     beforeEach(module('prob.observers.refinement'));
 
     beforeEach(function(done) {
       inject(function(_refinementObserver_) {
 
-        refinementObserver = _refinementObserver_;
-
-        sharedTest.setup(done, function() {
-          refinementObserverInstance = new refinementObserver(viewInstance, {
+        observerService = _refinementObserver_;
+        observerInstance = {
+          type: "refinement",
+          id: bms.uuid(),
+          options: {
             selector: '#door',
             refinement: 'ref1'
-          });
+          }
+        };
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
 
       });
@@ -30,14 +36,14 @@ define([
     });
 
     it('(1) should exist', inject(function() {
-      expect(refinementObserver).toBeDefined();
+      expect(observerService).toBeDefined();
     }));
 
     it('(2) should implement functions: getFormulas and getDefaultOptions', inject(function() {
-      expect(refinementObserverInstance.getDefaultOptions).toBeDefined();
+      expect(observerService.getDefaultOptions).toBeDefined();
     }));
 
-    it('(3) apply function should resolve if no selector is given', function(done) {
+    it('(3) check function should resolve if no selector is given', function(done) {
 
       bmsSessionInstance.toolData = {
         'model': {
@@ -45,8 +51,9 @@ define([
         }
       };
 
-      refinementObserverInstance.options.selector = undefined;
-      var promise = refinementObserverInstance.apply();
+      observerInstance.options.selector = undefined;
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
       promise.then(function() {}).finally(function() {
         expect(promise.$$state.status).toBe(1); // Resolve
         done();
@@ -61,14 +68,15 @@ define([
           'refinements': ['ref1']
         }
       };
-      refinementObserverInstance.options.enable = function(origin) {
+      observerInstance.options.enable = function(origin) {
         expect(origin).toBeInDOM();
         return {
           'opacity': 1
         }
       };
 
-      var promise = refinementObserverInstance.check();
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
       var doorBmsId = $('#door').attr('data-bms-id');
       promise.then(function(attributeValues) {
         var expectedObj = {};
@@ -91,15 +99,15 @@ define([
         }
       };
 
-      refinementObserverInstance.options.disable = function(origin) {
+      observerInstance.options.disable = function(origin) {
         expect(origin).toBeInDOM();
         return {
           'opacity': 0
         }
       };
 
-      var promise = refinementObserverInstance.check();
-
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
       var doorBmsId = $('#door').attr('data-bms-id');
       promise.then(function(attributeValues) {
         var expectedObj = {};

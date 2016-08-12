@@ -1,27 +1,34 @@
 define([
   'sharedTest',
   'jquery',
+  'bms.func',
   'bms.observers.formula'
-], function(sharedTest, $) {
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('bms.observers.formula', function() {
 
-    var formulaObserver;
-    var formulaObserverInstance;
+    var observerService;
+    var observerInstance;
+    var view;
 
     beforeEach(module('bms.observers.formula'));
 
     beforeEach(function(done) {
       inject(function(_formulaObserver_) {
 
-        formulaObserver = _formulaObserver_;
-        sharedTest.setup(done, function() {
-          formulaObserverInstance = new formulaObserver(window.viewInstance, {
+        observerService = _formulaObserver_;
+        observerInstance = {
+          type: "formula",
+          id: bms.uuid(),
+          options: {
             selector: '#door',
             formulas: ['door', 'floor']
-          });
+          }
+        };
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
 
       });
@@ -29,23 +36,24 @@ define([
     });
 
     it('(1) should exist', inject(function() {
-      expect(formulaObserver).toBeDefined();
+      expect(observerService).toBeDefined();
     }));
 
-    it('(2) should implement functions: getId, getFormulas and getDefaultOptions', inject(function() {
-      expect(formulaObserverInstance.getId).toBeDefined();
-      expect(formulaObserverInstance.getFormulas).toBeDefined();
-      expect(formulaObserverInstance.getDefaultOptions).toBeDefined();
-      expect(formulaObserverInstance.getDiagramData).toBeDefined();
+    it('(2) should implement functions: getFormulas, getDefaultOptions and getDiagramData', inject(function() {
+      expect(observerService.getFormulas).toBeDefined();
+      expect(observerService.getDefaultOptions).toBeDefined();
+      expect(observerService.getDiagramData).toBeDefined();
     }));
 
     it('(3) getFormulas function should return two formula objects', inject(function() {
-      expect(formulaObserverInstance.getFormulas().length).toBe(2);
+      var element = view.determineElement(observerInstance);
+      expect(observerService.getFormulas(observerInstance, view, element).length).toBe(2);
     }));
 
     it('(4) check function should reject if formulas contain errors', function(done) {
 
-      var promise = formulaObserverInstance.check({
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
         'door': {
           formula: 'door',
           result: 'closed',
@@ -70,7 +78,8 @@ define([
 
     it('(5) check function should reject if no results were passed', function(done) {
 
-      var promise = formulaObserverInstance.check();
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
 
       var error;
       promise.then(function() {}, function(err) {
@@ -85,7 +94,8 @@ define([
 
     it('(6) check function should reject if not all results were passed', function(done) {
 
-      var promise = formulaObserverInstance.check({
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
         'door': {
           formula: 'door',
           result: 'closed'
@@ -106,8 +116,8 @@ define([
     it('(7) check function should call trigger function and return attribute values (element passed)', function(done) {
 
       var doorElement = $('#door');
-      formulaObserverInstance.options.element = doorElement;
-      formulaObserverInstance.options.trigger = function(origin, results) {
+      observerInstance.options.element = doorElement;
+      observerInstance.options.trigger = function(origin, results) {
         // Origin should be passed to trigger function
         expect(origin).toEqual(doorElement);
         // Results should be passed to trigger function
@@ -117,7 +127,7 @@ define([
         };
       };
 
-      var promise = formulaObserverInstance.check({
+      var promise = observerService.check(observerInstance, view, doorElement, {
         'door': {
           formula: 'door',
           result: 'closed'
@@ -144,7 +154,7 @@ define([
 
     it('(8) check function should call trigger function and return attribute values (selector passed)', function(done) {
 
-      formulaObserverInstance.options.trigger = function(origin, results) {
+      observerInstance.options.trigger = function(origin, results) {
         // Origin should be passed to trigger function
         expect(origin).toBeInDOM();
         // Results should be passed to trigger function
@@ -154,7 +164,8 @@ define([
         };
       };
 
-      var promise = formulaObserverInstance.check({
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
         'door': {
           formula: 'door',
           result: 'closed'
@@ -181,13 +192,14 @@ define([
 
     it('(9) check function should call trigger function if no selector or element was passed', function(done) {
 
-      formulaObserverInstance.options.selector = undefined;
-      formulaObserverInstance.options.trigger = function(results) {
+      observerInstance.options.selector = undefined;
+      observerInstance.options.trigger = function(results) {
         // Results should be passed to trigger function
         expect(['closed', '1']).toEqual(results);
       };
 
-      var promise = formulaObserverInstance.check({
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
         'door': {
           formula: 'door',
           result: 'closed'
@@ -207,14 +219,15 @@ define([
 
     it('(10) check function should call trigger function if formula result is boolean value', function(done) {
 
-      formulaObserverInstance.options.trigger = function(origin, results) {
+      observerInstance.options.trigger = function(origin, results) {
         // Origin should be passed to trigger function
         expect(origin).toBeInDOM();
         // Results should be passed to trigger function
         expect([false, true]).toEqual(results);
       };
 
-      var promise = formulaObserverInstance.check({
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element, {
         'door': {
           formula: 'door',
           result: false
@@ -238,8 +251,8 @@ define([
           'refinements': ['m1', 'm2', 'm3']
         }
       };
-      formulaObserverInstance.options.refinement = 'm3';
-      expect(formulaObserverInstance.shouldBeChecked()).toBeTruthy();
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBeTruthy();
     });
 
     it('(12) shouldBeChecked should return false if given refinement is NOT in animation', function() {
@@ -248,22 +261,22 @@ define([
           'refinements': ['m1']
         }
       };
-      formulaObserverInstance.options.refinement = 'm3';
-      expect(formulaObserverInstance.shouldBeChecked()).toBe(false);
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
     it('(13) shouldBeChecked should return false if model is not initialized', function() {
       window.bmsSessionInstance.toolData = {
         'initialized': false
       };
-      expect(formulaObserverInstance.shouldBeChecked()).toBe(false);
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
     it('(14) shouldBeChecked should return true if model is initialized', function() {
       window.bmsSessionInstance.toolData = {
         'initialized': true
       };
-      expect(formulaObserverInstance.shouldBeChecked()).toBe(true);
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(true);
     });
 
     it('(15) shouldBeChecked should return false if model is initialized and given refinement is not in animation', function() {
@@ -273,8 +286,8 @@ define([
           'refinements': ['m1']
         }
       };
-      formulaObserverInstance.options.refinement = 'm3';
-      expect(formulaObserverInstance.shouldBeChecked()).toBe(false);
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
   });
