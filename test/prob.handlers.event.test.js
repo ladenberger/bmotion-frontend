@@ -1,31 +1,37 @@
 define([
   'sharedTest',
   'jquery',
+  'bms.func',
   'prob.handlers.event'
-], function(sharedTest, $) {
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('prob.handlers.event', function() {
 
-    var executeEventEvent;
-    var executeEventEventInstance;
+    var handlerService;
+    var handlerInstance;
+    var view;
 
     beforeEach(module('prob.handlers.event'));
 
     beforeEach(function(done) {
       inject(function(_executeEventEvent_) {
 
-        executeEventEvent = _executeEventEvent_;
-
-        sharedTest.setup(done, function() {
-          executeEventEventInstance = new executeEventEvent(viewInstance, {
+        handlerService = _executeEventEvent_;
+        handlerInstance = {
+          type: "executeEvent",
+          id: bms.uuid(),
+          options: {
             events: [{
               name: 'close_door'
             }, {
               name: 'open_door'
             }]
-          });
+          }
+        };
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
 
       });
@@ -33,17 +39,17 @@ define([
     });
 
     it('(1) should exist', inject(function() {
-      expect(executeEventEventInstance).toBeDefined();
+      expect(handlerService).toBeDefined();
     }));
 
-    it('(2) should implement functions: getId and getDefaultOptions', inject(function() {
-      expect(executeEventEventInstance.getId).toBeDefined();
-      expect(executeEventEventInstance.getDefaultOptions).toBeDefined();
+    it('(2) should implement functions: getDefaultOptions', inject(function() {
+      expect(handlerService.getDefaultOptions).toBeDefined();
     }));
 
     it('(3) setup should reject if no selector or element is given', function(done) {
 
-      var promise = executeEventEventInstance.setup();
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
       var error;
 
       promise.then(function() {}, function(err) {
@@ -58,10 +64,11 @@ define([
 
     it('(4) setup should init tooltip on given selector', function(done) {
 
-      executeEventEventInstance.options.selector = '#door';
-      executeEventEventInstance.options.element = '';
+      handlerInstance.options.selector = '#door';
+      handlerInstance.options.element = '';
 
-      var promise = executeEventEventInstance.setup();
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
 
       promise.then(function() {
         // Tooltip should be installed
@@ -77,10 +84,11 @@ define([
 
       var door = $('#door');
 
-      executeEventEventInstance.options.selector = '';
-      executeEventEventInstance.options.element = door;
+      handlerInstance.options.selector = '';
+      handlerInstance.options.element = door;
 
-      var promise = executeEventEventInstance.setup();
+      var element = view.determineElement(handlerInstance);
+      var promise = handlerService.setup(handlerInstance, view, element);
 
       promise.then(function() {
         // Tooltip should be installed
@@ -98,8 +106,8 @@ define([
           'refinements': ['m1', 'm2', 'm3']
         }
       };
-      executeEventEventInstance.options.refinement = 'm3';
-      expect(executeEventEventInstance.shouldBeChecked()).toBeTruthy();
+      handlerInstance.options.refinement = 'm3';
+      expect(handlerService.shouldBeChecked(handlerInstance, view)).toBeTruthy();
     });
 
     it('(7) shouldBeChecked should return false if given refinement is not in animation', function() {
@@ -108,8 +116,8 @@ define([
           'refinements': ['m1']
         }
       };
-      executeEventEventInstance.options.refinement = 'm3';
-      expect(executeEventEventInstance.shouldBeChecked()).toBe(false);
+      handlerInstance.options.refinement = 'm3';
+      expect(handlerService.shouldBeChecked(handlerInstance, view)).toBe(false);
     });
 
   });

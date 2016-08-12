@@ -16,122 +16,101 @@ define([
       function(ws, $q, bmsVisualizationService, bmsWsService) {
         'use strict';
 
-        var observer = function(view, options) {
-          this.id = bms.uuid();
-          this.view = view;
-          this.options = this.getDefaultOptions(options);
-        };
+        var observerService = {
 
-        observer.prototype.getDefaultOptions = function(options) {
-          return angular.merge({
-            name: "",
-            args: [],
-            callback: function() {},
-            cause: "AnimationChanged"
-          }, options);
-        };
-
-        observer.prototype.shouldBeChecked = function() {
-          var self = this;
-          var session = self.view.session;
-          if (session.isBVisualization()) {
-            if (typeof session.toolData.initialized === 'boolean' && session.toolData.initialized === false) {
-              return false;
-            } else if (session.toolData.model !== undefined) {
-              var refinements = session.toolData.model.refinements;
-              if (refinements) {
-                return self.options.refinement ? bms.inArray(self.options.refinement, refinements) : true;
+          getDefaultOptions: function(options) {
+            return angular.merge({
+              name: "",
+              args: [],
+              callback: function() {},
+              cause: "AnimationChanged"
+            }, options);
+          },
+          shouldBeChecked: function(observer, view) {
+            var session = view.session;
+            if (session.isBVisualization()) {
+              if (typeof session.toolData.initialized === 'boolean' && session.toolData.initialized === false) {
+                return false;
+              } else if (session.toolData.model !== undefined) {
+                var refinements = session.toolData.model.refinements;
+                if (refinements) {
+                  return observer.options.refinement ? bms.inArray(observer.options.refinement, refinements) : true;
+                }
               }
             }
-          }
-          return true;
-        };
+            return true;
+          },
+          apply: function(observer, view, element, container) {
 
-        observer.prototype.getId = function() {
-          return this.id;
-        };
+            var defer = $q.defer();
 
-        observer.prototype.apply = function(_container_) {
+            container = container ? container : view.container.contents();
 
-          var defer = $q.defer();
-          var self = this;
-          var element;
+            var normalized = bms.normalize(observer.options, ['callback'], element, container);
 
-          // Determine graphical element of observer
-          if (self.options.element !== undefined) {
-            element = self.options.element;
-          } else if (self.options.selector !== undefined) {
-            var container = _container_ ? _container_ : self.view.container.contents();
-            element = container.find(self.options.selector);
-          }
+            if (element instanceof $) {
 
-          if (element instanceof $) {
+              var fvalues = {};
+              var promises = [];
 
-            var fvalues = {};
-            var promises = [];
-
-            element.each(function() {
-              var ele = $(this);
-              var normalized = bms.normalize(self.options, ['callback'], ele);
               promises.push(function() {
 
                 var d = $q.defer();
 
-                bmsWsService.callMethod(self.view.session.id, normalized.name, normalized.args)
+                bmsWsService.callMethod(view.session.id, normalized.name, normalized.args)
                   .then(function(res) {
-                    var returnValue = normalized.callback.call(this, ele, res);
+                    var returnValue = normalized.callback.call(this, element, res);
+                    var tvalue = {};
                     if (returnValue) {
-                      var bmsid = self.view.getBmsIdForElement(ele);
-                      var tvalue = {};
+                      var bmsid = view.getBmsIdForElement(element);
                       tvalue[bmsid] = returnValue;
-                      d.resolve(tvalue);
                     }
+                    d.resolve(tvalue);
                   }, function(err) {
                     d.reject(err);
                   });
 
                 return d.promise;
 
-              }())
-            });
+              }());
 
-            $q.all(promises)
-              .then(function(data) {
-                angular.forEach(data, function(r) {
-                  fvalues = angular.merge(r, fvalues);
+              $q.all(promises)
+                .then(function(data) {
+                  angular.forEach(data, function(r) {
+                    fvalues = angular.merge(r, fvalues);
+                  });
+                  defer.resolve(fvalues);
+                }, function(errors) {
+                  defer.reject(errors);
                 });
-                defer.resolve(fvalues);
-              }, function(errors) {
-                defer.reject(errors);
-              });
 
-          } else {
-            defer.resolve({});
+            } else {
+              defer.resolve({});
+            }
+
+            return defer.promise;
+
+          },
+          check: function(observer, view, element) {
+
+            var defer = $q.defer();
+
+            observerService.apply(observer, view, element, view.container)
+              .then(
+                function(values) {
+                  defer.resolve(values);
+                },
+                function(error) {
+                  defer.reject(error);
+                });
+
+            return defer.promise;
+
           }
 
-          return defer.promise;
-
         };
 
-        observer.prototype.check = function() {
-
-          var defer = $q.defer();
-          var self = this;
-
-          self.apply()
-            .then(
-              function(values) {
-                defer.resolve(values);
-              },
-              function(error) {
-                defer.reject(error);
-              });
-
-          return defer.promise;
-
-        };
-
-        return observer;
+        return observerService;
 
       }
     ]);

@@ -15,88 +15,70 @@ define([
       function(ws, $q, bmsVisualizationService) {
         'use strict';
 
-        var observer = function(view, options) {
-          this.id = bms.uuid();
-          this.view = view;
-          this.options = this.getDefaultOptions(options);
-        };
+        var observerService = {
 
-        observer.prototype.getDefaultOptions = function(options) {
-          return angular.merge({
-            refinement: "",
-            enable: function() {},
-            disable: function() {}
-          }, options);
-        };
+          getDefaultOptions: function(options) {
+            return angular.merge({
+              refinement: "",
+              enable: function() {},
+              disable: function() {}
+            }, options);
+          },
+          apply: function(observer, view, element, container, isRefinement) {
 
-        observer.prototype.apply = function(_container_) {
+            var defer = $q.defer();
 
-          var defer = $q.defer();
-          var self = this;
-          var element;
+            container = container ? container : view.container.contents();
 
-          var visRefinements = self.view.session.toolData['model']['refinements'];
+            if (element instanceof $) {
 
-          // Determine graphical element of observer
-          if (self.options.element !== undefined) {
-            element = self.options.element;
-          } else if (self.options.selector !== undefined) {
-            var container = _container_ ? _container_ : self.view.container.contents();
-            element = container.find(self.options.selector);
-          }
-
-          if (element instanceof $) {
-            var fvalues = {};
-            element.each(function(i, v) {
+              var fvalues = {};
 
               var rr;
-              var e = $(v);
-
-              var normalized = bms.normalize(self.options, ['enable', 'disable'], e, _container_);
-              var isRefinement = bms.inArray(normalized.refinement, visRefinements);
 
               if (isRefinement) {
-                rr = bms.callElementFunction(normalized.enable, e);
+                rr = bms.callElementFunction(observer.options.enable, element);
               } else {
-                rr = bms.callElementFunction(normalized.disable, e);
+                rr = bms.callElementFunction(observer.options.disable, element);
               }
               if (rr) {
-                var bmsid = self.view.getBmsIdForElement(e);
+                var bmsid = view.getBmsIdForElement(element);
                 fvalues[bmsid] = rr;
               }
 
-            });
-            defer.resolve(fvalues);
-          } else {
+              defer.resolve(fvalues);
 
-            var normalized = bms.normalize(self.options, ['enable', 'disable'], undefined, _container_);
-            var isRefinement = bms.inArray(normalized.refinement, visRefinements);
-
-            if (isRefinement) {
-              bms.callFunction(self.options.enable);
             } else {
-              bms.callFunction(self.options.disable);
+
+              if (isRefinement) {
+                bms.callFunction(observer.options.enable);
+              } else {
+                bms.callFunction(observer.options.disable);
+              }
+
+              defer.resolve({});
+
             }
 
-            defer.resolve({});
+            return defer.promise;
+
+          },
+          check: function(observer, view, element) {
+
+            //TODO: Check refinement observer only once!
+            var self = this;
+            var defer = $q.defer();
+            var visRefinements = view.session.toolData['model']['refinements'];
+            var normalized = bms.normalize(observer.options, ['enable', 'disable'], element, view.container);
+            var isRefinement = bms.inArray(normalized.refinement, visRefinements);
+            defer.resolve(this.apply(observer, view, element, view.container, isRefinement));
+            return defer.promise;
 
           }
 
-          return defer.promise;
-
         };
 
-        observer.prototype.check = function() {
-
-          //TODO: Check refinement observer only once!
-          var self = this;
-          var defer = $q.defer();
-          defer.resolve(this.apply());
-          return defer.promise;
-
-        };
-
-        return observer;
+        return observerService;
 
       }
     ]);

@@ -35,7 +35,6 @@ requirejs.config({
     "prob.observers.predicate": "js/main/observers/prob.observers.predicate",
     "prob.observers.refinement": "js/main/observers/prob.observers.refinement",
     "prob.observers.csp": "js/main/observers/prob.observers.csp",
-    "prob.observers.data": "js/main/observers/prob.observers.data",
     "prob.observers.set": "js/main/observers/prob.observers.set",
     "bms.observers.method": "js/main/observers/bms.observers.method",
 

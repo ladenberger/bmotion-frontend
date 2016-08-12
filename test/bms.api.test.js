@@ -186,7 +186,9 @@ define([
       var error;
 
       var promise = bmsApiService.addEvent(sessionId, viewId, 'executeEvent', {
-        name: 'eventname'
+        events: [{
+          name: 'eventname'
+        }]
       });
       promise.then(
           function() {},

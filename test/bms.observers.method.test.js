@@ -1,15 +1,17 @@
 define([
   'sharedTest',
   'jquery',
+  'bms.func',
   'bms.observers.method'
-], function(sharedTest, $) {
+], function(sharedTest, $, bms) {
 
   "use strict";
 
   describe('bms.observers.method', function() {
 
-    var methodObserver;
-    var methodObserverInstance;
+    var observerService;
+    var observerInstance;
+    var view;
     var bmsWsService;
     var $q;
 
@@ -18,16 +20,21 @@ define([
     beforeEach(function(done) {
       inject(function(_methodObserver_, _bmsWsService_, _$q_) {
 
-        methodObserver = _methodObserver_;
         bmsWsService = _bmsWsService_;
         $q = _$q_;
 
-        sharedTest.setup(done, function() {
-          methodObserverInstance = new methodObserver(window.viewInstance, {
+        observerService = _methodObserver_;
+        observerInstance = {
+          type: "method",
+          id: bms.uuid(),
+          options: {
             selector: '#door',
             method: 'testMethod',
             args: ['arg1', 'arg2']
-          });
+          }
+        };
+        sharedTest.setup(done, function(_view_) {
+          view = _view_;
         });
 
       });
@@ -35,12 +42,11 @@ define([
     });
 
     it('(1) should exist', inject(function() {
-      expect(methodObserver).toBeDefined();
+      expect(observerService).toBeDefined();
     }));
 
     it('(2) should implement functions: getId and getDefaultOptions', inject(function() {
-      expect(methodObserverInstance.getId).toBeDefined();
-      expect(methodObserverInstance.getDefaultOptions).toBeDefined();
+      expect(observerService.getDefaultOptions).toBeDefined();
     }));
 
     it('(3) check function should call callback function and return attribute values', function(done) {
@@ -52,7 +58,7 @@ define([
       });
 
       var doorElement = $('#door');
-      methodObserverInstance.options.callback = function(origin, data) {
+      observerInstance.options.callback = function(origin, data) {
         // Origin should be passed to callback function
         expect(origin).toEqual(doorElement);
         expect('returnValue').toEqual(data);
@@ -61,7 +67,8 @@ define([
         };
       };
 
-      var promise = methodObserverInstance.check();
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, doorElement);
       promise.then(function(attributeValues) {
         var doorBmsId = doorElement.attr('data-bms-id');
         var expectedObj = {};
@@ -84,7 +91,8 @@ define([
         return deferred.promise;
       });
 
-      var promise = methodObserverInstance.check();
+      var element = view.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, view, element);
       var error;
       promise.then(function() {}, function(err) {
         error = err;
@@ -103,8 +111,8 @@ define([
           'refinements': ['m1', 'm2', 'm3']
         }
       };
-      methodObserverInstance.options.refinement = 'm3';
-      expect(methodObserverInstance.shouldBeChecked()).toBeTruthy();
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBeTruthy();
     });
 
     it('(6) shouldBeChecked should return false if given refinement is NOT in animation', function() {
@@ -113,22 +121,22 @@ define([
           'refinements': ['m1']
         }
       };
-      methodObserverInstance.options.refinement = 'm3';
-      expect(methodObserverInstance.shouldBeChecked()).toBe(false);
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
     it('(7) shouldBeChecked should return false if model is not initialized', function() {
       window.bmsSessionInstance.toolData = {
         'initialized': false
       };
-      expect(methodObserverInstance.shouldBeChecked()).toBe(false);
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
     it('(8) shouldBeChecked should return true if model is initialized', function() {
       window.bmsSessionInstance.toolData = {
         'initialized': true
       };
-      expect(methodObserverInstance.shouldBeChecked()).toBe(true);
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(true);
     });
 
     it('(9) shouldBeChecked should return false if model is initialized and given refinement is not in animation', function() {
@@ -138,8 +146,8 @@ define([
           'refinements': ['m1']
         }
       };
-      methodObserverInstance.options.refinement = 'm3';
-      expect(methodObserverInstance.shouldBeChecked()).toBe(false);
+      observerInstance.options.refinement = 'm3';
+      expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
   });

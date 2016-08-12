@@ -1,15 +1,16 @@
 define([
   'jquery',
+  'bms.func',
   'prob.observers.csp'
-], function($) {
+], function($, bms) {
 
   "use strict";
 
   describe('prob.observers.csp', function() {
 
     var bmsVisualizationService;
-    var cspEventObserver;
-    var cspEventObserverInstance;
+    var observerService;
+    var observerInstance;
     var probWsService;
     var bmsWsService;
     var viewInstance;
@@ -26,7 +27,7 @@ define([
     beforeEach(function(done) {
       inject(function(bmsVisualization, _probWsService_, _cspEventObserver_, _ws_, _$q_, _$rootScope_, $httpBackend, _bmsWsService_, bmsSessionService) {
 
-        cspEventObserver = _cspEventObserver_;
+        observerService = _cspEventObserver_;
         probWsService = _probWsService_;
         bmsWsService = _bmsWsService_;
         $rootScope = _$rootScope_;
@@ -55,7 +56,7 @@ define([
 
           var result = {};
 
-          result[cspEventObserverInstance.id] = {
+          result[observerInstance.id] = {
             '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': {
               result: '{enter.1.Train1}'
             },
@@ -73,49 +74,53 @@ define([
         var bmsSessionInstance = bmsSessionService.getSession(sessionId);
         viewInstance = bmsSessionInstance.getView(viewId);
 
-        cspEventObserverInstance = new cspEventObserver(viewInstance, {
-          "selector": "#crossing",
-          "observers": [{
-            "exp": "{gate.down,gate.up}",
-            "actions": [{
-              "selector": "g[id^=gate]",
-              "attr": "opacity",
-              "value": "0"
-            }]
-          }, {
-            "exp": "{gate.down}",
-            "actions": [{
-              "selector": "#gate-go_down-2, #gate-go_down-1",
-              "attr": "opacity",
-              "value": "100"
-            }]
-          }, {
-            "exp": "{gate.up}",
-            "actions": [{
-              "selector": "#gate-go_up-2, #gate-go_up-1",
-              "attr": "opacity",
-              "value": "100"
-            }]
-          }, {
-            "exp": "{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}",
-            "actions": [{
-              "selector": "#train_{{a2}}",
-              "attr": "x",
-              "value": "{{a1}}00"
+        observerInstance = {
+          id: bms.uuid(),
+          type: 'cspEvent',
+          options: {
+            "selector": "#crossing",
+            "observers": [{
+              "exp": "{gate.down,gate.up}",
+              "actions": [{
+                "selector": "g[id^=gate]",
+                "attr": "opacity",
+                "value": "0"
+              }]
             }, {
-              "selector": "#train_{{a2}}",
-              "attr": "transform",
-              "value": ""
+              "exp": "{gate.down}",
+              "actions": [{
+                "selector": "#gate-go_down-2, #gate-go_down-1",
+                "attr": "opacity",
+                "value": "100"
+              }]
+            }, {
+              "exp": "{gate.up}",
+              "actions": [{
+                "selector": "#gate-go_up-2, #gate-go_up-1",
+                "attr": "opacity",
+                "value": "100"
+              }]
+            }, {
+              "exp": "{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}",
+              "actions": [{
+                "selector": "#train_{{a2}}",
+                "attr": "x",
+                "value": "{{a1}}00"
+              }, {
+                "selector": "#train_{{a2}}",
+                "attr": "transform",
+                "value": ""
+              }]
+            }, {
+              "exp": "{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}",
+              "actions": [{
+                "selector": "#train_{{a2}}",
+                "attr": "transform",
+                "value": "translate(50,0)"
+              }]
             }]
-          }, {
-            "exp": "{leave.x.y | x <- {0..3}, y <- {Train1,Train2}}",
-            "actions": [{
-              "selector": "#train_{{a2}}",
-              "attr": "transform",
-              "value": "translate(50,0)"
-            }]
-          }]
-        });
+          }
+        };
 
         // Set manually container of view
         loadFixtures('examples/crossing.html');
@@ -132,18 +137,18 @@ define([
     });
 
     it('(1) should exist', inject(function() {
-      expect(cspEventObserver).toBeDefined();
+      expect(observerService).toBeDefined();
     }));
 
     it('(2) should implement functions', inject(function() {
-      expect(cspEventObserverInstance.getDefaultOptions).toBeDefined();
-      expect(cspEventObserverInstance.shouldBeChecked).toBeDefined();
-      expect(cspEventObserverInstance.getDiagramData).toBeDefined();
+      expect(observerService.getDefaultOptions).toBeDefined();
+      expect(observerService.shouldBeChecked).toBeDefined();
+      expect(observerService.getDiagramData).toBeDefined();
     }));
 
     it('(3) evaluateExpressions should translate expression results', function(done) {
 
-      var promise = cspEventObserverInstance.evaluateExpressions();
+      var promise = observerService.evaluateExpressions(viewInstance.session.id, observerInstance);
       promise.then(function(results) {
         expect(results).toEqual({
           '{enter.x.y | x <- {0..4}, y <- {Train1,Train2}}': ['enter.1.Train1'],
@@ -157,7 +162,7 @@ define([
     });
 
     it('(4) replaceParameter should replace parameters', function() {
-      var replaced = cspEventObserverInstance.replaceParameter('#some{{a1}}selector{{a2}}', ['1', '2']);
+      var replaced = observerService.replaceParameter('#some{{a1}}selector{{a2}}', ['1', '2']);
       expect(replaced).toBe('#some1selector2');
     });
 
@@ -187,7 +192,8 @@ define([
 
       });
 
-      var promise = cspEventObserverInstance.check();
+      var element = viewInstance.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, viewInstance, element);
       promise.then(function(attributeValues) {
 
         var trainId = $('#train_Train1').attr("data-bms-id");
@@ -231,7 +237,8 @@ define([
 
       });
 
-      var promise = cspEventObserverInstance.check();
+      var element = viewInstance.determineElement(observerInstance);
+      var promise = observerService.check(observerInstance, viewInstance, element);
       promise.then(function(attributeValues) {
 
         var trainId = $('#train_Train1').attr("data-bms-id");
