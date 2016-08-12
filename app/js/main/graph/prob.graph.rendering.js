@@ -212,7 +212,7 @@ define([
         return defer.promise;
       };
 
-      var getElementSnapshotAsDataUrl = function(elementObservers, node, path) {
+      var getElementSnapshotAsDataUrl = function(elementObservers, node, view, path) {
 
         var defer = $q.defer();
 
@@ -222,7 +222,7 @@ define([
 
           promises.push(function() {
             var d = $q.defer();
-            getElementSnapshotAsSvg(obj, node, path).then(function(svg) {
+            getElementSnapshotAsSvg(obj, node, view, path).then(function(svg) {
               d.resolve(getImageCanvasForSvg(svg));
             });
             return d.promise;
@@ -264,7 +264,22 @@ define([
 
       };
 
-      var getElementSnapshotAsSvg = function(obj, node, path) {
+      var determineElement = function(observer, container) {
+        var ele;
+        if (observer.options.selector !== undefined && observer.options.selector.length > 0) {
+          ele = container.find(observer.options.selector);
+        }
+        if (observer.options.element !== undefined && observer.options.element.length > 0) {
+          ele = observer.options.element;
+        }
+        if (ele instanceof $) {
+          return ele;
+        } else {
+          return undefined;
+        }
+      };
+
+      var getElementSnapshotAsSvg = function(obj, node, view, path) {
 
         var defer = $q.defer();
         var results = node.results;
@@ -276,9 +291,23 @@ define([
         // Prepare observers
         var promises = [];
         angular.forEach(observers, function(o) {
-          if (typeof o.getDiagramData === "function") {
-            promises.push(o.apply(o.getDiagramData(node), clonedContainer));
+
+          var service = $injector.get(o.type + "Observer", "");
+          var element = determineElement(o, clonedContainer);
+          if (element instanceof $) {
+            element.each(function() {
+              var ele = $(this);
+              if (typeof service.getDiagramData === 'function' && typeof service.apply === 'function') {
+                promises.push(service.apply(o, view, ele, clonedContainer, service.getDiagramData(node, o, view, ele)));
+              }
+            });
           }
+
+          /*var service = $injector.get(o.type + "Observer", "");
+          if (typeof service.getDiagramData === 'function' && typeof service.apply === 'function') {
+            promises.push(service.apply(o, view, clonedElement, clonedContainer, service.getDiagramData(node, o, view, obj.element)));
+          }*/
+
         });
 
         // Apply observers
@@ -375,7 +404,8 @@ define([
           var observers = view.getObservers();
           angular.forEach(observers, function(o) {
 
-            if ((typeof o.shouldBeChecked === 'function') && o.shouldBeChecked() && o.options.selector) {
+            var service = $injector.get(o.type + "Observer", "");
+            if (typeof service.getFormulas === 'function' && service.shouldBeChecked(o, view) && o.options.selector) {
               var oe = container.find(o.options.selector);
               if (oe.length) { // If element(s) exist(s)
                 oe.each(function() {
@@ -408,11 +438,12 @@ define([
 
             angular.forEach(oe.observers, function(o) {
 
-              if (typeof o.getFormulas === "function") {
+              var service = $injector.get(o.type + "Observer", "");
+              if (typeof service.getFormulas === "function") {
 
                 var fformulas = [];
 
-                o.getFormulas().forEach(function(f) {
+                service.getFormulas(o, view, oe.element).forEach(function(f) {
 
                   var exists = false;
                   angular.forEach(formulas, function(ef) {
@@ -422,7 +453,7 @@ define([
                     fformulas.push(f);
                   };
 
-                  formulas[o.getId()] = {
+                  formulas[o.id] = {
                     formulas: fformulas
                   };
 
@@ -445,7 +476,7 @@ define([
                 var nodes = data[0];
                 var edges = data[1];
 
-                if(diagramType === 'createProjectionDiagram') {
+                if (diagramType === 'createProjectionDiagram') {
                   edges = edges.filter(function(val) {
                     return val.data.source !== val.data.target;
                   });
@@ -455,7 +486,7 @@ define([
                 // Get HTML data
                 angular.forEach(nodes, function(node) {
                   if (diagramCond(node)) {
-                    promises.push(getElementSnapshotAsDataUrl(elementObservers, node, view.session.templateFolder));
+                    promises.push(getElementSnapshotAsDataUrl(elementObservers, node, view, view.session.templateFolder));
                   } else {
                     promises.push(getEmptySnapshotDataUrl());
                   }
@@ -496,11 +527,14 @@ define([
           var container = view.container;
 
           angular.forEach(observers, function(o) {
-            if ((typeof o.shouldBeChecked === 'function') && o.shouldBeChecked() && isValidSelector(container.contents(), o.options.selector) === undefined) {
+
+            var service = $injector.get(o.type + "Observer", "");
+            if (typeof service.getFormulas === 'function' && service.shouldBeChecked(o, view) && isValidSelector(container.contents(), o.options.selector) === undefined) {
               elementIds.push({
                 selector: o.options.selector
               });
             }
+
           });
 
           return elementIds;

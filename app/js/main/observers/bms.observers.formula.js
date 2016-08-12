@@ -71,6 +71,8 @@ define([
 
             var defer = $q.defer();
 
+            container = container ? container : view.container.contents();
+
             if (element instanceof $) {
               var fvalues = {};
               var returnValue = bms.callElementFunction(observer.options.trigger, element, 'values', result);
