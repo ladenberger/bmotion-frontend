@@ -167,7 +167,6 @@ define([
 
       it('view instance and container is set', function() {
         expect($scope.view).toBeDefined();
-        expect($scope.view.container).toBeDefined();
       });
 
       it('loadViewData should resolve view data', function(done) {
