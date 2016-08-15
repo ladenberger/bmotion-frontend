@@ -62,10 +62,12 @@ define([
 
             var defer = $q.defer();
 
+            var normalized = bms.normalize(handler.options, ["label", "callback"], element, container);
+
             probWsService.checkEvents(
                 sessionId,
                 traceId,
-                handler.events
+                normalized.events
               )
               .then(function(events) {
 
@@ -79,9 +81,9 @@ define([
                     .addClass('glyphicon')
                     .addClass(evt.canExecute ? 'glyphicon-ok-circle' : 'glyphicon-remove-circle');
 
-                  var labelSpan = $('<span>' + bms.convertFunction('origin,event,container', handler.label)(element, evt, container) + '</span>');
+                  var labelSpan = $('<span>' + bms.convertFunction('origin,event,container', handler.options.label)(element, evt, container) + '</span>');
                   if (evt.canExecute) {
-                    var callbackFunc = bms.convertFunction('origin,data,container', handler.callback);
+                    var callbackFunc = bms.convertFunction('origin,data,container', handler.options.callback);
                     labelSpan.click(function() {
                       bmsWsService.executeEvent(sessionId, {
                         traceId: traceId,
@@ -117,12 +119,12 @@ define([
             return defer.promise;
 
           },
-          initTooltip: function(sessionId, handler, element, container, traceId) {
+          initTooltip: function(view, handler, element, container, traceId) {
 
             return element.qtip({
               content: {
                 text: function(event, api) {
-                  return handlerService.getTooltipContent(sessionId, handler, element, container, traceId, api)
+                  return handlerService.getTooltipContent(view.session.id, handler, element, container, traceId, api)
                     .then(function(tooltipElement) {
                       return tooltipElement;
                     }, function(err) {
@@ -133,20 +135,28 @@ define([
               position: {
                 my: 'bottom left',
                 at: 'top right',
-                effect: false,
-                viewport: container
-                  /*,
-                  adjust: {
-                    x: container.offset().left,
-                    y: container.offset().top
-                  }*/
+                effect: false
               },
               events: {
                 show: function(event, api) {
+
+                  var $el = $(api.elements.target[0]);
+                  var dialog = view.iframe.closest(".ui-dialog");
+                  if (dialog.length > 0) {
+                    var leftOffset = dialog.offset().left;
+                    var topOffset = dialog.offset().top;
+                    $el.qtip('option', 'position.target', [0, 0]);
+                    $el.qtip('option', 'position.adjust.x', $el.offset().left + leftOffset + 50);
+                    $el.qtip('option', 'position.adjust.y', $el.offset().top + topOffset + 50);
+                  } else {
+                    $el.qtip('option', 'position.adjust.y', 50);
+                  }
+
                   var qtipDisable = element.data('qtip-disable') ? element.data('qtip-disable') : false;
                   if (event['originalEvent']['type'] === "mouseover" && qtipDisable) {
                     event.preventDefault();
                   }
+
                 }
               },
               show: {
@@ -169,18 +179,18 @@ define([
 
             if (element instanceof $) {
 
-              var normalized = bms.normalize(handler.options, ["label", "callback"], element, view.container);
-
               var traceId = view.toolOptions.traceId;
-              var jcontainer = view.container.contents();
+              var jcontainer = view.container;
 
               element.css('cursor', 'pointer');
 
-              var tooltip = handlerService.initTooltip(view.session.id, normalized, element, view.container, traceId);
+              var tooltip = handlerService.initTooltip(view, handler, element, view.container, traceId);
               var api = tooltip.qtip('api');
-              var callbackFunc = bms.convertFunction('origin,data,container', normalized.callback);
+              var callbackFunc = bms.convertFunction('origin,data,container', handler.options.callback);
 
               element.click(function(event) {
+
+                var normalized = bms.normalize(handler.options, ["label", "callback"], element, view.container);
 
                 // Get more information about event (e.g. enabled/disabled)
                 probWsService.checkEvents(

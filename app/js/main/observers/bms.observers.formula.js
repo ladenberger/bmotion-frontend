@@ -71,7 +71,7 @@ define([
 
             var defer = $q.defer();
 
-            container = container ? container : view.container.contents();
+            container = container ? container : view.container;
 
             if (element instanceof $) {
               var fvalues = {};

@@ -46,7 +46,7 @@ define([
 
                 var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
                 var viewInstance = bmsSessionInstance.getView($scope.id);
-                viewInstance.container.contents().find("body").append(newInput);
+                viewInstance.container.find("body").append(newInput);
                 jele.remove();
 
                 break;
@@ -72,7 +72,7 @@ define([
 
                 var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
                 var viewInstance = bmsSessionInstance.getView($scope.id);
-                viewInstance.container.contents().find("body").append(newInput);
+                viewInstance.container.find("body").append(newInput);
                 jele.remove();
 
                 break;
@@ -94,7 +94,7 @@ define([
                   .css("top", offset.top + "px");
                 var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
                 var viewInstance = bmsSessionInstance.getView($scope.id);
-                viewInstance.container.contents().find("body").append(newInput);
+                viewInstance.container.find("body").append(newInput);
                 jele.remove();
 
                 break;
@@ -116,7 +116,7 @@ define([
                 jele.remove();
                 var bmsSessionInstance = bmsSessionService.getSession($scope.sessionId);
                 var viewInstance = bmsSessionInstance.getView($scope.id);
-                viewInstance.container.contents().find("body").append(newInput);
+                viewInstance.container.find("body").append(newInput);
                 /*newInput.qtip({
                   content: {
                     text: ''

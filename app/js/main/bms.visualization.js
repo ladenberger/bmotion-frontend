@@ -140,7 +140,7 @@ define([
         bmsVisualization.prototype.getBmsIds = function(selector, _container_) {
           var self = this;
           if (self.bmsids[selector] === undefined) {
-            var container = _container_ ? _container_ : self.container.contents();
+            var container = _container_ ? _container_ : self.container;
             var bmsids = [];
             container.find(selector).each(function(i, e) {
               var ele = $(e);
@@ -337,9 +337,10 @@ define([
           var defer = $q.defer();
           var self = this;
           var path = self.session.templateFolder.length > 0 ? self.session.templateFolder + '/' + template : template;
-          self.container.attr('src', path);
-          self.container.load(function() {
-            $compile(self.container.contents())($scope);
+          self.iframe.attr('src', path);
+          self.iframe.load(function() {
+            self.container = self.iframe.contents();
+            $compile(self.container)($scope);
             defer.resolve();
           });
           return defer.promise;
@@ -399,7 +400,7 @@ define([
           var self = this;
           var ele;
           if (observer.options.selector !== undefined && observer.options.selector.length > 0) {
-            ele = self.container.contents().find(observer.options.selector);
+            ele = self.container.find(observer.options.selector);
           }
           if (observer.options.element !== undefined && observer.options.element.length > 0) {
             ele = observer.options.element;

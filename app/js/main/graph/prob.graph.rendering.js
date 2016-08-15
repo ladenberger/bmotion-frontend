@@ -387,7 +387,7 @@ define([
 
         var defer = $q.defer();
 
-        var container = view.container.contents();
+        var container = view.container;
         var selectorCheckHasError = isValidSelector(container, selector);
         var sessionId = view.session.id;
 
@@ -524,7 +524,7 @@ define([
           angular.forEach(observers, function(o) {
 
             var service = $injector.get(o.type + "Observer", "");
-            if (typeof service.getFormulas === 'function' && service.shouldBeChecked(o, view) && isValidSelector(container.contents(), o.options.selector) === undefined) {
+            if (typeof service.getFormulas === 'function' && service.shouldBeChecked(o, view) && isValidSelector(container, o.options.selector) === undefined) {
               elementIds.push({
                 selector: o.options.selector
               });

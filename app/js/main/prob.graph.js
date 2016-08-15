@@ -382,7 +382,7 @@ define([
           var defer = $q.defer();
 
           var vis = bmsVisualizationService.getVisualization(visualizationId);
-          var container = vis.container.contents();
+          var container = vis.container;
           var selectorCheckHasError = isValidSelector(container, selector);
           var sessionId = vis.id;
 
@@ -524,7 +524,7 @@ define([
                 // TODO: Return some error
               } finally {
                 if (observerInstance && (typeof observerInstance.shouldBeChecked === "function")) {
-                  if (observerInstance.shouldBeChecked() && isValidSelector(container.contents(), o.data.selector) === undefined) {
+                  if (observerInstance.shouldBeChecked() && isValidSelector(container, o.data.selector) === undefined) {
                     elementIds.push({
                       selector: o.data.selector
                     });

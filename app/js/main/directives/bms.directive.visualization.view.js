@@ -72,7 +72,7 @@ define([
             iframe.attr("viewId", $scope.id);
             iframe.attr("sessionId", $scope.sessionId);
             var iframeContents;
-            $scope.view.container = iframe;
+            $scope.view.iframe = iframe;
             $scope.rootView = 'bmsRootView' in attrs;
 
             // Watch for changes in attribute values
@@ -103,7 +103,7 @@ define([
                 var nattrs = $scope.values[bmsid];
                 for (var a in nattrs) {
                   if ($scope.attrs[bmsid].indexOf(a) === -1) {
-                    var orgElement = $scope.view.container.contents().find('[data-bms-id=' + bmsid + ']');
+                    var orgElement = $scope.view.container.find('[data-bms-id=' + bmsid + ']');
                     var attrDefault = orgElement.attr(a);
                     // Special case for class attributes
                     if (a === "class" && attrDefault === undefined) {

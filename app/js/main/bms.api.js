@@ -164,7 +164,7 @@ define([
                   if (ferrors.length > 0) {
                     defer.reject(ferrors);
                   } else {
-                    nOptions.trigger(fresults, view.container.contents());
+                    nOptions.trigger(fresults, view.container);
                     defer.resolve(results);
                   }
 

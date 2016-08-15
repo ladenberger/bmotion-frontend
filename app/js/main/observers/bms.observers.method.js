@@ -44,7 +44,7 @@ define([
 
             var defer = $q.defer();
 
-            container = container ? container : view.container.contents();
+            container = container ? container : view.container;
 
             var normalized = bms.normalize(observer.options, ['callback'], element, container);
 

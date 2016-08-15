@@ -4,9 +4,10 @@
  */
 define([
   'angular',
+  'jquery',
   'bms.modal',
   'bms.api'
-], function(angular) {
+], function(angular, $) {
 
   return angular.module('prob.directive.execute.event', [
       'bms.modal',
@@ -20,7 +21,7 @@ define([
           replace: false,
           link: function($scope, _element_, attr) {
             bmsApiService.addEvent($scope.sessionId, $scope.id, 'executeEvent', {
-              element: _element_,
+              element: $(_element_),
               name: attr['name'],
               predicate: attr['predicate']
             });
