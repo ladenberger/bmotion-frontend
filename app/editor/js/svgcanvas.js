@@ -229,7 +229,7 @@ $.SvgCanvas = function(container, config) {
   all_properties.text = $.extend(true, {}, all_properties.shape);
   $.extend(all_properties.text, {
     fill: "#000000",
-    stroke_width: 1,
+    stroke_width: 0,
     font_size: 24,
     font_family: 'Helvetica, Arial, sans-serif'
   });
@@ -437,7 +437,6 @@ $.SvgCanvas = function(container, config) {
     return shape;
 
   };
-
 
   // import svgtransformlist.js
   var getTransformList = canvas.getTransformList = svgedit.transformlist.getTransformList;
@@ -698,10 +697,10 @@ $.SvgCanvas = function(container, config) {
     current_mode = "select",
 
     // String indicating the last mouse action
-    last_mouse_action = "";
+    last_mouse_action = "",
 
-  // String with the current direction in which an element is being resized
-  current_resize_mode = "none",
+    // String with the current direction in which an element is being resized
+    current_resize_mode = "none",
 
     // Object with IDs for imported files, to see if one was already added
     import_ids = {};
@@ -1436,7 +1435,6 @@ $.SvgCanvas = function(container, config) {
         changes.y1 = pt1.y;
         changes.x2 = pt2.x;
         changes.y2 = pt2.y;
-
       case "text":
         var tspan = selected.querySelectorAll('tspan');
         var i = tspan.length
@@ -2552,8 +2550,6 @@ $.SvgCanvas = function(container, config) {
 
     while (mouse_target.parentNode && mouse_target.parentNode !== (current_group || current_layer)) {
       mouse_target = mouse_target.parentNode;
-      if (mouse_target.parentNode.tagName === 'svg')
-        break;
     }
 
     //
@@ -2824,10 +2820,6 @@ $.SvgCanvas = function(container, config) {
               "width": 0,
               "height": 0,
               "id": getNextId(),
-              "fill": "white",
-              "stroke": "black",
-              "stroke-width": 1,
-              "stroke-dasharray": "none",
               "opacity": cur_shape.opacity / 2
             }
           });
@@ -2920,8 +2912,8 @@ $.SvgCanvas = function(container, config) {
               "y2": y,
               "id": getNextId(),
               "stroke": cur_shape.stroke,
-              "stroke-width": "1.5",
-              "stroke-dasharray": "none",
+              "stroke-width": stroke_w,
+              "stroke-dasharray": cur_shape.stroke_dasharray,
               "stroke-linejoin": cur_shape.stroke_linejoin,
               "stroke-linecap": cur_shape.stroke_linecap,
               "stroke-opacity": cur_shape.stroke_opacity,
@@ -2941,10 +2933,6 @@ $.SvgCanvas = function(container, config) {
               "cy": y,
               "r": 0,
               "id": getNextId(),
-              "fill": "white",
-              "stroke": "black",
-              "stroke-width": 1,
-              "stroke-dasharray": "none",
               "opacity": cur_shape.opacity / 2
             }
           });
@@ -2960,10 +2948,6 @@ $.SvgCanvas = function(container, config) {
               "rx": 0,
               "ry": 0,
               "id": getNextId(),
-              "fill": "white",
-              "stroke": "black",
-              "stroke-width": 1,
-              "stroke-dasharray": "none",
               "opacity": cur_shape.opacity / 2
             }
           });
@@ -2978,8 +2962,7 @@ $.SvgCanvas = function(container, config) {
               "y": y,
               "id": getNextId(),
               "fill": cur_text.fill,
-              "stroke-width": 0,
-              "stroke-dasharray": "none",
+              "stroke-width": cur_text.stroke_width,
               "font-size": cur_text.font_size,
               "font-family": cur_text.font_family,
               "text-anchor": "left",
@@ -3716,25 +3699,11 @@ $.SvgCanvas = function(container, config) {
           keep = (attrs.width != 0 || attrs.height != 0) || current_mode === "image";
           break;
         case "circle":
-          if (last_mouse_action !== 'mouse_move') {
-            var ele = $(element);
-            var attr_r = ele.attr("r");
-            if (attr_r < 50) ele.attr("r", 50);
-          }
-          last_mouse_action = '';
-          keep = true;
-          //keep = (element.getAttribute('r') != 0);
+          keep = (element.getAttribute('r') != 0);
           break;
         case "ellipse":
-          if (last_mouse_action !== 'mouse_move') {
-            var ele = $(element);
-            var attrs = ele.attr(["rx", "ry"]);
-            if (attrs.rx < 50) ele.attr("rx", 50);
-            if (attrs.ry < 25) ele.attr("ry", 25);
-          }
-          last_mouse_action = '';
-          keep = true;
-          //keep = (attrs.rx != null || attrs.ry != null);
+          var attrs = $(element).attr(["rx", "ry"]);
+          keep = (attrs.rx != null || attrs.ry != null);
           break;
         case "fhellipse":
           if ((freehand.maxx - freehand.minx) > 0 &&
@@ -3931,15 +3900,13 @@ $.SvgCanvas = function(container, config) {
         leaveContext();
       }
 
-      /*if ((parent.tagName !== 'g' && parent.tagName !== 'a') ||
+      if ((parent.tagName !== 'g' && parent.tagName !== 'a') ||
         parent === getCurrentDrawing().getCurrentLayer() ||
         mouse_target === selectorManager.selectorParentGroup) {
         // Escape from in-group edit
         return;
-      }*/
-
+      }
       setContext(mouse_target);
-
     }
 
     // prevent links from being followed in the canvas
@@ -6464,13 +6431,10 @@ $.SvgCanvas = function(container, config) {
             }).attr('src', url);
           }
         } else {
-          var jimage = $(this);
-          if (!jimage.attr("data-bms-widget")) {
-            // adapt image path
-            var session = methodDraw.getSession();
-            val = session.templateFolder + '/' + val;
-            jimage.attr('xlink:href', val);
-          }
+          // adapt image path
+          var vis = methodDraw.getVisualization(val);
+          val = vis['templateFolder'] + '/' + val;
+          $(this).attr('xlink:href', val);
         }
         // Add to encodableImages if it loads
         canvas.embedImage(val);
@@ -7136,7 +7100,6 @@ $.SvgCanvas = function(container, config) {
 
     clearSelection();
     call("contextset", current_group);
-
   }
 
   // Group: Document functions
@@ -8303,17 +8266,12 @@ $.SvgCanvas = function(container, config) {
     if (!elements.length || elements[0] == null) return null
     else {
       var isSameElement = function(el) {
-        if (el && selectedElements[0]) {
-          var jele1 = $(el);
-          var jele2 = $(selectedElements[0]);
-          var compare1 = jele1.attr("data-bms-widget") !== null ? jele1.attr("data-bms-widget") : el.nodeName;
-          var compare2 = jele2.attr("data-bms-widget") !== null ? jele2.attr("data-bms-widget") : selectedElements[0].nodeName;
-          return (compare1 == compare2);
-
-        } else return null;
+        if (el && selectedElements[0])
+          return (el.nodeName == selectedElements[0].nodeName);
+        else return null;
       }
+      return selectedElements.every(isSameElement);
     }
-    return selectedElements.every(isSameElement);
   }
 
 
@@ -8561,18 +8519,6 @@ $.SvgCanvas = function(container, config) {
     }
   };
 
-  var updateRequestSelector = this.updateRequestSelector = function(elems) {
-    var elems = elems || selectedElements;
-    var i = elems.length;
-    while (i--) {
-      var elem = elems[i];
-      if (elem == null) continue;
-      if (selectedElements.indexOf(elem) >= 0) {
-        if (!elem.parentNode) return;
-        selectorManager.requestSelector(elem).resize();
-      }
-    }
-  }
 
   // Function: changeSelectedAttributeNoUndo
   // This function makes the changes to the elements. It does not add the change
@@ -8615,41 +8561,10 @@ $.SvgCanvas = function(container, config) {
         if (attr == "#text") {
           var old_w = svgedit.utilities.getBBox(elem).width;
           elem.textContent = newValue;
+
         } else if (attr == "#href") {
           setHref(elem, newValue);
-        } else {
-
-          var jelem = $(elem);
-
-          if (['ibutton', 'iinput'].indexOf(jelem.attr('data-bms-widget')) >= 0) {
-
-            var text = jelem.find("text");
-            var rect = jelem.find("rect");
-
-            if (attr === 'width') {
-              // Set new width of rect
-              rect.attr("width", newValue);
-              if (jelem.attr('data-bms-widget') === 'ibutton') {
-                var textWidth = text.width();
-                var diff = newValue - textWidth;
-                var newX = rect.attr("x") + Math.round(diff / 2);
-                text.attr("x", newX);
-              }
-            } else if (attr === 'height') {
-              var textHeight = text.height();
-              var diff = newValue - textHeight;
-              // Set new width of rect
-              rect.attr("height", newValue);
-              var newX = rect.attr("y") + Math.round(diff / 2) + Math.round(textHeight);
-              text.attr("y", newX - 4);
-            }
-
-
-          } else {
-            elem.setAttribute(attr, newValue);
-          }
-
-        }
+        } else elem.setAttribute(attr, newValue);
 
         // Timeout needed for Opera & Firefox
         // codedread: it is now possible for this function to be called with elements
@@ -8674,6 +8589,7 @@ $.SvgCanvas = function(container, config) {
             if (xform.type == 4) {
               // remove old rotate
               tlist.removeItem(n);
+
               var box = svgedit.utilities.getBBox(elem);
               var center = transformPoint(box.x + box.width / 2, box.y + box.height / 2, transformListToTransform(tlist).matrix);
               var cx = center.x,
