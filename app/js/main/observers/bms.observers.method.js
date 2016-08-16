@@ -48,45 +48,23 @@ define([
 
             var normalized = bms.normalize(observer.options, ['callback'], element, container);
 
-            if (element instanceof $) {
-
-              var fvalues = {};
-              var promises = [];
-
-              promises.push(function() {
-
-                var d = $q.defer();
-
-                bmsWsService.callMethod(view.session.id, normalized.name, normalized.args)
-                  .then(function(res) {
-                    var returnValue = normalized.callback.call(this, element, res);
-                    var tvalue = {};
-                    if (returnValue) {
-                      var bmsid = view.getBmsIdForElement(element);
-                      tvalue[bmsid] = returnValue;
-                    }
-                    d.resolve(tvalue);
-                  }, function(err) {
-                    d.reject(err);
-                  });
-
-                return d.promise;
-
-              }());
-
-              $q.all(promises)
-                .then(function(data) {
-                  angular.forEach(data, function(r) {
-                    fvalues = angular.merge(r, fvalues);
-                  });
-                  defer.resolve(fvalues);
-                }, function(errors) {
-                  defer.reject(errors);
-                });
-
-            } else {
-              defer.resolve({});
-            }
+            bmsWsService.callMethod(view.session.id, normalized.name, normalized.args)
+              .then(function(res) {
+                var returnValue;
+                if (element instanceof $) {
+                  returnValue = normalized.callback.call(this, element, res);
+                } else {
+                  returnValue = normalized.callback.call(this, res);
+                }
+                var tvalue = {};
+                if (returnValue) {
+                  var bmsid = view.getBmsIdForElement(element);
+                  tvalue[bmsid] = returnValue;
+                }
+                defer.resolve(tvalue);
+              }, function(err) {
+                defer.reject(err);
+              });
 
             return defer.promise;
 

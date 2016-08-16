@@ -45,7 +45,7 @@ define([
       expect(observerService).toBeDefined();
     }));
 
-    it('(2) should implement functions: getId and getDefaultOptions', inject(function() {
+    it('(2) should implement functions: getDefaultOptions', inject(function() {
       expect(observerService.getDefaultOptions).toBeDefined();
     }));
 
@@ -83,7 +83,31 @@ define([
 
     });
 
-    it('(4) check function should reject if an error occurred while executing event on server side', function(done) {
+    it('(4) check function should call callback function (no selector defined)', function(done) {
+
+      spyOn(bmsWsService, "callMethod").and.callFake(function(evt, args) {
+        var deferred = $q.defer();
+        deferred.resolve('returnValue');
+        return deferred.promise;
+      });
+
+      observerInstance.options.selector = undefined;
+
+      observerInstance.options.callback = function(data) {
+        // Origin should be passed to callback function
+        expect('returnValue').toEqual(data);
+      };
+
+      var promise = observerService.check(observerInstance, view);
+      promise.then(function() {
+      }).finally(function() {
+        expect(promise.$$state.status).toBe(1); // Resolved
+        done();
+      });
+
+    });
+
+    it('(5) check function should reject if an error occurred while executing event on server side', function(done) {
 
       spyOn(bmsWsService, "callMethod").and.callFake(function(evt, args) {
         var deferred = $q.defer();
@@ -104,8 +128,7 @@ define([
 
     });
 
-
-    it('(5) shouldBeChecked should return true if given refinement is in animation', function() {
+    it('(6) shouldBeChecked should return true if given refinement is in animation', function() {
       window.bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1', 'm2', 'm3']
@@ -115,7 +138,7 @@ define([
       expect(observerService.shouldBeChecked(observerInstance, view)).toBeTruthy();
     });
 
-    it('(6) shouldBeChecked should return false if given refinement is NOT in animation', function() {
+    it('(7) shouldBeChecked should return false if given refinement is NOT in animation', function() {
       window.bmsSessionInstance.toolData = {
         'model': {
           'refinements': ['m1']
@@ -125,21 +148,21 @@ define([
       expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
-    it('(7) shouldBeChecked should return false if model is not initialized', function() {
+    it('(8) shouldBeChecked should return false if model is not initialized', function() {
       window.bmsSessionInstance.toolData = {
         'initialized': false
       };
       expect(observerService.shouldBeChecked(observerInstance, view)).toBe(false);
     });
 
-    it('(8) shouldBeChecked should return true if model is initialized', function() {
+    it('(9) shouldBeChecked should return true if model is initialized', function() {
       window.bmsSessionInstance.toolData = {
         'initialized': true
       };
       expect(observerService.shouldBeChecked(observerInstance, view)).toBe(true);
     });
 
-    it('(9) shouldBeChecked should return false if model is initialized and given refinement is not in animation', function() {
+    it('(10) shouldBeChecked should return false if model is initialized and given refinement is not in animation', function() {
       window.bmsSessionInstance.toolData = {
         'initialized': true,
         'model': {
