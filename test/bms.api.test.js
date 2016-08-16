@@ -279,6 +279,43 @@ define([
       expect(window.viewInstance.getListeners('ModelInitialised').length).toBe(1);
     });
 
+    it('(12) callMethod should trigger callback', function(done) {
+
+      spyOn(bmsWsService, "callMethod").and.callFake(function(evt, args) {
+        var defer = $q.defer();
+        defer.resolve("returnValue");
+        return defer.promise;
+      });
+
+      bmsApiService.callMethod(sessionId, viewId, {
+        name: "someMethod",
+        args: ["arg1", "arg2"],
+        callback: function(data) {
+          expect(data).toBe("returnValue");
+          done();
+        }
+      });
+
+    });
+
+    it('(13) callMethod should fail if scheme is invalid', function(done) {
+
+      var error;
+
+      var promise = bmsApiService.callMethod(sessionId, viewId, {});
+      promise.then(
+          function() {},
+          function(err) {
+            error = err;
+          })
+        .finally(function() {
+          expect(error).toBeDefined();
+          expect(promise.$$state.status).toBe(2); // Rejected
+          done();
+        });
+
+    });
+
   });
 
 });

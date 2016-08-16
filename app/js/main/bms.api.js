@@ -227,23 +227,45 @@ define([
 
         };
 
-        var callMethod = function(sessionId, viewId, name, args, callback) {
+        var callMethod = function(sessionId, viewId, options) {
 
           var defer = $q.defer();
 
           var session = bmsSessionService.getSession(sessionId);
           var view = session.getView(viewId);
 
-          bmsWsService.callMethod(sessionId, name, args)
-            .then(
-              function success(result) {
-                if (callback) callback.call(this, result);
-                defer.resolve(result);
+          if (tv4.validate(options, {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "args": {
+                  "type": "array"
+                }
               },
-              function error(err) {
-                bmsErrorService.print(err);
-                defer.reject(err);
-              });
+              "required": ["name"]
+            })) {
+
+            bmsWsService.callMethod(sessionId, options.name, options.args)
+              .then(
+                function success(result) {
+                  if (options.callback) options.callback.call(this, result);
+                  defer.resolve(result);
+                },
+                function error(err) {
+                  bmsErrorService.print(err);
+                  defer.reject(err);
+                });
+
+          } else {
+
+            var error = "callMethod has an invalid scheme: " + tv4.error.message;
+            bmsErrorService.print(error);
+            //bmsModalService.openErrorDialog(error);
+            defer.reject(error);
+
+          }
 
           return defer.promise;
 
