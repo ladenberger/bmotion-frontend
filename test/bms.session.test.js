@@ -12,6 +12,7 @@ define(['bms.session'], function() {
     var manifestPath;
     var manifestData;
     var sessionId = "someSessionId";
+    var templateFolder = '';
 
     beforeEach(module('bms.session'));
 
@@ -35,11 +36,14 @@ define(['bms.session'], function() {
           .respond(manifestData);
 
         spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
-          var defer = $q.defer();
-          defer.resolve([{
-            tool: 'BVisualization'
-          }, {}]);
-          return defer.promise;
+          var deferred = $q.defer();
+          deferred.resolve([{
+            tool: 'BVisualization',
+            templateFolder: templateFolder
+          }, {
+            traceId: 'someTraceId'
+          }]);
+          return deferred.promise;
         });
 
         bmsSessionInstance = bmsSessionService.getSession(sessionId);
@@ -55,24 +59,24 @@ define(['bms.session'], function() {
 
     });
 
-    it('should exist', inject(function() {
+    it('(1) should exist', inject(function() {
       expect(bmsSession).toBeDefined();
       expect(bmsSessionService).toBeDefined();
     }));
 
-    it('should implement functions: load and destroy', inject(function() {
+    it('(2) should implement functions: load and destroy', inject(function() {
       var bmsSessionInstance = new bmsSession(sessionId);
       expect(bmsSessionInstance.load).toBeDefined();
       expect(bmsSessionInstance.destroy).toBeDefined();
     }));
 
-    it('initSession function should set session instance data', function() {
-      expect(bmsSessionInstance.modelPath).toBe('somepath/model/m3.bcm');
+    it('(3) initSession function should set session instance data', function() {
+      //expect(bmsSessionInstance.modelPath).toBe('somepath/model/m3.bcm');
       expect(bmsSessionInstance.manifestData).toEqual(manifestData);
       expect(bmsSessionInstance.id).toBe(sessionId);
     });
 
-    it('createView should create new view instance', function() {
+    it('(4) createView should create new view instance', function() {
 
       var view = bmsSessionInstance.getView('lift');
       expect(view.session).toEqual(bmsSessionInstance);
@@ -80,7 +84,7 @@ define(['bms.session'], function() {
 
     });
 
-    it('session should be initialized', function(done) {
+    it('(5) session should be initialized', function(done) {
 
       var promise = bmsSessionInstance.isInitialized();
       promise.then(function(data) {})
@@ -91,7 +95,7 @@ define(['bms.session'], function() {
 
     });
 
-    it('init function should return error if no manifest file path was passed', function(done) {
+    it('(6) init function should return error if no manifest file path was passed', function(done) {
 
       var promise = bmsSessionInstance.init();
       var error;

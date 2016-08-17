@@ -104,7 +104,12 @@ define([
 
           spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
             var deferred = $q.defer();
-            deferred.resolve(sessionId);
+            deferred.resolve([{
+              tool: 'BVisualization',
+              templateFolder: templateFolder
+            }, {
+              traceId: 'someTraceId'
+            }]);
             return deferred.promise;
           });
 
@@ -113,6 +118,7 @@ define([
           $httpBackend.when('GET', templateFolder + '/events.json').respond(jsonEvents);
 
           bmsSessionInstance = bmsSessionService.getSession(sessionId);
+          bmsSessionInstance.templateFolder = templateFolder;
           var viewInstance = bmsSessionInstance.getView(viewId);
           var promise = bmsSessionInstance.init(manifestPath);
           promise.then(function() {

@@ -69,7 +69,9 @@ define([
               '</div>',
             replace: false,
             scope: {
-              manifestPath: '@bmsOnlineVisualization'
+              manifestPath: '@bmsOnlineVisualization',
+              sessionId: '@bmsSessionId',
+              id: '@bmsOnlineVisualizationId'
             },
             controller: ['$scope',
               function($scope) {
@@ -87,13 +89,18 @@ define([
                     $scope.session = bmsSessionService.getSession($scope.sessionId);
                     initFunc = $scope.session.load();
                   } else {
-                    $scope.sessionId = bms.uuid();
+                    if (!$scope.sessionId) {
+                      $scope.sessionId = bms.uuid();
+                    }
                     $scope.session = bmsSessionService.getSession($scope.sessionId);
                     initFunc = $scope.session.init($scope.manifestPath);
                     $location.path($scope.sessionId);
                   }
 
-                  $scope.id = bms.uuid(); // Visualization
+                  if (!$scope.id) {
+                    $scope.id = bms.uuid();
+                  }
+
                   $scope.view = $scope.session.getView($scope.id); // Get fresh view instance
 
                   // Initialize session

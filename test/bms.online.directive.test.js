@@ -112,7 +112,12 @@ define([
 
           spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
             var deferred = $q.defer();
-            deferred.resolve(sessionId);
+            deferred.resolve([{
+              tool: 'BVisualization',
+              templateFolder: templateFolder
+            }, {
+              traceId: 'someTraceId'
+            }]);
             return deferred.promise;
           });
 
@@ -126,7 +131,7 @@ define([
           promise.then(function() {
 
             // Simulate compilation of bmsVisualizationView directive
-            var element = angular.element('<div data-bms-online-visualization="' + manifestPath + '"></div>');
+            var element = angular.element('<div data-bms-online-visualization="' + manifestPath + '" data-bms-online-visualization-id="' + viewId + '" data-bms-session-id="' + bmsSessionInstance.id + '"></div>');
             directiveElem = $compile(element)($rootScope.$new());
             $scope = directiveElem.isolateScope();
 
@@ -168,21 +173,21 @@ define([
 
       });
 
-      it('should have iframe element', function() {
+      it('(1) should have iframe element', function() {
         var iframeElement = directiveElem.find('iframe');
         expect(iframeElement).toBeDefined();
       });
 
-      it('session is set', function() {
+      it('(2) session is set', function() {
         expect($scope.session).toBeDefined();
       });
 
-      it('view instance and container is set', function() {
+      it('(3) view instance and container is set', function() {
         expect($scope.view).toBeDefined();
         expect($scope.view.container).toBeDefined();
       });
 
-      it('view should be initialized', function(done) {
+      it('(4) view should be initialized', function(done) {
 
         var promise = $scope.view.isInitialized();
         promise.then(function() {
@@ -202,7 +207,7 @@ define([
 
       });
 
-      it('additional views should be added', function(done) {
+      it('(5) additional views should be added', function(done) {
 
         var promise = $scope.view.isInitialized();
         promise.then(function() {

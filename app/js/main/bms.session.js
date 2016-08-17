@@ -69,16 +69,15 @@ define([
 
                 self.manifestFilePath = manifestFilePath;
                 self.manifestData = manifestData;
-                self.templateFolder = self.getTemplateFolder(manifestFilePath);
-                self.modelPath = self.templateFolder + '/' + manifestData.model;
 
-                if (manifestData.groovy) {
-                  self.groovyPath = self.templateFolder + '/' + manifestData.groovy;
-                }
-
-                bmsWsService.initSession(self.id, self.manifestFilePath, self.modelPath, self.groovyPath, manifestData.modelOptions)
+                bmsWsService.initSession(self.id, manifestFilePath, manifestData.model, manifestData.groovy, manifestData.modelOptions)
                   .then(function(sessionData) {
                     self.tool = sessionData[0].tool;
+                    self.templateFolder = sessionData[0].templateFolder;
+                    self.modelPath = sessionData[0].modelPath;
+                    if (sessionData[0].groovyPath) {
+                      self.groovyPath = sessionData[0].groovyPath;
+                    }
                     self.toolData = sessionData[1];
                     defer.resolve(self);
                     self.initialized.resolve(self);
@@ -103,18 +102,18 @@ define([
           bmsWsService.loadSession(self.id)
             .then(function(sessionData) {
 
-              self.tool = sessionData[0].tool;
-              self.toolData = sessionData[1];
               self.manifestFilePath = sessionData[0].manifestFilePath;
-              self.templateFolder = self.getTemplateFolder(self.manifestFilePath);
+              self.tool = sessionData[0].tool;
+              self.templateFolder = sessionData[0].templateFolder;
+              self.modelPath = sessionData[0].modelPath;
+              if (sessionData[0].groovyPath) {
+                self.groovyPath = sessionData[0].groovyPath;
+              }
+              self.toolData = sessionData[1];
 
               bmsManifestService.getManifest(self.manifestFilePath)
                 .then(function(manifestData) {
                   self.manifestData = manifestData;
-                  self.modelPath = self.templateFolder + '/' + manifestData.model;
-                  if (manifestData.groovy) {
-                    self.groovyPath = self.templateFolder + '/' + manifestData.groovy;
-                  }
                   defer.resolve(self);
                   self.initialized.resolve(self);
                 });

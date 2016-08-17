@@ -17,6 +17,7 @@ define([
     var $rootScope;
     var viewId = 'someViewId';
     var sessionId = 'someSessionId';
+    var templateFolder = '';
     var ws;
     var $q;
 
@@ -46,7 +47,12 @@ define([
 
         spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
           var deferred = $q.defer();
-          deferred.resolve(sessionId);
+          deferred.resolve([{
+            tool: 'CSPVisualization',
+            templateFolder: templateFolder
+          }, {
+            traceId: 'someTraceId'
+          }]);
           return deferred.promise;
         });
 

@@ -16,6 +16,7 @@ define([
     var ws;
     var $q;
     var formulaObserver;
+    var templateFolder = '';
 
     jasmine.getFixtures().fixturesPath = 'base/test/fixtures';
 
@@ -43,7 +44,12 @@ define([
 
         spyOn(bmsWsService, "initSession").and.callFake(function(evt, args) {
           var deferred = $q.defer();
-          deferred.resolve(sessionId);
+          deferred.resolve([{
+            tool: 'BVisualization',
+            templateFolder: templateFolder
+          }, {
+            traceId: 'someTraceId'
+          }]);
           return deferred.promise;
         });
 
