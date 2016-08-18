@@ -4,12 +4,14 @@ define([
   'bms.session',
   'bms.view',
   'bms.standalone.tabs',
+  'bms.common',
+  'bms.ws',
   'ng-electron'
 ], function(angular, bms) {
 
-  return angular.module('bms.standalone.ctrl.session', ['bms.session', 'bms.view', 'bms.standalone.tabs', 'ngElectron'])
-    .controller('bmsSessionCtrl', ['$scope', '$rootScope', '$routeParams', '$location', 'electron', 'bmsViewService', 'bmsSessionService', 'bmsTabsService', 'bmsVisualizationService', 'bmsModalService',
-      function($scope, $rootScope, $routeParams, $location, electron, bmsViewService, bmsSessionService, bmsTabsService, bmsVisualizationService, bmsModalService) {
+  return angular.module('bms.standalone.ctrl.session', ['bms.session', 'bms.view', 'bms.standalone.tabs', 'bms.common', 'bms.ws', 'ngElectron'])
+    .controller('bmsSessionCtrl', ['$scope', '$rootScope', '$routeParams', '$location', 'electron', 'bmsViewService', 'bmsSessionService', 'bmsTabsService', 'bmsVisualizationService', 'bmsModalService', 'bmsErrorService', 'ws',
+      function($scope, $rootScope, $routeParams, $location, electron, bmsViewService, bmsSessionService, bmsTabsService, bmsVisualizationService, bmsModalService, bmsErrorService, ws) {
 
         // Load session by id
         bmsModalService.loading("Initializing visualization ...");
@@ -22,6 +24,10 @@ define([
         bmsViewService.clearViews();
         $scope.views = bmsViewService.getViews();
         $scope.svgs = $scope.session.getSvgData();
+
+        ws.on('log', function(msg) {
+          console.log("Groovy logs", msg);
+        });
 
         $scope.$watch(function() {
           return bmsViewService.getViews();
