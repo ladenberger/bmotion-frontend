@@ -8,7 +8,6 @@ define([
   'bms.directive.visualization.view',
   'bms.directive.svg',
   'bms.directive.dialog',
-  'prob.directive.execute.event',
   'prob.directive.view'
 ], function(angular) {
   return angular.module('bms.directive', [
@@ -16,7 +15,6 @@ define([
     'bms.directive.visualization.view',
     'bms.directive.svg',
     'bms.directive.dialog',
-    'prob.directive.execute.event',
     'prob.directive.view'
   ]);
 });

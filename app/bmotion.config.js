@@ -13,7 +13,7 @@ requirejs.config({
     "bms.directive.dialog": "js/main/directives/bms.directive.dialog",
     "bms.directive.svg": "js/main/directives/bms.directive.svg",
 
-    "prob.directive.execute.event": "js/main/directives/prob.directive.execute.event",
+    //"prob.directive.execute.event": "js/main/directives/prob.directive.execute.event",
     "prob.directive.view": "js/main/directives/prob.directive.view",
 
     // Handler modules
