@@ -307,6 +307,7 @@ define([
                 if (check) {
 
                   var element = self.determineElement(evt);
+
                   if (element instanceof $) {
                     element.each(function() {
                       var ele = $(this);
@@ -405,8 +406,11 @@ define([
           if (observer.options.element !== undefined && observer.options.element.length > 0) {
             ele = observer.options.element;
           }
+
           if (ele instanceof $) {
             return ele;
+          } else if (ele instanceof angular.element) {
+            return $(ele);
           } else {
             return undefined;
           }
