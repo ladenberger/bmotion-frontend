@@ -6432,8 +6432,8 @@ $.SvgCanvas = function(container, config) {
           }
         } else {
           // adapt image path
-          var vis = methodDraw.getVisualization(val);
-          val = vis['templateFolder'] + '/' + val;
+          var session = methodDraw.getSession();
+          val = session.templateFolder + '/' + val;
           $(this).attr('xlink:href', val);
         }
         // Add to encodableImages if it loads
