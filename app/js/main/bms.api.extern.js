@@ -76,7 +76,7 @@ define([
         init: function(callback) {
           this.on("ModelInitialised", callback);
         },
-        callMethod: function(name, options) {
+        callMethod: function(options) {
           setTimeout(function() {
             var elem = angular.element(document.body);
             var injector = elem.injector();
