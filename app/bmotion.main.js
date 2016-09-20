@@ -22,8 +22,9 @@ var Dialog = require('dialog');
 // Quit when all windows are closed and no other one is listening to this.
 app.on('window-all-closed', function() {
   if (app.listeners('window-all-closed').length == 1) {
-    if (server) kill(server.pid, 'SIGKILL');
-    app.quit();
+    if (server) kill(server.pid, 'SIGKILL', function(err) {
+      app.quit();
+    });
   }
 });
 
@@ -165,7 +166,7 @@ var buildFileMenu = function(mainMenu) {
 
     }
   }));
-  fileMenu.append(new MenuItem({
+  /*fileMenu.append(new MenuItem({
     type: 'separator'
   }));
   fileMenu.append(new MenuItem({
@@ -188,7 +189,7 @@ var buildFileMenu = function(mainMenu) {
           }
         });
     }
-  }));
+  }));*/
   mainMenu.append(new MenuItem({
     label: 'File',
     submenu: fileMenu,
@@ -473,13 +474,17 @@ var shouldQuit = app.makeSingleInstance(function(commandLine, workingDirectory) 
 });
 
 if (shouldQuit) {
-  if (server) kill(server.pid, 'SIGKILL');
+  if (server) kill(server.pid, 'SIGKILL', function(err) {
+    app.quit();
+  });
   app.quit();
   return;
 }
 
 app.on('before-quit', function() {
-  if (server) kill(server.pid, 'SIGKILL');
+  if (server) kill(server.pid, 'SIGKILL', function(err) {
+    app.quit();
+  });
 });
 
 app.on('ready', function() {
@@ -509,6 +514,7 @@ app.on('ready', function() {
   // Start BMotionWeb server
   var path = require('path');
   var appPath = path.dirname(__dirname);
+  //var appPath = '/home/lukas/git/bmotion-frontend/dev/standalone/electron-v0.36.2/resources';
   var isWin = /^win/.test(process.platform);
   var separator = isWin ? ';' : ':';
   server = cp.spawn('java', ['-Xmx1024m', '-cp', appPath + '/libs/*' + separator + appPath + '/libs/bmotion-prob-0.3.1-SNAPSHOT.jar', 'de.bmotion.prob.Standalone', '-local'], {
@@ -550,6 +556,10 @@ app.on('ready', function() {
       visualizationWindows.push(newVisualizationWindow);
       newVisualizationWindow.on('close', function() {
         visualizationWindows.splice(visualizationWindows.indexOf(newVisualizationWindow), 1);
+        angular.send({
+          type: 'destroySession',
+          sessionId: data.sessionId
+        }, mainWindow);
       });
     }
   });

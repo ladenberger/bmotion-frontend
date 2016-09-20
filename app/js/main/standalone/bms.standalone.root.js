@@ -10,6 +10,8 @@ define([
     'bms.observers',
     'bms.handlers',
     'bms.directive',
+    'bms.session',
+    'bms.common',
     'bms.directive.editor',
     'bms.standalone.nodejs',
     'bms.standalone.service',
@@ -26,6 +28,8 @@ define([
         'bms.observers',
         'bms.handlers',
         'bms.directive',
+        'bms.session',
+        'bms.common',
         'bms.directive.editor',
         'bms.standalone.nodejs',
         'bms.standalone.service',
@@ -35,8 +39,8 @@ define([
         'bms.views',
         'prob.graph'
       ])
-      .run(['$rootScope', 'bmsTabsService', 'bmsMainService', 'bmsConfigService', 'bmsModalService', 'initVisualizationService', 'createVisualizationService', 'initFormalModelOnlyService',
-        function($rootScope, bmsTabsService, bmsMainService, bmsConfigService, bmsModalService, initVisualizationService, createVisualizationService, initFormalModelOnlyService) {
+      .run(['$rootScope', 'bmsTabsService', 'bmsMainService', 'bmsConfigService', 'bmsModalService', 'initVisualizationService', 'createVisualizationService', 'initFormalModelOnlyService', 'bmsSessionService', 'bmsErrorService',
+        function($rootScope, bmsTabsService, bmsMainService, bmsConfigService, bmsModalService, initVisualizationService, createVisualizationService, initFormalModelOnlyService, bmsSessionService, bmsErrorService) {
 
           bmsMainService.setMode('ModeStandalone');
           //editableOptions.theme = 'bs3'; // bootstrap3 theme. Can be also 'bs2', 'default'
@@ -70,6 +74,11 @@ define([
               bmsModalService.openErrorDialog(data.data);
             } else if (data.type === 'createNewVisualization') {
               createVisualizationService();
+            } else if (data.type === 'destroySession') {
+              var session = bmsSessionService.getSession(data.sessionId);
+              session.destroy().then(function() {}, function(err) {
+                bmsErrorService.print(err);
+              });
             }
           });
 

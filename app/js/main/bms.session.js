@@ -127,7 +127,7 @@ define([
         };
 
         bmsSession.prototype.destroy = function() {
-          return bmsWsService.destroySession(self.id);
+          return bmsWsService.destroySession(this.id);
         };
 
         bmsSession.prototype.isInitialized = function() {
