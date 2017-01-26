@@ -3,7 +3,7 @@ module.exports = function(grunt) {
   var path = require('path');
   var cssBowerLibs = 'css/libs/bower/';
   var jsBowerLibs = 'js/libs/bower/';
-  var appVersion = '0.3.1-SNAPSHOT';
+  var appVersion = '0.3.1';
   var electronVersion = '0.36.2';
   var targets = ["linux-ia32", "linux-x64", "darwin-x64", "win32-ia32", "win32-x64"];
   var editorDependencies = ["angular-ui-codemirror", "codemirror", "angular-xeditable", "eventEmitter", "eventie", "imagesloaded", "jquery.browser"];
@@ -22,65 +22,55 @@ module.exports = function(grunt) {
     electron: {
       "linux-x64": {
         options: {
-          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
           platform: 'linux',
           arch: 'x64',
-          asar: true,
-          "app-version": appVersion
+          asar: true
         }
       },
       "linux-ia32": {
         options: {
-          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
           platform: 'linux',
           arch: 'ia32',
-          asar: true,
-          "app-version": appVersion
+          asar: true
         }
       },
       "win32-ia32": {
         options: {
-          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
           platform: 'win32',
           //icon: 'app/resources/icons/bmsicon.ico',
           arch: 'ia32',
-          asar: true,
-          "app-version": appVersion
+          asar: true
         }
       },
       "win32-x64": {
         options: {
-          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
           //icon: 'app/resources/icons/bmsicon.ico',
           platform: 'win32',
           arch: 'x64',
-          asar: true,
-          "app-version": appVersion
+          asar: true
         }
       },
       "darwin-x64": {
         options: {
-          name: 'bmotion',
           dir: 'app',
           out: 'build/client',
           version: electronVersion,
           icon: 'app/resources/icons/bmsicon.icns',
           platform: 'darwin',
           arch: 'x64',
-          asar: true,
-          "app-version": appVersion
+          asar: true
         }
       }
     },
@@ -189,6 +179,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', ['karma']);
 
+  grunt.registerTask('setupdev', ['prepare']);
   grunt.registerTask('prepare', ['bower:install']);
   grunt.registerTask('build', ['standalone_all']);
 

@@ -10,3 +10,4 @@ build
 coverage
 dev
 npm-debug.log
+bms.log

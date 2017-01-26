@@ -15,8 +15,7 @@
     "qtip2": "2.2.1",
     "tv4": "1.1.9",
     "angular-sanitize": "~1.4.5",
-    "angular-ui-codemirror": "~0.3.0",
-    "ng-electron": "develephant/ng-electron#~0.4.0"
+    "angular-ui-codemirror": "~0.3.0"
   },
   "ignore": [
     "node_modules",
@@ -49,13 +48,6 @@
       "js": [
         "lib/codemirror.js",
         "mode/javascript/javascript.js"
-      ],
-      "css": "lib/codemirror.css"
-    },
-    "ng-electron": {
-      "js": [
-        "ng-electron.js",
-        "ng-bridge.js"
       ],
       "css": "lib/codemirror.css"
     }
