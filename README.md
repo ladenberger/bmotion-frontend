@@ -21,6 +21,26 @@ gradle clean standalone_all
 
 The build script will produce a zip for all platforms. The zip files are located in the build/dist folder.
 
+## Development
+
+Run the following commmand to setup the development environment:
+
+```
+gradle setupDev
+```
+
+In order to start the BMotionWeb standalone application from the source files run the following command:
+
+```
+gradle startDev
+```
+
+Please note: You need to start a BMotionWeb server. For this just run the following command:
+
+```
+gradle startServer
+```
+
 ## No Gradle installed?
 
 If you don't have gradle installed, you can use the gradlew script provided. For instance, use
