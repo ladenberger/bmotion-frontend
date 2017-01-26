@@ -29,13 +29,13 @@ Run the following commmand to setup the development environment:
 gradle setupdev
 ```
 
-In order to start BMotionWeb from the source files run the following command:
+In order to start the BMotionWeb standalone application from the source files run the following command:
 
 ```
 gradle startdev
 ```
 
-Please note: A BMotionWeb server must be running (see also https://github.com/ladenberger/bmotion).
+Please note: A BMotionWeb server must be running (see also https://github.com/ladenberger/bmotion-prob).
 
 ## No Gradle installed?
 
