@@ -35,6 +35,8 @@ In order to start BMotionWeb from the source files run the following command:
 gradle startdev
 ```
 
+Please note: A BMotionWeb server must be running (see also https://github.com/ladenberger/bmotion).
+
 ## No Gradle installed?
 
 If you don't have gradle installed, you can use the gradlew script provided. For instance, use
