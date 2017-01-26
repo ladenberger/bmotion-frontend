@@ -32,3 +32,21 @@ If you don't have gradle installed, you can use the gradlew script provided. For
 to build for linux x64.
 
 This should build the application without a gradle installation on your computer.
+
+## Development
+
+You will need to install the npm package manager (https://github.com/npm/npm) and the grunt-cli npm package (https://github.com/gruntjs/grunt-cli).
+
+Moreover, you will need to run the BMotionWeb server (see also https://github.com/ladenberger/bmotion-prob).
+
+After installing npm and grunt-cli, and running the BMotionWeb server just execute the the following commmand to setup the development environment:
+
+```
+grunt dev
+```
+
+In order to start BMotionWeb from the source files execute the following command:
+
+```
+npm start
+```
