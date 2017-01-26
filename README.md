@@ -26,16 +26,20 @@ The build script will produce a zip for all platforms. The zip files are located
 Run the following commmand to setup the development environment:
 
 ```
-gradle setupdev
+gradle setupDev
 ```
 
 In order to start the BMotionWeb standalone application from the source files run the following command:
 
 ```
-gradle startdev
+gradle startDev
 ```
 
-Please note: A BMotionWeb server must be running (see also https://github.com/ladenberger/bmotion-prob).
+Please note: You need to start a BMotionWeb server. For this just run the following command:
+
+```
+gradle startServer
+```
 
 ## No Gradle installed?
 
