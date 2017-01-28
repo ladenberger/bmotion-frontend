@@ -38,11 +38,11 @@ app.on('window-all-closed', function() {
   }
 });
 
-var openDialog = function(type) {
+var openDialog = function(type, win) {
   angular.send({
     type: 'openDialog',
     data: type
-  });
+  }, win);
 };
 
 var setOsxMenu = function(menu) {
@@ -84,8 +84,8 @@ var buildViewMenu = function(mainMenu) {
   }));
   viewMenu.append(new MenuItem({
     label: 'Open Groovy Console',
-    click: function() {
-      openDialog('GroovyConsoleSession');
+    click: function(item, focusedWindow) {
+      openDialog('GroovyConsoleSession', focusedWindow);
     }
   }));
   viewMenu.append(new MenuItem({
@@ -116,8 +116,8 @@ var buildViewMenu = function(mainMenu) {
   }));
   viewMenu.append(new MenuItem({
     label: 'User Interactions Log',
-    click: function() {
-      openDialog('UserInteractions');
+    click: function(item, focusedWindow) {
+      openDialog('UserInteractions', focusedWindow);
     }
   }));
   mainMenu.append(new MenuItem({
@@ -279,38 +279,38 @@ var buildProBMenu = function(mainMenu) {
   var probMenu = new Menu();
   probMenu.append(new MenuItem({
     label: 'Events',
-    click: function() {
-      openDialog('Events');
+    click: function(item, focusedWindow) {
+      openDialog('Events', focusedWindow);
     }
   }));
   probMenu.append(new MenuItem({
     label: 'History',
-    click: function() {
-      openDialog('CurrentTrace');
+    click: function(item, focusedWindow) {
+      openDialog('CurrentTrace', focusedWindow);
     }
   }));
   probMenu.append(new MenuItem({
     label: 'State',
-    click: function() {
-      openDialog('StateInspector');
+    click: function(item, focusedWindow) {
+      openDialog('StateInspector', focusedWindow);
     }
   }));
   probMenu.append(new MenuItem({
     label: 'Animations',
-    click: function() {
-      openDialog('CurrentAnimations');
+    click: function(item, focusedWindow) {
+      openDialog('CurrentAnimations', focusedWindow);
     }
   }));
   probMenu.append(new MenuItem({
     label: 'Model Checking',
-    click: function() {
-      openDialog('ModelCheckingUI');
+    click: function(item, focusedWindow) {
+      openDialog('ModelCheckingUI', focusedWindow);
     }
   }));
   probMenu.append(new MenuItem({
     label: 'Console',
-    click: function() {
-      openDialog('BConsole');
+    click: function(item, focusedWindow) {
+      openDialog('BConsole', focusedWindow);
     }
   }));
 
