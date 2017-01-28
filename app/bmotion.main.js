@@ -55,11 +55,11 @@ var buildHelpMenu = function(mainMenu) {
   var helpMenu = new Menu();
   helpMenu.append(new MenuItem({
     label: 'About',
-    click: function() {
+    click: function(item, focusedWindow) {
       angular.send({
         type: 'openHelp',
         data: app.getVersion()
-      });
+      }, focusedWindow);
     }
   }));
   mainMenu.append(new MenuItem({
@@ -223,10 +223,10 @@ var buildDiagramMenu = function(mainMenu, tool) {
       else
         return 'Ctrl+Shift+T';
     })(),
-    click: function() {
+    click: function(item, focusedWindow) {
       angular.send({
         type: 'openTraceDiagramModal'
-      });
+      }, focusedWindow);
     }
   }));
   diagramMenu.append(new MenuItem({
@@ -237,10 +237,10 @@ var buildDiagramMenu = function(mainMenu, tool) {
       else
         return 'Ctrl+Shift+P';
     })(),
-    click: function() {
+    click: function(item, focusedWindow) {
       angular.send({
         type: 'openElementProjectionModal'
-      });
+      }, focusedWindow);
     },
     enabled: tool === 'EventBVisualization' || tool === 'ClassicalBVisualization'
   }));
@@ -578,7 +578,7 @@ app.on('ready', function() {
         angular.send({
           type: 'destroySession',
           sessionId: data.sessionId
-        },newVisualizationWindow);
+        }, newVisualizationWindow);
       });
 
       newVisualizationWindow.on('focus', function() {
