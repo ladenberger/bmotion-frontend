@@ -2,7 +2,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.tasks.Exec
 
 def bmotionVersion = '0.3.1'
-def appVersion = '0.3.1'
+def appVersion = '0.3.2'
 def targets = ["linux-ia32", "linux-x64", "darwin-x64", "win32-ia32", "win32-x64"]
 
 // ----------------------------------------

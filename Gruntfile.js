@@ -3,7 +3,6 @@ module.exports = function(grunt) {
   var path = require('path');
   var cssBowerLibs = 'css/libs/bower/';
   var jsBowerLibs = 'js/libs/bower/';
-  var appVersion = '0.3.1';
   var electronVersion = '0.36.2';
   var targets = ["linux-ia32", "linux-x64", "darwin-x64", "win32-ia32", "win32-x64"];
   var editorDependencies = ["angular-ui-codemirror", "codemirror", "angular-xeditable", "eventEmitter", "eventie", "imagesloaded", "jquery.browser"];
