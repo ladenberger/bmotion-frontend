@@ -2,13 +2,14 @@ define([
   'angular',
   'bms.func',
   'bms.session',
+  'bms.modal',
   'bms.standalone.electron',
   'ng-electron'
 ], function(angular, bms) {
 
-  return angular.module('bms.standalone.service', ['bms.session', 'bms.standalone.electron', 'ngElectron'])
-    .factory('createVisualizationService', ['$uibModal', '$q', 'electronDialog', 'fs', 'path', 'ncp', 'initVisualizationService',
-      function($uibModal, $q, electronDialog, fs, path, ncp, initVisualizationService) {
+  return angular.module('bms.standalone.service', ['bms.session', 'bms.modal', 'bms.standalone.electron', 'ngElectron'])
+    .factory('createVisualizationService', ['$uibModal', '$q', 'electronDialog', 'fs', 'path', 'ncp', 'initVisualizationService', 'bmsModalService',
+      function($uibModal, $q, electronDialog, fs, path, ncp, initVisualizationService, bmsModalService) {
 
         var createJsonFile = function(folder, file, json) {
           var defer = $q.defer();
@@ -93,7 +94,7 @@ define([
                             });
                           })
                           .then(function() {
-                            initVisualizationService(folder + '/' + manifestFile);
+                            bmsModalService.openDialog("Visualization template successfully created")
                           }, function(err) {
                             bmsModalService.openErrorDialog("An error occurred while writing file: " + err);
                           });
